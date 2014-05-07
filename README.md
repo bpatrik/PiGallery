@@ -1,4 +1,4 @@
 PiGallery
 =========
 
-Online Photo gallery for Raspberry Pi
+Online Photo gallery for Raspberry Pi.
