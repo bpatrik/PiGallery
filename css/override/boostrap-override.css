@@ -1,0 +1,55 @@
+html{
+    height: 100%;
+}
+body {
+    padding-top: 70px;
+    height:100%;
+}
+.container{
+    width: 100%;
+}
+
+/*----------image gallery override----------
+-------------------------------------------*/
+/*
+.blueimp-gallery > .slides > .slide > .slide-content, .blueimp-gallery > .prev, .blueimp-gallery > .next, .blueimp-gallery > .close, .blueimp-gallery > .play-pause {
+    -moz-user-select: none;
+}*/
+
+
+.blueimp-gallery > .full-screen {
+    color: #FFFFFF;
+    font-size: 20px;
+    left: 15px;
+    line-height: 30px;
+    margin: 0 40px 0 0;
+    opacity: 0.8;
+    position: absolute;
+    text-shadow: 0 0 2px #000000;
+    top: 15px;
+}
+
+.blueimp-gallery > .full-screen {
+    cursor: pointer;
+    font-size: 20px;
+    left: auto;
+    margin: -15px;
+    padding: 15px;
+    right: 50px;
+    text-decoration: none;
+}
+.blueimp-gallery-controls > .full-screen, {
+    display: block;
+    transform: translateZ(0px);
+}
+
+ .blueimp-gallery > .full-screen:hover {
+    color: #FFFFFF;
+    opacity: 1;
+}
+
+/*override X*/
+
+.blueimp-gallery > .close {
+    font-size: 40px;
+}
