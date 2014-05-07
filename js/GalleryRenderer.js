@@ -3,26 +3,24 @@ define(["jquery","knockout", "ThumbnailManager"], function($, ko, ThumbnailManag
     return function GalleryRenderer(directoryPathOl, galleryDiv, ContentManager){
 
         /*Image gallery*/
-        var TARGET_COL_COUNT = 3;
+        var TARGET_COL_COUNT = 3,
+            MIN_ROW_COUNT = 2,
+            MAX_ROW_COUNT = 4,
 
-        var MIN_ROW_COUNT = 2;
-        var MAX_ROW_COUNT = 4;
         /*directory gallery*/
-        var TARGET_DIR_COL_COUNT = 5;
+            TARGET_DIR_COL_COUNT = 5,
+            IMAGE_MARGIN = 5,
 
-        var IMAGE_MARGIN = 5;
+            $galleryDiv = $(galleryDiv),
+            $directoryGalleryDiv = $galleryDiv.find("#directory-gallery"),
+            $photoGalleryDiv = $galleryDiv.find("#photo-gallery"),
+            $directoryPathOl = $(directoryPathOl),
 
+            that = this,
 
-        var $galleryDiv = $(galleryDiv);
-        var $directoryGalleryDiv = $galleryDiv.find("#directory-gallery");
-        var $photoGalleryDiv = $galleryDiv.find("#photo-gallery");
-        var $directoryPathOl = $(directoryPathOl);
-
-        var that = this;
-
-        var directoryContent = null;
-        var contentManager = ContentManager;
-        var thumbnailManager  = new ThumbnailManager();
+            directoryContent = null,
+            contentManager = ContentManager,
+            thumbnailManager  = new ThumbnailManager();
 
 
         // View-model for the KnockoutJS data binding.
@@ -37,7 +35,7 @@ define(["jquery","knockout", "ThumbnailManager"], function($, ko, ThumbnailManag
 
 
 
-        this.showSearchResult = function(searchContent){
+        this.showSearchResult = function (searchContent) {
 
             $directoryGalleryDiv.empty();
             $photoGalleryDiv.empty();
@@ -45,32 +43,32 @@ define(["jquery","knockout", "ThumbnailManager"], function($, ko, ThumbnailManag
             this.showSearchedText(searchContent.searchString);
             this.showDirectories(searchContent.directories);
             this.showImages(searchContent.photos);
-        }
+        };
 
-        this.showSearchedText = function(text){
+        this.showSearchedText = function (text) {
             $directoryPathOl.empty();
-            $directoryPathOl.append($("<li>").html("Showing results for: " + text));
-        }
+            $directoryPathOl.append($("<li>").html("Showing search results for: " + text));
+        };
 
         /**
          * Show the given conent
          * If the directory not changed, updates the content
          * @param directoryContent
          */
-        this.showContent = function(directoryContent){
+        this.showContent = function (directoryContent) {
 
-            var newPhotos = directoryContent.photos;
-            var newDirectories = directoryContent.directories;
+            var newPhotos = directoryContent.photos,
+                newDirectories = directoryContent.directories;
 
             //check directory change
             if (this.directoryContent) {
-                if(this.directoryContent.currentPath != directoryContent.currentPath){//directory changed, empty gallery
+                if (this.directoryContent.currentPath !== directoryContent.currentPath) {//directory changed, empty gallery
                     $directoryGalleryDiv.empty();
                     $photoGalleryDiv.empty();
-                }else{ //dir name remained
+                } else { //dir name remained
 
                     //filter already shown photos and dirs
-                    for( var i = 0; i < this.directoryContent.photos.length; i++ ){
+                    for (var i = 0; i < this.directoryContent.photos.length; i++ ){
                         var oldPhoto = this.directoryContent.photos[i];
 
                         for( var j = 0; j <newPhotos.length; j++){
@@ -144,7 +142,7 @@ define(["jquery","knockout", "ThumbnailManager"], function($, ko, ThumbnailManag
                     );
                 }
 
-                //show is
+                //show il
                 $directoryPathOl.append($li);
             }
 
@@ -158,7 +156,6 @@ define(["jquery","knockout", "ThumbnailManager"], function($, ko, ThumbnailManag
             for(var i = 0; i < directories.length; i++){
 
                 var directory = directories[i];
-                var side = directory.samplePhotos[0].width < directory.samplePhotos[0].height ? "width" : "height";
 
                 var dirClickHandler = function(data, event){
                     event.preventDefault();
@@ -166,92 +163,60 @@ define(["jquery","knockout", "ThumbnailManager"], function($, ko, ThumbnailManag
                     that.showContent(contentManager.getContent(path,that));
 
                 }
-                directory.mousemoveHandler = function(data, event ) {
-                    if( Date.now() - that.lastUpdate < 500)
-                        return;
-                    that.lastUpdate = Date.now();
-                    data.samplePhotoId++;
-                    if(data.samplePhotoId >= data.samplePhotos.length)
-                        data.samplePhotoId = 0 ;
 
-                    data.samplePhoto(data.samplePhotos[data.samplePhotoId]);
+                var getScaledHeight = function (width, height, scaledWidth){
+                    return height * (scaledWidth / width);
+                }
+                var getScaledWidth = function (width, height, scaledHeight){
+                    return width * (scaledHeight / height);
+                }
 
-                    if(data.samplePhotos[data.samplePhotoId].width < data.samplePhotos[data.samplePhotoId].height){
-                        data.height("auto");
-                        data.width("100%");
-                    }else{
-                        data.height("100%");
-                        data.width("auto");
-                    }
-                   // ko.mapping.fromJS(data.samplePhotos[data.samplePhotoId], data.samplePhoto );
+                var mouseMoveHandler = function(data, event ) {
+                    if( Date.now() - data.lastUpdate     < 500)
+                           return;
+                    data.lastUpdate = Date.now();
 
-    /*
-                    var $targetDiv = $(event.target).closest(".gallery-directory-image");
-                    var $img = $targetDiv.find('img');
+                    var $img = $(event.target).closest('img');
 
-                    var directory = directories[$targetDiv.data("directoryId")];
-                    var dirCounter = $targetDiv.data("dirCounter");
-                    dirCounter++;
-                    if(dirCounter >= directory.samplePhotos.length)
-                        dirCounter = 0;
-                    $targetDiv.data("dirCounter",dirCounter);
+                    $img.fadeOut(400, function() {
+                        data.samplePhotoId++;
+                        if(data.samplePhotoId >= data.samplePhotos.length)
+                            data.samplePhotoId = 0 ;
 
-                    var side = directory.samplePhotos[dirCounter].width < directory.samplePhotos[dirCounter].height ? "width" : "height";
-                    var src =  directory.samplePhotos[dirCounter].path + directory.samplePhotos[dirCounter].fileName;
-                    $img.css("width","auto").css("height","auto").css(side,"100%").attr("src",src);*/
+                        data.samplePhoto(data.samplePhotos[data.samplePhotoId]);
+                        if(data.samplePhotos[data.samplePhotoId].width < data.samplePhotos[data.samplePhotoId].height){
+                            data.height(getScaledHeight(data.samplePhotos[data.samplePhotoId].width, data.samplePhotos[data.samplePhotoId].height, rowHeight));
+                            data.width(rowHeight);
+                        }else{
+                            data.height(rowHeight);
+                            data.width(getScaledWidth(data.samplePhotos[data.samplePhotoId].width, data.samplePhotos[data.samplePhotoId].height, rowHeight));
+                        }
+                        $img.fadeIn();
+                    });
                 };
 
                 directory.renderSize = rowHeight;
                 directory.clickHandler = dirClickHandler;
-            //    directory.samplePhoto = ko.mapping.fromJS( directory.samplePhotos[0]);
-                directory.samplePhoto = ko.observable( directory.samplePhotos[0]);
-                directory.samplePhotoId = 0;
-                if(directory.samplePhotos[0].width < directory.samplePhotos[0].height){
-                    directory.height = ko.observable("auto");
-                    directory.width = ko.observable("100%");
+
+                if(directory.samplePhotos.length > 0){
+
+                    directory.mouseMoveHandler = mouseMoveHandler;
+                    directory.samplePhoto = ko.observable( directory.samplePhotos[0]);
+                    directory.samplePhotoId = 0;
+                    if(directory.samplePhotos[0].width < directory.samplePhotos[0].height){
+                        directory.height = ko.observable(getScaledHeight(directory.samplePhotos[0].width, directory.samplePhotos[0].height, rowHeight));
+                        directory.width = ko.observable(rowHeight);
+                    }else{
+                        directory.height = ko.observable(rowHeight);
+                        directory.width = ko.observable(getScaledWidth(directory.samplePhotos[0].width, directory.samplePhotos[0].height, rowHeight));
+                    }
+                    directory.noImageSrc = null;
                 }else{
-                    directory.height =ko.observable( "100%");
-                    directory.width = ko.observable("auto");
+                    directory.mouseMoveHandler = function(data, event ) {};
                 }
-              //  koViewModel.directories.push(ko.mapping.fromJS(directory));
+
+
                 koViewModel.directories.push(directory);
-
-         /*       var $imgDiv = $('<div>').append(
-                    $('<a>' ,{href:"?dir="+ directory.path+directory.directoryName+"/", title: directory.samplePhotos[0].fileName , "data-path": directory.path+directory.directoryName+"/"}).append(
-                        $('<img>', {id: directory.samplePhotos[0].fileName, src: directory.samplePhotos[0].path + directory.samplePhotos[0].fileName}).css(side,"100%")
-                    ).click(dirClickHandler)
-                ).addClass("gallery-directory-image").height(rowHeight).width(rowHeight).data("dirCounter","0").data("directoryId",i);
-
-
-                //update picture on mouse move
-                var lastUpdate = 0;
-                $imgDiv.mousemove(function( event ) {
-                    if( Date.now() -lastUpdate < 500)
-                        return;
-                    lastUpdate = Date.now();
-
-                    var $targetDiv = $(event.target).closest(".gallery-directory-image");
-                    var $img = $targetDiv.find('img');
-
-                    var directory = directories[$targetDiv.data("directoryId")];
-                    var dirCounter = $targetDiv.data("dirCounter");
-                    dirCounter++;
-                    if(dirCounter >= directory.samplePhotos.length)
-                        dirCounter = 0;
-                    $targetDiv.data("dirCounter",dirCounter);
-
-                    var side = directory.samplePhotos[dirCounter].width < directory.samplePhotos[dirCounter].height ? "width" : "height";
-                    var src =  directory.samplePhotos[dirCounter].path + directory.samplePhotos[dirCounter].fileName;
-                    $img.css("width","auto").css("height","auto").css(side,"100%").attr("src",src);
-                });
-
-                $directoryGalleryDiv.append(
-                    $('<div>').append(
-                            $imgDiv,
-                            $('<div>').addClass("gallery-directory-description")
-                        ).addClass("gallery-directory-wrapper")
-                        .height(rowHeight).width(rowHeight)
-                );*/
             }
         }
 
@@ -325,43 +290,9 @@ define(["jquery","knockout", "ThumbnailManager"], function($, ko, ThumbnailManag
                     koViewModel.photos.push(photo);
                 }
 
-                //add images to div
-           /*     for(var j = 0; j < photoRow.length; j++){
 
-                    var photo = photoRow[j];
-                    var $keywordsDiv = $('<div>').addClass("galley-image-keywords");
-                    for(keyword in photo.keywords){
-                        $keywordsDiv.append(
-                             $('<a>', {href: "#"}).html("#" + photo.keywords[keyword]),
-                             ", "
-                        );
-                    }
-
-                    var imageWidth = imageHeight * (photo.width / photo.height);
-                    //add image to div
-                    $photoGalleryDiv.append(
-                            $('<div>').append(
-                                $('<a>' ,{href:photo.path + photo.fileName, title: photo.fileName, "data-galxlery":""}).append(
-                                   thumbnailManager.createThumbnail(photo,imageWidth, imageHeight)
-                                ),
-                                $('<div>').append($keywordsDiv).addClass("gallery-image-description")
-                        ).addClass("gallery-image")
-                                .height(imageHeight)
-                                .css("max-width",imageWidth)
-                                .css("display","none")
-                    );
-                }
-    */
 
             }
-
-            $photoGalleryDiv.append($("<br/>"));
-            //Fading in photos
-            var delayTime = 0;
-            $photoGalleryDiv.children("div:hidden").each(function(){
-                $(this).delay( delayTime ).fadeIn();
-               delayTime+=50;
-             });
 
         }
 

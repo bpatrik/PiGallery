@@ -19,15 +19,17 @@
     overflow: hidden;
 }
 
-
 .gallery-directory-description{
-    bottom: 60px;
-    height: 60px;
-    margin-bottom: -60px;
+    bottom: 35px;
+    height: 35px;
+    margin-bottom: -35px;
     position: relative;
     color: #FFFFFF;
     padding: 5px;
     background-color: rgba(0, 0, 0, 0.5);
+    font-size: 20px;
+    text-align: left;
+    word-break: break-all;
 }
 
 #gallery hr{
@@ -45,9 +47,8 @@
 }
 
 .gallery-image-description{
-    bottom: 60px;
-    height: 60px;
-    margin-bottom: -60px;
+    bottom: 25px;
+    height: 25px;
     position: relative;
     transition: all 0.3s ease 0.1s;
     color: #FFFFFF;
@@ -59,7 +60,8 @@
    /* position: absolute;
     right: 5px;
     bottom: 5px;*/
-    display: inline;
+    display: table;
+    margin-top: 20px;
     position: absolute;
     transition: all 0.3s ease 0.1s;
 }
@@ -70,6 +72,8 @@
 
 .gallery-image:hover .gallery-image-description{
     background-color: rgba(0,0,0,0.6);
+    bottom: 60px;
+    height: 60px;
 
 }
 

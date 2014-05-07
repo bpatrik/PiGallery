@@ -72,9 +72,6 @@ define(["jquery", "jquery_ui"], function($) {
                         });
                     }
                 }
-              /*  select: function (event, ui) {
-                    window.location.replace("/Product/Details?friendlyUrl=" + ui.item.value);
-                }*/
             }).data("ui-autocomplete");
 
             SetRenderMode(acInstance);

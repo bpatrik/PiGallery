@@ -27,8 +27,8 @@ class DB {
      * @return array
      */
     public static function getDirectoryContent($path = "/"){
-
         $relativePath = $path;
+        $path = utf8_decode(urldecode($path));
         $path = Helper::toDirectoryPath($path);
 
         //is image folder already added?
@@ -49,8 +49,8 @@ class DB {
             if($value != "." && $value != ".."){
                 $contentPath = Helper::concatPath($path,$value);
                 if(is_dir($contentPath) == true){
-
-                    array_push($directories, new Directory(0, Helper::toURLPath(Helper::relativeToDocumentRoot($path)), $value, 0, DB::getPhotos($contentPath,5), DB::getPhotoCount($contentPath)));
+                    $value = utf8_encode($value);
+                    array_push($directories, new Directory(0, Helper::toURLPath(Helper::relativeToDocumentRoot($path)),$value, 0, DB::getPhotos($contentPath,5), DB::getPhotoCount($contentPath)));
 
                 }else{
                     list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
@@ -70,7 +70,7 @@ class DB {
                                                         Helper::toURLPath(
                                                             Helper::relativeToDocumentRoot($contentPath))));
 
-                    array_push($photos, new Photo(0, Helper::toURLPath(Helper::relativeToDocumentRoot($path)), $value,$width, $height, $keywords, $availableThumbnails ));
+                    array_push($photos, new Photo(0, urlencode(Helper::toURLPath(Helper::relativeToDocumentRoot($path))), $value,$width, $height, $keywords, $availableThumbnails ));
                 }
             }
         }
@@ -123,7 +123,7 @@ class DB {
                             Helper::toURLPath(
                                 Helper::relativeToDocumentRoot($contentPath))));
 
-                    array_push($photos, new Photo(0, Helper::toURLPath(Helper::relativeToDocumentRoot($path)), $value,$width, $height, $keywords, $availableThumbnails ));
+                    array_push($photos, new Photo(0, urlencode (Helper::toURLPath(Helper::relativeToDocumentRoot($path))), $value,$width, $height, $keywords, $availableThumbnails ));
                     $maxCount--;
                     if($maxCount <=0)
                         break;

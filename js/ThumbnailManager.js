@@ -8,29 +8,6 @@ define(["jquery"], function($) {
         var thumbnailQueue = [];
         var loadingInProgress = false;
 
-        this.createThumbnail = function(photo,width,height){
-
-            //find the best size
-            var foundThumbnailInfo = photo.availableThumbnails[0];
-            for(var i = 0; i < photo.availableThumbnails.length; i++){
-                var thumbnailInfo = photo.availableThumbnails[i];
-                if(thumbnailInfo.size * thumbnailInfo.size >= width* height){
-                    foundThumbnailInfo = thumbnailInfo;
-                    break;
-                }
-            }
-
-          //  return $('<img>', {id: photo.fileName, src: photo.path + photo.fileName, height: height, width: width});
-            var thumbnailPath = "thumbnail.php?image=" + photo.path + photo.fileName + "&size=" + foundThumbnailInfo.size;
-            if(foundThumbnailInfo.available == true){
-                return $('<img>', {id: photo.fileName, src: thumbnailPath, height: height, width: width});
-            }else{
-                var $img = $('<img>', {id: photo.fileName, src: "images/loading.gif", height: height, width: width});
-                queuUpThumbanil($img, thumbnailPath);
-                return $img;
-            }
-        }
-
         this.createThumbnailURL = function(img, photo, width, height){
             //find the best size
             var foundThumbnailInfo = photo.availableThumbnails[0];
