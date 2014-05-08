@@ -1,13 +1,13 @@
 var PiGallery = PiGallery || {};
 
-define(["jquery"], function($) {
+define(["jquery"], function ($) {
     "use strict";
    return function ContentManager() {
         this.lastXhr = null;
 
         this.getContent = function(path, galleryRenderer){
 
-            if(this.lastXhr  && this.lastXhr.readyState != 4){
+            if (this.lastXhr  && this.lastXhr.readyState != 4){
                 this.lastXhr.abort();
                 this.lastXhr = null;
             }
@@ -27,7 +27,7 @@ define(["jquery"], function($) {
             }).fail(function(errMsg) {
                     console.log("Error during downloading directory content");
             });
-
+            console.log("Ret");
             return getLocalStoredContent(path);
         };
 

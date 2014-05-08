@@ -42,13 +42,14 @@
 
 .gallery-image{
     display: inline-block;
-    margin: 5px 3px;
+    margin:  3px;
+    overflow: hidden;
 
 }
 
 .gallery-image-description{
-    bottom: 25px;
-    height: 25px;
+    bottom: 30px;
+    height: 30px;
     position: relative;
     transition: all 0.3s ease 0.1s;
     color: #FFFFFF;
@@ -56,14 +57,14 @@
 }
 
 .galley-image-keywords{
-    opacity: 0;
+   /* opacity: 0;*/
    /* position: absolute;
     right: 5px;
     bottom: 5px;*/
     display: table;
     margin-top: 20px;
     position: absolute;
-    transition: all 0.3s ease 0.1s;
+   /* transition: all 0.3s ease 0.1s;*/
 }
 
 .galley-image-keywords > a{
@@ -72,15 +73,15 @@
 
 .gallery-image:hover .gallery-image-description{
     background-color: rgba(0,0,0,0.6);
-    bottom: 60px;
-    height: 60px;
+   /* bottom: 60px;
+    height: 60px;*/
 
 }
-
+/*
 .gallery-image:hover .galley-image-keywords{
    opacity: 1;
 
-}
+}*/
 
 
 /*autocomplete*/

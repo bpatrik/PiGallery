@@ -1,14 +1,14 @@
 
-define(["jquery"], function($) {
+define(["jquery"], function ($) {
     "use strict";
 
-    return function ThumbnailManager (){
+    return function ThumbnailManager() {
 
 
         var thumbnailQueue = [];
         var loadingInProgress = false;
 
-        this.createThumbnailURL = function(img, photo, width, height){
+        this.createThumbnailURL = function (img, photo, width, height) {
             //find the best size
             var foundThumbnailInfo = photo.availableThumbnails[0];
             for(var i = 0; i < photo.availableThumbnails.length; i++){
@@ -18,7 +18,7 @@ define(["jquery"], function($) {
                     break;
                 }
             }
-          //  return photo.path + photo.fileName;
+
             var thumbnailPath = "thumbnail.php?image=" + photo.path + photo.fileName + "&size=" + foundThumbnailInfo.size;
             var $img = $(img);
 
@@ -26,7 +26,7 @@ define(["jquery"], function($) {
                 return thumbnailPath;
             }else{
                 queuUpThumbanil($img, thumbnailPath);
-                return "images/loading.gif";
+                return "img/loading.gif";
              //   return $img;
             }
         }

@@ -1,6 +1,7 @@
 require.config({
-    baseUrl: '/js/',
+    baseUrl: '/js/lib',
     paths: {
+        PiGallery: '../pigallery/',
         // the left side is the module ID,
         // the right side is the path to
         // the jQuery file, relative to baseUrl.
@@ -11,6 +12,7 @@ require.config({
         // the HTML page.
        // jquery: 'jquery-2.1.0.min',
         jquery_ui: 'jquery-ui-1.10.4_min',
+        underscore: 'underscorejs-1.6.0.min',
         knockout: 'knockout-3.1.0-min',
         bootstrap: 'bootstrap.min',
         bootstrap_image_gallery: 'bootstrap-image-gallery',
@@ -26,13 +28,17 @@ require.config({
         'jquery_blueimp-gallery_min': {
             deps: ["jquery"]
 
+        },
+        'underscore': {
+            exports: '_'
         }
 
     }
 
 });
-requirejs(['jquery' ,'blueImpGallery','ContentManager', 'GalleryRenderer',"AutoComplete", 'bootstrap'],
+require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete" ],
     function   ($,blueimpGallery,ContentManager, GalleryRenderer, AutoComplete) {
+
         var contentManager = new ContentManager();
         var contentRenderer = new GalleryRenderer($("#directory-path"),$("#gallery"),contentManager);
 
@@ -69,5 +75,7 @@ requirejs(['jquery' ,'blueImpGallery','ContentManager', 'GalleryRenderer',"AutoC
         });
 
         new AutoComplete($("#auto-complete-box"));
+
+
 
 });

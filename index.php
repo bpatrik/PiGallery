@@ -83,7 +83,7 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="../navbar/"><span class="glyphicon glyphicon-share-alt"> Share</span></a></li>
-                <li><a href="../navbar/">bpatrik</a></li>
+                <li><a href="#">bpatrik</a></li>
                 <li><a href="./">Log out</a></li>
             </ul>
             <form class="navbar-form navbar-right" role="search">
@@ -138,48 +138,70 @@
     </ol>
     <div id="gallery">
 
-        <div id="directory-gallery" data-bind="foreach: directories">
-            <div class="gallery-directory-wrapper" data-bind="style: { height: renderSize + 'px', width: renderSize   + 'px'  }" >
-                <div class="gallery-directory-image" data-bind="style: { height: renderSize + 'px', width: renderSize   + 'px'  } , event: {mousemove : mouseMoveHandler}" >
-                    <a data-bind="attr: { href: '?dir='+ path + directoryName + '/', title: directoryName , 'data-path': path+directoryName+'/'}, event: {click: clickHandler}  " >
-                        <!-- ko if: samplePhotos.length > 0 -->
-                        <img data-bind="attr: { src: $root.getThumbnailUrl($element, samplePhoto(), width, height) }, style: {width: width() + 'px', height: height() + 'px'}">
-                        <!-- /ko -->
+        <div id="directory-gallery"  data-bind="template: { name: 'directoryList' }"  ></div>
 
-                        <!-- ko if: samplePhotos.length == 0 -->
-                        <img  src="images/gallery-icon.jpg" style="width: 100%">
-                        <!-- /ko -->
-                    </a>
-                </div>
-                <div class="gallery-directory-description">
-                    <span class="pull-left" data-bind="text: directoryName"> </span>
-                </div>
-            </div>
-        </div>
 
         <hr/>
 
-        <div id="photo-gallery"  data-bind="foreach: photos">
 
-            <div class="gallery-image" data-bind="style: { height: renderHeight + 'px', maxWidth: renderWidth   + 'px', display:'none' }" >
-                <a data-bind="attr: { href: path + fileName,  title: fileName  }" data-galxlery="">
-                    <img onload="$(this).parent().parent().fadeIn();" data-bind="attr: { src: $root.getThumbnailUrl($element, $data, renderHeight, renderWidth) }, style: { height: renderHeight  + 'px',  width: renderWidth + 'px'  }"/>
-                </a>
-               <div class="gallery-image-description">
-                   <span class="pull-left" data-bind="text: fileName " style="display: inline; position: absolute"> </span>
-
-                    <div class="galley-image-keywords"  data-bind="foreach: keywords">
-                        <a href="#" data-bind="text: '#' + $data, event: {click: $parent.keywordClickHandler}"> </a>,
-                    </div>
-                </div>
-            </div>
+        <div id="photo-gallery"  data-bind="template: { name: 'photoList' }"  >
         </div>
+
 
     </div>
 
 </div> <!-- /container -->
 
-<script src="js/require.min.js" data-main="js/main.js"></script>
+<!-- render templates-->
+<script type="text/html" id="directoryList">
+    <% _.each(directories(), function(directory, index) { %>
+        <div class="gallery-directory-wrapper"   data-directory-id="<%= index %>" style="height: <%= directory.renderSize %>px; width: <%= directory.renderSize %>px;" >
+
+            <div class="gallery-directory-image" data-bind="event: {mousemove : $root.directoryMouseMoveHandler }"  style="height: <%= directory.renderSize %>px; width: <%= directory.renderSize %>px;">
+                <a data-bind="attr: { href: '?dir='+ directory.path + directory.directoryName + '/', title: directory.directoryName , 'data-path': directory.path+directory.directoryName+'/'}, event: {click: $root.directoryClickHandler}  " >
+
+                    <% if(directory.samplePhotos.length > 0) { %>
+                    <img  data-bind="attr: { src: $root.getThumbnailUrl($element, directory.samplePhoto(), directory.width(), directory.height()) }, style: {width: directory.width() + 'px', height: directory.height() + 'px'}">
+                    <% } %>
+
+                    <% if(directory.samplePhotos.length == 0) { %>
+                    <img  src="img/gallery-icon.jpg" style="width: 100%;">
+                    <% } %>
+                </a>
+            </div>
+            <div class="gallery-directory-description">
+                <span class="pull-left" data-bind="text: directory.directoryName"> </span>
+            </div>
+
+        </div>
+
+    <% }) %>
+</script>
+
+
+<script type="text/html" id="photoList">
+    <% _.each(photos(), function(photo) { %>
+     <div class="gallery-image"  style="height: <%= photo.renderHeight %>px; width: <%= photo.renderWidth %>px; display: none;" data-bind=" event: {mouseover: $root.imageMouseOverHandler, mouseout: $root.imageMouseOutHandler}" >
+        <a href=<%= photo.path + photo.fileName %> data-galxlery="">
+            <img onload="$(this).parent().parent().fadeIn();"  data-bind="attr: { src: $root.getThumbnailUrl($element, photo, photo.renderHeight, photo.renderWidth) }"  style="height: <%= photo.renderHeight %>px; width: <%= photo.renderWidth %>px;" />
+        </a>
+        <div class="gallery-image-description">
+            <span class="pull-left" style="display: inline; position: absolute"><%= photo.fileName %></span>
+
+            <div class="galley-image-keywords">
+            <% _.each(photo.keywords, function(keyword) { %>
+                <a href="#" data-keyword="<%= keyword %>" data-bind="event: {click: $root.keywordClickHandler }">#<%= keyword %></a>,
+             <% }) %>
+            </div>
+        </div>
+    </div>
+
+    <% }) %>
+</script>
+
+
+<script src="js/lib/require.min.js" data-main="js/main.js"></script>
+
 
 </body>
 </html>
