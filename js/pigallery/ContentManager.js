@@ -4,7 +4,7 @@ define(["jquery"], function ($) {
     "use strict";
    return function ContentManager() {
         this.lastXhr = null;
-
+        var that = this;
         this.getContent = function(path, galleryRenderer){
 
             if (this.lastXhr  && this.lastXhr.readyState != 4){
@@ -20,8 +20,8 @@ define(["jquery"], function ($) {
                 dataType: "json"
             }).done(function(data) {
                     console.log("done");
-                    this.lastXhr = null;
-                    storeContent(data);
+                    that.lastXhr = null;
+                    that.storeContent(data);
                     galleryRenderer.showContent(data);
 
             }).fail(function(errMsg) {
@@ -40,7 +40,7 @@ define(["jquery"], function ($) {
 
         };
 
-        var storeContent = function(content){
+        this.storeContent = function(content){
 
             window.sessionStorage.setItem("PiGallery:Content:"+content.currentPath, JSON.stringify(content));
         };

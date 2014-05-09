@@ -20,14 +20,13 @@
 }
 
 .gallery-directory-description{
-    bottom: 35px;
-    height: 35px;
-    margin-bottom: -35px;
+    bottom: 50px;
+    height: 50px;
     position: relative;
     color: #FFFFFF;
     padding: 5px;
     background-color: rgba(0, 0, 0, 0.5);
-    font-size: 20px;
+    font-size: 15px;
     text-align: left;
     word-break: break-all;
 }

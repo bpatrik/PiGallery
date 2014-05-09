@@ -2,7 +2,10 @@
 
 namespace piGallery\model;
 
+use piGallery\Properties;
+
 require_once __DIR__ ."./../db/entities/Photo.php";
+require_once __DIR__ ."./../config.php";
 
 class Helper {
 
@@ -22,6 +25,16 @@ class Helper {
     public static function relativeToDocumentRoot($absolute){
         $absolute = Helper::toDirectoryPath($absolute);
         $baseDir = Helper::toDirectoryPath($_SERVER['DOCUMENT_ROOT']);
+        if(Helper::isSubPath($absolute,$baseDir)){
+            return ltrim(str_replace($baseDir,"",$absolute),DIRECTORY_SEPARATOR);
+        }
+        return $absolute;
+    }
+
+    public static function relativeToImageDirectory($absolute){
+
+        $absolute = Helper::toDirectoryPath($absolute);
+        $baseDir = Helper::concatPath(Helper::toDirectoryPath($_SERVER['DOCUMENT_ROOT']), Properties::$imageFolder);
         if(Helper::isSubPath($absolute,$baseDir)){
             return ltrim(str_replace($baseDir,"",$absolute),DIRECTORY_SEPARATOR);
         }

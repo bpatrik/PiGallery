@@ -2,27 +2,20 @@
 
 namespace piGallery;
 
-require_once __DIR__ ."./config.php";
 require_once __DIR__."./model/Helper.php";
-require_once __DIR__."./model/Logger.php";
-require_once __DIR__ ."./model/ThumbnailManager.php";
+require_once __DIR__ ."./config.php";
 
-use piGallery\model\Logger;
-use piGallery\model\ThumbnailManager;
+
 use piGallery\model\Helper;
+use piGallery\Properties;
 
-
-$image= Helper::toDirectoryPath(Helper::require_REQUEST("image"));
-$size= Helper::require_REQUEST("size");
-
-
-$thumbnail = ThumbnailManager::requestThumbnail($image, $size);
-
+$imagePath= Helper::toDirectoryPath(Helper::require_REQUEST("path"));
+$imagePath = Helper::concatPath(Properties::$imageFolder, $imagePath);
 if(Properties::$enableImageCaching){
     /*Enable caching*/
     $time = 1280951171;
     $lastmod = gmdate('D, d M Y H:i:s \G\M\T', $time);
-    $etag = "pigallerythumbnail-".md5($image.$size);
+    $etag = "pigalleryimg-".md5($imagePath);
 
     $ifmod = isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ? $_SERVER['HTTP_IF_MODIFIED_SINCE'] == $lastmod : null;
     $iftag = isset($_SERVER['HTTP_IF_NONE_MATCH']) ? $_SERVER['HTTP_IF_NONE_MATCH'] == $etag : null;
@@ -36,9 +29,6 @@ if(Properties::$enableImageCaching){
     header('Cache-Control: max-age=259200');
 }
 
-
 header('content-type: image/jpeg');
-header("Content-Length: " . $thumbnail["filesSze"]);
-echo $thumbnail["image"];
-
-?>
+header("Content-Length: " . filesize($imagePath));
+echo file_get_contents($imagePath);

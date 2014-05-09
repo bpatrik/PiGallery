@@ -13,6 +13,8 @@ use piGallery\db\entities\Photo;
 use piGallery\model\Helper;
 use piGallery\model\ThumbnailManager;
 use piGallery\Properties;
+use \mysqli;
+use \Exception;
 
 /**
  * Class DB
@@ -20,7 +22,81 @@ use piGallery\Properties;
  */
 class DB {
 
+    private static function getDatabseConnection(){
 
+        $mysqli = new mysqli(Properties::$databaseAddress,
+                             Properties::$databseUserName,
+                             Properties::$databsePassword,
+                             Properties::$databseName);
+
+        if ($mysqli->connect_errno) {
+            throw new Exception("Failed to connect to MySQL: " . $mysqli->connect_error);
+        }
+
+        return $mysqli;
+
+    }
+
+    public static function recreateDatabase(){
+
+
+        $dropPhotoTableSql ="DROP TABLE photos";
+        $dropDirectoryTableSql ="DROP TABLE directories";
+
+        $createPhotoTableSQL = "CREATE TABLE photos
+                                (
+                                    ID INT NOT NULL AUTO_INCREMENT,
+                                    PRIMARY KEY(ID),
+                                    directory_id INT,
+                                    fileName NVARCHAR(64),
+                                    width INT,
+                                    height INT,
+                                    keywords NVARCHAR(128),
+                                    FOREIGN KEY (directory_id)
+                                        REFERENCES directories(ID)
+                                        ON DELETE CASCADE
+                                )";
+
+        $createDirectoryTableSQL = "CREATE TABLE directories
+                                    (
+                                        ID INT NOT NULL AUTO_INCREMENT,
+                                        PRIMARY KEY(ID),
+                                        path NVARCHAR(256),
+                                        directoryName NVARCHAR(64),
+                                        lastModification DATETIME
+                                    )";
+
+
+        try{
+
+            $mysqli = DB::getDatabseConnection();
+
+            //Dropping table
+            $mysqli->query($dropPhotoTableSql);
+            $mysqli->query($dropDirectoryTableSql);
+
+            //Creating table
+            if(!$mysqli->query($createDirectoryTableSQL)){
+                throw new Exception("Error: ". $mysqli->error);
+            }
+
+            if(!$mysqli->query($createPhotoTableSQL)){
+                throw new Exception("Error: ". $mysqli->error);
+            }
+
+
+        }catch(Exception $ex){
+
+            $mysqli->close();
+            return $ex->getMessage();
+        }
+
+
+        $mysqli->close();
+        return "ok";
+
+
+    }
 
     /**
      * @param string $path
@@ -50,7 +126,7 @@ class DB {
                 $contentPath = Helper::concatPath($path,$value);
                 if(is_dir($contentPath) == true){
                     $value = utf8_encode($value);
-                    array_push($directories, new Directory(0, Helper::toURLPath(Helper::relativeToDocumentRoot($path)),$value, 0, DB::getPhotos($contentPath,5), DB::getPhotoCount($contentPath)));
+                    array_push($directories, new Directory(0, Helper::toURLPath(Helper::relativeToDocumentRoot($path)),$value, 0, DB::getPhotos($contentPath,5)));
 
                 }else{
                     list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
@@ -78,24 +154,7 @@ class DB {
          return array("currentPath" => $relativePath ,"directories" => $directories , "photos" => $photos);
     }
 
-    public static function getPhotoCount($path){
 
-        $path = Helper::concatPath($path,DIRECTORY_SEPARATOR);
-        $dirContent = scandir($path);
-        $count = 0;
-        foreach ($dirContent as &$value) { //search for directories and other files
-            if($value != "." && $value != ".."){
-                $contentPath = Helper::concatPath($path,$value);
-                if(is_dir($contentPath) == true){
-
-
-                }else{
-                    $count++;
-                }
-            }
-        }
-        return $count;
-    }
 
     public static function getPhotos($path, $maxCount){
 
@@ -161,7 +220,7 @@ class DB {
                     $directories = array_merge($directories,$subDriResult["directories"]);
                     $photos = array_merge($photos,$subDriResult["photos"]);
                     if(stripos($value, $searchString) !== FALSE){
-                        array_push($directories, new Directory(0, Helper::toURLPath(Helper::relativeToDocumentRoot($path)), $value, 0, DB::getPhotos($contentPath,5), DB::getPhotoCount($contentPath)));
+                        array_push($directories, new Directory(0, Helper::toURLPath(Helper::relativeToDocumentRoot($path)), $value, 0, DB::getPhotos($contentPath,5)));
                     }
 
                 }else{
@@ -235,7 +294,8 @@ class DB {
                     }
                     array_push($directories,Helper::relativeToDocumentRoot($contentPath));
                 }else{
-                    list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
+                    getimagesize($contentPath, $info);
+
                     //loading lightroom keywords
                     $keywords = array();
                     if(isset($info['APP13'])) {

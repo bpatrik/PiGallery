@@ -186,24 +186,36 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
             var dirs = path.split("/");
             //removing empty strings
             for(var i = 0; i < dirs.length; i++){
-                if(!dirs[i]  || 0 === dirs[i].length)
+                if(!dirs[i]  || 0 === dirs[i].length){
                     dirs.splice(i,1);
+                    i--;
+                }
+            }
+            var actualPath = "";
+
+            var dirClickHandler = function(event){
+                event.preventDefault();
+                var path = $(event.target).closest("a").data("path");
+                that.showContent(contentManager.getContent(path,that));
+
             }
 
+            /*Show alias for root directory*/
+            var $li = null;
+            if(0 == dirs.length ){ //is it the root directory?
+                $li = $("<li>").html("Images");
+            }else{
+                $li = $("<li>").append(
+                    $("<a>",{href: "?dir=/", "data-path": "/"})
+                        .html("Images")
+                        .click(dirClickHandler));
 
+            }
 
-            var actualPath = "";
+            $directoryPathOl.append($li);
+
             for(var i = 0; i < dirs.length; i++){
                 actualPath += dirs[i]+"/";
-
-                var dirClickHandler = function(event){
-                    event.preventDefault();
-                    var path = $(event.target).closest("a").data("path");
-                    that.showContent(contentManager.getContent(path,that));
-
-                }
-
-                var $li = null;
                 if(i == dirs.length - 1 ){//is it the current directory?
                     $li = $("<li>").html(dirs[i]);
                 }else{ //add link to parent directories

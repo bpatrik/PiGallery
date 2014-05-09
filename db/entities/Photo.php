@@ -29,6 +29,7 @@ class Photo extends Content {
     protected $keywords;
 
     /**
+     * transient
      * @var ThumbnailInfo[]
      */
     protected $availableThumbnails;

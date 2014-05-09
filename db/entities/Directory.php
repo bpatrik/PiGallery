@@ -22,26 +22,21 @@ class Directory extends Content {
      */
     protected $samplePhotos;
 
-    /**
-     * @var int
-     */
-    protected $photoCount;
 
     /**
      * @param $id
      * @param $path
      * @param $directoryName
      * @param $lastModification
-     * @param $photoCount
+     * @param $samplePhotos
      */
-    function __construct($id, $path, $directoryName, $lastModification, $samplePhotos, $photoCount)
+    function __construct($id, $path, $directoryName, $lastModification, $samplePhotos)
     {
         $this->id = $id;
         $this->path = $path;
         $this->directoryName = $directoryName;
         $this->lastModification = $lastModification;
         $this->samplePhotos = $samplePhotos;
-        $this->photoCount = $photoCount;
     }
 
 

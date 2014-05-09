@@ -16,11 +16,11 @@ require_once __DIR__."./../db/entities/ThumbnailInfo.php";
 
 class ThumbnailManager {
 
-    public static function getThumbnailFileName($pathToImage, $size){
+    private static function getThumbnailFileName($pathToImage, $size){
         return md5($pathToImage.$size);
     }
 
-    public static function createThumbnail($pathToImage, $size){//TODO: support png and gif too
+    private static function createThumbnail($pathToImage, $size){//TODO: support png and gif too
 
         Logger::v("ThumbnailManager::createThumbnail","creating thumbnail: " . $pathToImage);
         $pixelCount = $size * $size;
@@ -60,7 +60,7 @@ class ThumbnailManager {
      * @param $size
      * @return bool
      */
-    public static function isThumbnailExist($pathToImage,$size){
+    private static function isThumbnailExist($pathToImage,$size){
         $fileName = ThumbnailManager::getThumbnailFileName($pathToImage,$size);
         return file_exists(Helper::concatPath($_SERVER['DOCUMENT_ROOT'],Properties::$thumbnailFolder) . "/" .$fileName.".jpg");
     }
@@ -70,6 +70,7 @@ class ThumbnailManager {
      * @return ThumbnailInfo[]
      */
     public static function getAvailableThumbanils($pathToImage){
+        $pathToImage = Helper::concatPath(Properties::$imageFolder, $pathToImage);
         $availableThumbnails = array();
         foreach(Properties::$thumbnailSizes as $size){
             $exist = ThumbnailManager::isThumbnailExist($pathToImage,$size);
@@ -80,6 +81,7 @@ class ThumbnailManager {
     }
 
     public static function requestThumbnail($pathToImage, $size){
+        $pathToImage = Helper::concatPath(Properties::$imageFolder, $pathToImage);
 
        /* $requestedPixelCount = $width * $height;
         $sizeFound = 150;

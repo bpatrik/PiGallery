@@ -31,51 +31,104 @@ require.config({
         },
         'underscore': {
             exports: '_'
+        },
+        'jquery.cookie': {
+            deps: ['jquery']
         }
 
     }
 
 });
-require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete" ],
-    function   ($,blueimpGallery,ContentManager, GalleryRenderer, AutoComplete) {
 
-        var contentManager = new ContentManager();
-        var contentRenderer = new GalleryRenderer($("#directory-path"),$("#gallery"),contentManager);
+PiGallery.showGallery = function(){
+    require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete" ],
+        function   ($,blueimpGallery,ContentManager, GalleryRenderer, AutoComplete) {
+            $('#gallerySite').show();
+            $('#signInSite').hide();
 
-        contentRenderer.showContent(PiGallery.preLoadedDirectoryContent);
+            var contentManager = new ContentManager();
+            var galleryRenderer = new GalleryRenderer($("#directory-path"),$("#gallery"),contentManager);
 
-        $("#search-button").click(function(event) {
-            event.preventDefault();
-            contentManager.getSearchResult($("#auto-complete-box").val(),contentRenderer );
-        });
+            contentManager.storeContent(PiGallery.preLoadedDirectoryContent);
+            galleryRenderer.showContent(PiGallery.preLoadedDirectoryContent);
+
+            $("#search-button").click(function(event) {
+                event.preventDefault();
+                contentManager.getSearchResult($("#auto-complete-box").val(),contentRenderer );
+            });
 
 
-        /*---------------lightbox setup--------------------*/
+            /*---------------lightbox setup--------------------*/
 
-      //   $('#blueimp-gallery').data('useBootstrapModal', false);
-        var lb = null;
+          //   $('#blueimp-gallery').data('useBootstrapModal', false);
+            PiGallery.lightbox = null;
 
-        $('#photo-gallery').click(function (event) {
-            event = event || window.event;
-            var target = event.target || event.srcElement,
-                link = target.src ? target.parentNode : target,
-                options = $.extend({}, $('#blueimp-gallery').data(),
-                    {index: link, event: event}),
-                links = $('#photo-gallery [data-galxlery]');
-            lb = blueimpGallery(links, options);
+            $('#photo-gallery').click(function (event) {
+                event = event || window.event;
+                var target = event.target || event.srcElement,
+                    link = target.src ? target.parentNode : target,
+                    options = $.extend({}, $('#blueimp-gallery').data(),
+                        {index: link, event: event}),
+                    links = $('#photo-gallery [data-galxlery]');
+
+                $('.full-screen').show();
+                PiGallery.lightbox = blueimpGallery(links, options);
+                return false;
+            });
+
+            $('.full-screen').click(function () {
+                if(PiGallery.lightbox.options.fullScreen == false){
+                    PiGallery.lightbox.options.fullScreen = true;
+                    PiGallery.lightbox.requestFullScreen(PiGallery.lightbox.container[0]);
+                    $('.full-screen').hide();
+                }
+                return false;
+            });
+
+
+            if(PiGallery.searchSupported){
+              new AutoComplete($("#auto-complete-box"));
+            }
+    });
+}
+
+PiGallery.showLogin = function(){
+    require(['jquery', 'jquery.cookie'],  function   ($) {
+            $('#gallerySite').hide();
+            $('#signInSite').show();
+
+        $('#loginButton').click(function() {
+            $.ajax({
+                type: "POST",
+                url: "model/AJAXfacade.php",
+                data: {method: "login",
+                       userName: $('#userNameBox').val(),
+                       password: $('#passwordBox').val(),
+                       rememberMe: $('#rememberMeBox').attr('checked')},
+                dataType: "json"
+            }).done(function(result) {
+                if(result.error == null){
+                    if($('#rememberMeBox').attr('checked')){
+                        $.cookie("pigallery-sessionid", result.data.sessionId, { expires : 31 });
+                    }else{
+                        $.cookie("pigallery-sessionid", result.data.sessionId);
+                    }
+                    PiGallery.showGallery();
+                }else{
+                    alert(result.error);
+                }
+            }).fail(function(errMsg) {
+                console.log("Error during downloading singing in");
+            });
             return false;
         });
-        $('.full-screen').click(function () {
-            lb.close();
-            lb = null;
-            $('#blueimp-gallery').data('fullScreen', true);
-            lb = blueimpGallery($('#gallery [data-galxlery]'), $('#blueimp-gallery').data());
-            $('#blueimp-gallery').data('fullScreen', false);
-            return false;
-        });
-
-        new AutoComplete($("#auto-complete-box"));
+    });
+}
 
 
+if(PiGallery.loggedIn){
+    PiGallery.showGallery();
+}else{
+    PiGallery.showLogin();
 
-});
+}
