@@ -1,5 +1,3 @@
-var PiGallery = PiGallery || {};
-
 define(["jquery"], function ($) {
     "use strict";
    return function ContentManager() {
@@ -18,7 +16,7 @@ define(["jquery"], function ($) {
                 url: "model/AJAXfacade.php",
                 data: {method: "getContent", dir: path},
                 dataType: "json"
-            }).done(function(data) { 
+            }).done(function(data) {
                     that.lastXhr = null;
                     that.storeContent(data);
                     galleryRenderer.showContent(data);
