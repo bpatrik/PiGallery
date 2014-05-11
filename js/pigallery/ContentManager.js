@@ -18,8 +18,7 @@ define(["jquery"], function ($) {
                 url: "model/AJAXfacade.php",
                 data: {method: "getContent", dir: path},
                 dataType: "json"
-            }).done(function(data) {
-                    console.log("done");
+            }).done(function(data) { 
                     that.lastXhr = null;
                     that.storeContent(data);
                     galleryRenderer.showContent(data);
@@ -27,7 +26,6 @@ define(["jquery"], function ($) {
             }).fail(function(errMsg) {
                     console.log("Error during downloading directory content");
             });
-            console.log("Ret");
             return getLocalStoredContent(path);
         };
 
@@ -55,7 +53,6 @@ define(["jquery"], function ($) {
                     data: {method: "search", searchString: searchString},
                     dataType: "json"
                 }).done(function(data) {
-                    console.log("done");
                     galleryRenderer.showSearchResult(data);
 
                 }).fail(function(errMsg) {

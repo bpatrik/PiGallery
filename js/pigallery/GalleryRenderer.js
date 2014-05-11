@@ -1,4 +1,4 @@
-define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGallery/koUnderscoreTemplateEngine' ], function ($, ko, ThumbnailManager, _, koUnderscoreTemplateEngine) {
+define(["jquery",  "PiGallery/ThumbnailManager", "underscore" ], function ($, ThumbnailManager, _) {
     "use strict";
     return function GalleryRenderer(directoryPathOl, galleryDiv, ContentManager){
 
@@ -23,93 +23,16 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
             contentManager = ContentManager,
             thumbnailManager  = new ThumbnailManager();
 
-
-
-
-        // View-model for the KnockoutJS data binding.
-        var koViewModel = {
-            photos: ko.observableArray(),
-            directories: ko.observableArray(),
-            loadThumbnails: function(){
-                thumbnailManager.loadThumbnails();
-            },
-            getThumbnailUrl: function(imgID,  photo, widht, height ){
-                return thumbnailManager.createThumbnailURL(imgID,  photo, widht, height, function(src, imageID) {});
-            },
-            imageMouseOverHandler: function (data, event) {
-                var $imgDiv = $(event.target).closest(".gallery-image"),
-                    $descDiv = $imgDiv.find(".gallery-image-description"),
-                    $keywordsDiv = $descDiv.find(".galley-image-keywords"),
-                    $filenameDiv = $descDiv.find("span"),
-                    height = $keywordsDiv.height() + $filenameDiv.height() + IMAGE_DESCRIPTION_PADDING * 2;
-
-                $descDiv.css({height: height, "bottom": height + "px"});
-
-            },
-            imageMouseOutHandler: function (data, event) {
-                var $imgDiv = $(event.target).closest(".gallery-image");
-                var $descDiv = $imgDiv.find(".gallery-image-description");
-                var $filenameDiv = $descDiv.find("span");
-                var height =   $filenameDiv.height() + IMAGE_DESCRIPTION_PADDING * 2;
-                $descDiv.css({height: height, "bottom": height + "px"});
-            },
-            keywordClickHandler: function (data, event) {
-                event.preventDefault();
-                event.stopPropagation();
-                contentManager.getSearchResult($(event.target).closest('a').data("keyword"), that);
-            },
-            directoryClickHandler: function (data, event) {
-                console.log("clicked");
-                koViewModel.directories.removeAll();
-                koViewModel.photos.removeAll();
-                event.preventDefault();
-                var path = $(event.target).closest("a").data("path");
-                that.showContent(contentManager.getContent(path, that));
-            },
-            directoryMouseMoveHandler: function(data, event ) {
-                var $img = $(event.target).closest('img');
-                data = data.directories()[$(event.target).closest(".gallery-directory-wrapper").data("directory-id")];
-
-              //  data = data.directories();
-
-
-                if (Date.now() - data.lastUpdate  < 500 || data.samplePhotos.length == 0){
-                    return;
-                }
-                data.lastUpdate = Date.now();
-                var getScaledHeight = function (width, height, scaledWidth){
-                    return height * (scaledWidth / width);
-                }
-                var getScaledWidth = function (width, height, scaledHeight){
-                    return width * (scaledHeight / height);
-                }
-
-                var rowHeight = ($directoryGalleryDiv.parent().width() - (IMAGE_MARGIN * 2 * TARGET_DIR_COL_COUNT)) / TARGET_DIR_COL_COUNT; //TODO: make phone friendly
-
-
-                $img.fadeOut(400, function () {
-                    data.samplePhotoId++;
-                    if (data.samplePhotoId >= data.samplePhotos.length){
-                        data.samplePhotoId = 0;
-                    }
-
-                    data.samplePhoto(data.samplePhotos[data.samplePhotoId]);
-                    if(data.samplePhotos[data.samplePhotoId].width < data.samplePhotos[data.samplePhotoId].height){
-                        data.height(getScaledHeight(data.samplePhotos[data.samplePhotoId].width, data.samplePhotos[data.samplePhotoId].height, rowHeight));
-                        data.width(rowHeight);
-                    }else{
-                        data.height(rowHeight);
-                        data.width(getScaledWidth(data.samplePhotos[data.samplePhotoId].width, data.samplePhotos[data.samplePhotoId].height, rowHeight));
-                    }
-                    $img.fadeIn();
-                });
+            window.onpopstate = function(event){
+                var path = event.state ? event.state.path : "/";
+                that.showContent(contentManager.getContent(path,that));
             }
-        };
 
-        ko.setTemplateEngine(new koUnderscoreTemplateEngine());
-        ko.applyBindings(koViewModel);
-
-
+        var saveHistory = function(url){
+            if(history.pushState && history.replaceState) {
+                window.history.pushState({path: that.directoryContent.currentPath }, document.title, url);
+            }
+        }
 
         this.showSearchResult = function (searchContent) {
 
@@ -139,8 +62,8 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
             //check directory change
             if (this.directoryContent) {
                 if (this.directoryContent.currentPath !== directoryContent.currentPath) {//directory changed, empty gallery
-                   koViewModel.directories.removeAll();
-                   koViewModel.photos.removeAll();
+                    $directoryGalleryDiv.empty();
+                    $photoGalleryDiv.empty();
                 } else { //dir name remained
 
                     //filter already shown photos and dirs
@@ -200,6 +123,8 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
                 event.preventDefault();
                 var path = $(event.target).closest("a").data("path");
                 that.showContent(contentManager.getContent(path,that));
+                saveHistory( $(event.target).closest("a").attr('href'));
+                return false;
 
             }
 
@@ -209,7 +134,7 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
                 $li = $("<li>").html("Images");
             }else{
                 $li = $("<li>").append(
-                    $("<a>",{href: "?dir=/", "data-path": "/"})
+                    $("<a>",{href: "index.php?dir=/", "data-path": "/"})
                         .html("Images")
                         .click(dirClickHandler));
 
@@ -223,7 +148,7 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
                     $li = $("<li>").html(dirs[i]);
                 }else{ //add link to parent directories
                     $li = $("<li>").append(
-                        $("<a>",{href: "?dir="+actualPath, "data-path": actualPath})
+                        $("<a>",{href: "index.php?dir="+actualPath, "data-path": actualPath})
                             .html(dirs[i])
                             .click(dirClickHandler)
                     );
@@ -253,42 +178,24 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
             for(var i = 0; i < directories.length; i++){
 
                 var directory = directories[i];
-/*
-                directory.renderSize = rowHeight;
-
-                if(directory.samplePhotos.length > 0){
-                    directory.samplePhoto = ko.observable( directory.samplePhotos[0]);
-                    directory.samplePhotoId = 0;
-                    if(directory.samplePhotos[0].width < directory.samplePhotos[0].height){
-                        directory.height = ko.observable(getScaledHeight(directory.samplePhotos[0].width, directory.samplePhotos[0].height, rowHeight));
-                        directory.width = ko.observable(rowHeight);
-                    }else{
-                        directory.height = ko.observable(rowHeight);
-                        directory.width = ko.observable(getScaledWidth(directory.samplePhotos[0].width, directory.samplePhotos[0].height, rowHeight));
-                    }
-                }
-
-
-
-                koViewModel.directories.push(directory);*/
 
 
               var calcPhotoDimension = function(photo){
                   var width, height;
                   if(photo.width < photo.height){
-                      height = ko.observable(getScaledHeight(directory.samplePhotos[0].width, directory.samplePhotos[0].height, rowHeight));
-                      width = ko.observable(rowHeight);
+                      height = getScaledHeight(directory.samplePhotos[0].width, directory.samplePhotos[0].height, rowHeight);
+                      width = rowHeight;
                   }else{
-                      height = ko.observable(rowHeight);
-                      width = ko.observable(getScaledWidth(directory.samplePhotos[0].width, directory.samplePhotos[0].height, rowHeight));
+                      height = rowHeight;
+                      width = getScaledWidth(directory.samplePhotos[0].width, directory.samplePhotos[0].height, rowHeight);
                   }
                   return {height: height, width:width};
               }
 
               var directoryClickHandler = function ( event) {
-                    console.log("clicked");
                     var path = $(event.target).closest("a").data("path");
                     that.showContent(contentManager.getContent(path, that));
+                    saveHistory( $(event.target).closest("a").attr('href'));
                     return false;
                };
                 //update picture on mouse move
@@ -328,7 +235,7 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
 
 
              var $imgDiv = $('<div>').append(
-                 $('<a>' ,{href:"?dir="+ directory.path+directory.directoryName+"/", title: directory.directoryName , "data-path": directory.path+directory.directoryName+"/"}).append(
+                 $('<a>' ,{href:"index.php?dir="+ directory.path+directory.directoryName+"/", title: directory.directoryName , "data-path": directory.path+directory.directoryName+"/"}).append(
                  $samplePhoto
                  ).click(directoryClickHandler)
              ).addClass("gallery-directory-image").height(rowHeight).width(rowHeight).data("dirCounter","0").data("directoryId",i).data("lastUpdate",Date.now());
@@ -422,21 +329,6 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
                 if(rowHeight < minRowHeight) rowHeight = minRowHeight;
 
                 var imageHeight = rowHeight - (IMAGE_MARGIN * 2);
-
-            /*    for(var j = 0; j < photoRow.length; j++){
-                    var photo = photoRow[j];
-                    var imageWidth = imageHeight * (photo.width / photo.height);
-
-                    photo.renderHeight = imageHeight;
-                    photo.renderWidth = imageWidth;
-
-                    photo.$img = thumbnailManager.createThumbnail(photo,imageWidth,imageHeight);
-                //    photo.src = thumbnailManager.createThumbnailURL(photo.id,  photo,  photo.renderWidth, photo.renderHeight);
-                  //  koViewModel.photos.push(photo);
-
-
-
-                }*/
 
 
 

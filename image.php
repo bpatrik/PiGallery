@@ -24,10 +24,8 @@ use piGallery\model\Logger;
 use piGallery\Properties;
 
 
-Logger::v("image.php", "sajt");
 $imagePath= Helper::toDirectoryPath(Helper::require_REQUEST("path")); 
 $imagePath =  Helper::concatPath(Helper::getAbsoluteImageFolderPath(), $imagePath);
-Logger::v("image.php", $imagePath);
 
 if(Properties::$enableImageCaching){
     /*Enable caching*/
