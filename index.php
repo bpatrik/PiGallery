@@ -120,9 +120,11 @@
                     <li><a href="#">Monitor</a></li> -->
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="../navbar/"><span class="glyphicon glyphicon-share-alt"> Share</span></a></li>
-                    <li><a href="#">bpatrik</a></li>
-                    <li><a href="./">Log out</a></li>
+                    <?php if(\piGallery\Properties::$databaseEnabled) { ?>
+                         <li><a href="#"><span class="glyphicon glyphicon-share-alt"> Share</span></a></li>
+                    <?php } ?>
+                    <li><a href="#" id="userNameButon">User</a></li>
+                    <li><a href="#" id="logOutButton">Log out</a></li>
                 </ul>
                 <?php if(\piGallery\Properties::$databaseEnabled) { ?>
                 <form class="navbar-form navbar-right" role="search">
@@ -177,75 +179,12 @@
         <ol id="directory-path" class="breadcrumb">
         </ol>
         <div id="gallery">
-
             <div id="directory-gallery"  data-bind="template: { name: 'directoryList'}"  ></div>
-
-
             <hr/>
-
-
-            <div id="photo-gallery"  data-bind="template: { name: 'photoList' }"  >
-            </div>
-
-
+            <div id="photo-gallery"  data-bind="template: { name: 'photoList' }"  > </div>
         </div>
-
     </div> <!-- /container -->
 </div>
-<!-- render templates-->
-<script type="text/html" id="directoryList">
-    <% _.each(directories(), function(directory, index) { %>
-        <div class="gallery-directory-wrapper"   data-directory-id="<%= index %>" style="height: <%= directory.renderSize %>px; width: <%= directory.renderSize %>px;" >
-
-            <div class="gallery-directory-image" data-bind="event: {mousemove : $root.directoryMouseMoveHandler }"  style="height: <%= directory.renderSize %>px; width: <%= directory.renderSize %>px;">
-                <a data-bind="attr: { href: '?dir='+ directory.path + directory.directoryName + '/', title: directory.directoryName , 'data-path': directory.path+directory.directoryName+'/'}, event: {click: $root.directoryClickHandler}  " >
-
-                    <% if(directory.samplePhotos.length > 0) { %>
-                    <img  id="dirSapmle_<%= directory.samplePhoto().id %>"  data-bind="attr: { src: $root.getThumbnailUrl('dirSapmle_'+directory.samplePhoto().id, directory.samplePhoto(), directory.width(), directory.height()) }, style: {width: directory.width() + 'px', height: directory.height() + 'px'}">
-                    <% } %>
-
-                    <% if(directory.samplePhotos.length == 0) { %>
-                    <img  src="img/gallery-icon.jpg" style="width: 100%;">
-                    <% } %>
-                </a>
-            </div>
-            <div class="gallery-directory-description">
-                <span class="pull-left" data-bind="text: directory.directoryName"> </span>
-            </div>
-
-        </div>
-
-    <% }) %>
-</script>
-
-
-<script type="text/html" id="photoList">
-    <% _.each(photos(), function(photo) { %>
-     <div class="gallery-image"  style="height: <%= photo.renderHeight %>px; width: <%= photo.renderWidth %>px; " data-bind=" event: {mouseover: $root.imageMouseOverHandler, mouseout: $root.imageMouseOutHandler}" >
-        <a id=<%= photo.id %> href=image.php?path=<%= photo.path + photo.fileName %> data-galxlery="">
-           <!-- <img onload="$(this).parent().parent().fadeIn();" id="photo_<%= photo.id %>" src=<%= photo.src %>  style= "height: <%= photo.renderHeight %>px; width: <%= photo.renderWidth %>px;" />
-        -->
-        </a>
-            <%  $('#'+photo.id).append(photo.$img); %>
-        <div class="gallery-image-description">
-            <span class="pull-left" style="display: inline; position: absolute"><%= photo.fileName %></span>
-
-            <div class="galley-image-keywords">
-            <% if(PiGallery.searchSupported){
-                     _.each(photo.keywords, function(keyword) { %>
-                     <a href="#" data-keyword="<%= keyword %>" data-bind="event: {click: $root.keywordClickHandler }">#<%= keyword %></a>,
-             <%     });
-                } else{
-                _.each(photo.keywords, function(keyword) {%>
-                    <span>#<%= keyword %></span>,
-             <% });} %>
-            </div>
-        </div>
-    </div>
-
-    <% }) %>
-</script>
-
 
 <script src="js/lib/require.min.js" data-main="js/main.js"></script>
 

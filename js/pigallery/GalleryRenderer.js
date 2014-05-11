@@ -10,14 +10,18 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
 
             that = this,
 
-            directoryContent = null,
             contentManager = ContentManager,
             thumbnailManager  = new ThumbnailManager(),
             directoryRenderer = new DirectoryRenderer($directoryGalleryDiv, thumbnailManager, this),
             photoRenderer = new PhotoRenderer($photoGalleryDiv, thumbnailManager, this);
 
+        /*-----------Constructor code------------*/
 
-
+        this.reset = function () {
+            $directoryGalleryDiv.empty();
+            $photoGalleryDiv.empty();
+        }
+        /*-------Functions-------------*/
         var saveHistory = function(url){
             if(history.pushState && history.replaceState) {
                 window.history.pushState({path: that.directoryContent.currentPath }, document.title, url);

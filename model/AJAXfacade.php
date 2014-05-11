@@ -2,15 +2,6 @@
 
 namespace piGallery\model;
 
-/*Authenticating*/
-require_once __DIR__."./AuthenticationManager.php";
-require_once __DIR__ ."./../db/entities/Role.php";
-
-use piGallery\db\entities\Role;
-use piGallery\model\AuthenticationManager;
-
-/*Authentication need for images*/
-AuthenticationManager::authenticate(Role::User);
 
 /*LOGIC*/
 require_once __DIR__ ."./../db/DB.php";
@@ -22,6 +13,8 @@ require_once __DIR__ ."./UserManager.php";
 
 use piGallery\db\DB;
 use piGallery\Properties;
+use piGallery\db\entities\Role;
+use piGallery\model\AuthenticationManager;
 
 /* empty string set as null*/
 foreach ($_REQUEST as $key => $value){
@@ -30,11 +23,21 @@ foreach ($_REQUEST as $key => $value){
     }
 }
 
+function authenticate($role = Role::User) {
+
+    /*Authenticating*/
+    require_once __DIR__."./AuthenticationManager.php";
+    require_once __DIR__ ."./../db/entities/Role.php";
+
+    /*Authentication need for images*/
+    AuthenticationManager::authenticate($role);
+}
 
 
 switch (Helper::require_REQUEST('method')){
 
     case 'getContent':
+        authenticate();
         $dir = Helper::require_REQUEST('dir');
 
         if(Properties::$databaseEnabled){
@@ -44,6 +47,7 @@ switch (Helper::require_REQUEST('method')){
         }
         break;
     case 'autoComplete':
+        authenticate();
         $count= intval(Helper::get_REQUEST('count',5));
         $searchText= Helper::require_REQUEST('searchText');
 
@@ -56,7 +60,7 @@ switch (Helper::require_REQUEST('method')){
         break;
 
     case 'search':
-
+        authenticate();
         $searchString = Helper::require_REQUEST('searchString');
 
         if(Properties::$databaseEnabled){
@@ -67,8 +71,9 @@ switch (Helper::require_REQUEST('method')){
 
         break;
     case 'recreateDatabase':
+        authenticate();
         if(Properties::$databaseEnabled){
-            die(DB::recreateDatabase());
+            die(DB::recreateDatabase(Role::Admin));
         }else{
             die("Error: not supported");
         }
@@ -76,7 +81,7 @@ switch (Helper::require_REQUEST('method')){
     case 'login':
         $userName =  Helper::require_REQUEST('userName');
         $password = Helper::require_REQUEST('password');
-        $searchText = filter_var(Helper::get_REQUEST('rememberMe',"false"), FILTER_VALIDATE_BOOLEAN);
+        $rememberMe= filter_var(Helper::get_REQUEST('rememberMe',"false"), FILTER_VALIDATE_BOOLEAN);
 
         $error = null;
         $data = null;
@@ -94,6 +99,16 @@ switch (Helper::require_REQUEST('method')){
 
         die(json_encode(array("error" => $error, "data" =>$data)));
 
+        break;
+    case 'logout':
+        $sessionID =  Helper::require_REQUEST('sessionID');
+        $error = null;
+        $data = null;
+        if(Properties::$databaseEnabled){
+
+        }
+
+        die(json_encode(array("error" => $error, "data" =>$data)));
         break;
 
 }

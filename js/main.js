@@ -10,13 +10,12 @@ require.config({
         // is using jQuery 1.9.0 located at
         // js/lib/jquery-1.9.0.js, relative to
         // the HTML page.
-       // jquery: 'jquery-2.1.0.min',
-        jquery_ui: 'jquery-ui-1.10.4_min',
-        underscore: 'underscorejs-1.6.0.min',
-        knockout: 'knockout-3.1.0-min',
-        bootstrap: 'bootstrap.min',
-        bootstrap_image_gallery: 'bootstrap-image-gallery',
-        blueImpGallery: 'blueimp-gallery-indicator'
+        jquery: ['//code.jquery.com/jquery-2.1.1.min','jquery-2.1.1.min'],
+        jquery_ui: ['//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min','jquery-ui-1.10.4_min'],
+        underscore: ['//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min','underscorejs-1.6.0.min'],
+        bootstrap: ['//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min','bootstrap.min'],
+        blueImpGallery: 'blueimp-gallery-indicator',
+        jquery_cookie: ['//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min', 'jquery.cookie']
     },
     shim:  {
         'blueImpGallery' : {
@@ -32,7 +31,7 @@ require.config({
         'underscore': {
             exports: '_'
         },
-        'jquery.cookie': {
+        'jquery_cookie': {
             deps: ['jquery']
         }
 
@@ -41,14 +40,16 @@ require.config({
 });
 
 PiGallery.showGallery = function(){
-    require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete" ],
+    require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete", 'jquery_cookie' ],
         function   ($,blueimpGallery,ContentManager, GalleryRenderer, AutoComplete) {
             $('#gallerySite').show();
             $('#signInSite').hide();
+            $("#userNameButton").html(PiGallery.user.userName);
 
             var contentManager = new ContentManager();
             var galleryRenderer = new GalleryRenderer($("#directory-path"),$("#gallery"),contentManager);
 
+            galleryRenderer.reset();
             contentManager.storeContent(PiGallery.preLoadedDirectoryContent);
             galleryRenderer.showContent(PiGallery.preLoadedDirectoryContent);
 
@@ -58,7 +59,29 @@ PiGallery.showGallery = function(){
             });
 
 
-            /*---------------lightbox setup--------------------*/
+            /*------------Log out button-------------------------*/
+            $('#logOutButton').click(function(){
+                $.ajax({
+                    type: "POST",
+                    url: "model/AJAXfacade.php",
+                    data: {method: "logout",
+                           sessionID: $.cookie("pigallery-sessionid") },
+                    dataType: "json"
+                }).done(function(result) {
+                    if(result.error == null){
+                        $.removeCookie("pigallery-sessionid");
+                        PiGallery.user = null;
+                        PiGallery.showLogin();
+                    }else{
+                        alert(result.error);
+                    }
+                }).fail(function(errMsg) {
+                    console.log("Error during downloading singing in");
+                });
+                return false;
+            });
+
+            /*---------------light box setup--------------------*/
 
           //   $('#blueimp-gallery').data('useBootstrapModal', false);
             PiGallery.lightbox = null;
@@ -85,7 +108,7 @@ PiGallery.showGallery = function(){
                 return false;
             });
 
-
+            /*----------AutoComplete setup */
             if(PiGallery.searchSupported){
               new AutoComplete($("#auto-complete-box"));
             }
@@ -93,7 +116,7 @@ PiGallery.showGallery = function(){
 }
 
 PiGallery.showLogin = function(){
-    require(['jquery', 'jquery.cookie'],  function   ($) {
+    require(['jquery', 'jquery_cookie'],  function   ($) {
             $('#gallerySite').hide();
             $('#signInSite').show();
 
@@ -113,6 +136,9 @@ PiGallery.showLogin = function(){
                     }else{
                         $.cookie("pigallery-sessionid", result.data.sessionID, { expires : 1 });
                     }
+                    $('#userNameBox').val(""),
+                    $('#passwordBox').val(""),
+                    PiGallery.user = result.data;
                     PiGallery.showGallery();
                 }else{
                     alert(result.error);
