@@ -2,6 +2,18 @@
 
 namespace piGallery;
 
+/*Authenticating*/
+require_once __DIR__."./model/AuthenticationManager.php";
+require_once __DIR__ ."./db/entities/Role.php";
+
+use piGallery\db\entities\Role;
+use piGallery\model\AuthenticationManager;
+
+/*Authentication need for images*/
+AuthenticationManager::authenticate(Role::User);
+
+/*SITE*/
+
 require_once __DIR__."./model/Helper.php";
 require_once __DIR__ ."./config.php";
 require_once __DIR__."./model/Logger.php";
