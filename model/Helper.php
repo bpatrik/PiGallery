@@ -22,6 +22,16 @@ class Helper {
         return $default;
     }
 
+    public static function getAbsoluteThumbnailFolderPath(){
+        $documentRoot = Helper::concatPath(Helper::toDirectoryPath($_SERVER['DOCUMENT_ROOT']), Properties::$documentRoot);
+        return Helper::concatPath($documentRoot,Properties::$thumbnailFolder);
+    }
+
+    public static function getAbsoluteImageFolderPath(){
+        $documentRoot = Helper::concatPath(Helper::toDirectoryPath($_SERVER['DOCUMENT_ROOT']), Properties::$documentRoot);
+        return Helper::concatPath($documentRoot,Properties::$imageFolder);
+    }
+
     public static function relativeToDocumentRoot($absolute){
         $absolute = Helper::toDirectoryPath($absolute);
         $baseDir = Helper::toDirectoryPath($_SERVER['DOCUMENT_ROOT']);
@@ -34,7 +44,8 @@ class Helper {
     public static function relativeToImageDirectory($absolute){
 
         $absolute = Helper::toDirectoryPath($absolute);
-        $baseDir = Helper::concatPath(Helper::toDirectoryPath($_SERVER['DOCUMENT_ROOT']), Properties::$imageFolder);
+        $baseDir = Helper::concatPath(Helper::toDirectoryPath($_SERVER['DOCUMENT_ROOT']), Properties::$documentRoot);
+        $baseDir = Helper::concatPath($baseDir, Properties::$imageFolder);
         if(Helper::isSubPath($absolute,$baseDir)){
             return ltrim(str_replace($baseDir,"",$absolute),DIRECTORY_SEPARATOR);
         }
@@ -57,6 +68,7 @@ class Helper {
     public static function toDirectoryPath($path){
         $path = str_replace("/", DIRECTORY_SEPARATOR,$path);
         $path = str_replace("\\", DIRECTORY_SEPARATOR,$path);
+        $path = str_replace(".".DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR,$path);
         $path = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR,$path); //clean duplicated separators
         return $path;
     }

@@ -4,13 +4,19 @@ namespace piGallery;
 
 require_once __DIR__."./model/Helper.php";
 require_once __DIR__ ."./config.php";
+require_once __DIR__."./model/Logger.php";
 
 
 use piGallery\model\Helper;
+use piGallery\model\Logger;
 use piGallery\Properties;
 
-$imagePath= Helper::toDirectoryPath(Helper::require_REQUEST("path"));
-$imagePath = Helper::concatPath(Properties::$imageFolder, $imagePath);
+
+Logger::v("image.php", "sajt");
+$imagePath= Helper::toDirectoryPath(Helper::require_REQUEST("path")); 
+$imagePath =  Helper::concatPath(Helper::getAbsoluteImageFolderPath(), $imagePath);
+Logger::v("image.php", $imagePath);
+
 if(Properties::$enableImageCaching){
     /*Enable caching*/
     $time = 1280951171;

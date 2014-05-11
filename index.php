@@ -42,9 +42,11 @@
         require_once __DIR__ ."./db/DB.php";
         require_once __DIR__ ."./model/Helper.php";
         require_once __DIR__ ."./model/DirectoryScanner.php";
+        require_once __DIR__ ."./model/UserManager.php";
         require_once __DIR__ ."./config.php";
 
         use \piGallery\model\Helper;
+        use \piGallery\model\UserManager;
         use \piGallery\Properties;
 
         $dir =  Helper::get_REQUEST('dir','/');
@@ -53,6 +55,18 @@
         }else{
             $content = \piGallery\model\DirectoryScanner::getDirectoryContent($dir);
         }
+
+        $jsonUser = json_encode(null);
+        if(isset($_COOKIE["pigallery-sessionid"]) && !empty($_COOKIE["pigallery-sessionid"])){
+            $user = UserManager::loginWithSessionID($_COOKIE["pigallery-sessionid"]);
+            if($user != null){
+                $user->setPassword(null);
+                $jsonUser = json_encode($user->getJsonData());
+            }
+        }
+
+
+
     ?>
 
     <script language="JavaScript">
@@ -61,7 +75,8 @@
         //Preloaded directory content
         PiGallery.preLoadedDirectoryContent= <?php echo Helper::contentArrayToJSON($content); ?>;
         PiGallery.searchSupported = <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>;
-        PiGallery.loggedIn = false;
+        PiGallery.documentRoot = "<?php echo Properties::$documentRoot; ?>";
+        PiGallery.user =  <?php echo $jsonUser; ?>;
 
     </script>
 
@@ -69,7 +84,7 @@
 </head>
 
 <body>
-<div id="signInSite">
+<div id="signInSite" style="display: none;">
     <div class="container">
 
         <form class="form-signin" role="form">
@@ -163,7 +178,7 @@
         </ol>
         <div id="gallery">
 
-            <div id="directory-gallery"  data-bind="template: { name: 'directoryList' }"  ></div>
+            <div id="directory-gallery"  data-bind="template: { name: 'directoryList'}"  ></div>
 
 
             <hr/>
@@ -186,7 +201,7 @@
                 <a data-bind="attr: { href: '?dir='+ directory.path + directory.directoryName + '/', title: directory.directoryName , 'data-path': directory.path+directory.directoryName+'/'}, event: {click: $root.directoryClickHandler}  " >
 
                     <% if(directory.samplePhotos.length > 0) { %>
-                    <img  data-bind="attr: { src: $root.getThumbnailUrl($element, directory.samplePhoto(), directory.width(), directory.height()) }, style: {width: directory.width() + 'px', height: directory.height() + 'px'}">
+                    <img  id="dirSapmle_<%= directory.samplePhoto().id %>"  data-bind="attr: { src: $root.getThumbnailUrl('dirSapmle_'+directory.samplePhoto().id, directory.samplePhoto(), directory.width(), directory.height()) }, style: {width: directory.width() + 'px', height: directory.height() + 'px'}">
                     <% } %>
 
                     <% if(directory.samplePhotos.length == 0) { %>
@@ -206,10 +221,12 @@
 
 <script type="text/html" id="photoList">
     <% _.each(photos(), function(photo) { %>
-     <div class="gallery-image"  style="height: <%= photo.renderHeight %>px; width: <%= photo.renderWidth %>px; display: none;" data-bind=" event: {mouseover: $root.imageMouseOverHandler, mouseout: $root.imageMouseOutHandler}" >
-        <a href=image.php?path=<%= photo.path + photo.fileName %> data-galxlery="">
-            <img onload="$(this).parent().parent().fadeIn();"  data-bind="attr: { src: $root.getThumbnailUrl($element, photo, photo.renderHeight, photo.renderWidth) }"  style="height: <%= photo.renderHeight %>px; width: <%= photo.renderWidth %>px;" />
+     <div class="gallery-image"  style="height: <%= photo.renderHeight %>px; width: <%= photo.renderWidth %>px; " data-bind=" event: {mouseover: $root.imageMouseOverHandler, mouseout: $root.imageMouseOutHandler}" >
+        <a id=<%= photo.id %> href=image.php?path=<%= photo.path + photo.fileName %> data-galxlery="">
+           <!-- <img onload="$(this).parent().parent().fadeIn();" id="photo_<%= photo.id %>" src=<%= photo.src %>  style= "height: <%= photo.renderHeight %>px; width: <%= photo.renderWidth %>px;" />
+        -->
         </a>
+            <%  $('#'+photo.id).append(photo.$img); %>
         <div class="gallery-image-description">
             <span class="pull-left" style="display: inline; position: absolute"><%= photo.fileName %></span>
 

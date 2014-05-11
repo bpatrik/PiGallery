@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: VirtualPc-Win7x64
- * Date: 2014.04.29.
- * Time: 10:37
- */
 
 namespace piGallery\model;
 

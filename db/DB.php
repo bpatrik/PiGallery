@@ -141,7 +141,7 @@ class DB {
                     }
 
                     //TODO: simplify
-                    $availableThumbnails = ThumbnailManager::getAvailableThumbanils(
+                    $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                                                 Helper::toDirectoryPath(
                                                         Helper::toURLPath(
                                                             Helper::relativeToDocumentRoot($contentPath))));
@@ -177,7 +177,7 @@ class DB {
                         }
                     }
 
-                    $availableThumbnails = ThumbnailManager::getAvailableThumbanils(
+                    $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                         Helper::toDirectoryPath(
                             Helper::toURLPath(
                                 Helper::relativeToDocumentRoot($contentPath))));
@@ -249,7 +249,7 @@ class DB {
 
                     if($found){
 
-                        $availableThumbnails = ThumbnailManager::getAvailableThumbanils(
+                        $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                             Helper::toDirectoryPath(
                                 Helper::toURLPath(
                                     Helper::relativeToDocumentRoot($contentPath))));

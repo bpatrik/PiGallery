@@ -1,5 +1,5 @@
 require.config({
-    baseUrl: '/js/lib',
+    baseUrl:  ' js/lib', 
     paths: {
         PiGallery: '../pigallery/',
         // the left side is the module ID,
@@ -109,9 +109,9 @@ PiGallery.showLogin = function(){
             }).done(function(result) {
                 if(result.error == null){
                     if($('#rememberMeBox').attr('checked')){
-                        $.cookie("pigallery-sessionid", result.data.sessionId, { expires : 31 });
+                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires : 30 });
                     }else{
-                        $.cookie("pigallery-sessionid", result.data.sessionId);
+                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires : 1 });
                     }
                     PiGallery.showGallery();
                 }else{
@@ -125,8 +125,7 @@ PiGallery.showLogin = function(){
     });
 }
 
-
-if(PiGallery.loggedIn){
+if(PiGallery.user != null){
     PiGallery.showGallery();
 }else{
     PiGallery.showLogin();

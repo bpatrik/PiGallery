@@ -7,6 +7,7 @@ require_once __DIR__ ."./Helper.php";
 require_once __DIR__ ."./../config.php";
 require_once __DIR__ ."./DirectoryScanner.php";
 require_once __DIR__ ."./../config.php";
+require_once __DIR__ ."./UserManager.php";
 
 use piGallery\db\DB;
 use piGallery\Properties;
@@ -71,19 +72,13 @@ switch (Helper::require_REQUEST('method')){
         if(Properties::$databaseEnabled){
 
         }else{
-            foreach(Properties::$users as &$value){
-                if($value['userName'] == $userName && $value['password'] == $password){
-                    $data = array(
-                        "sessionId" => md5($userName.$password),
-                        "userName" => $userName,
-                        "role" => "user"
-                    );
-                    break;
-                }
+            $user = UserManager::login($userName, $password);
+            if($user != null){
+                $user->setPassword(null);
+               $data= $user->getJsonData();
+            }else{
+                $error = "Wrong user name or password";
             }
-        }
-        if($data == null){
-            $error = "Wrong user name or password";
         }
 
         die(json_encode(array("error" => $error, "data" =>$data)));

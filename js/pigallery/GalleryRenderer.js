@@ -30,8 +30,11 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
         var koViewModel = {
             photos: ko.observableArray(),
             directories: ko.observableArray(),
-            getThumbnailUrl: function(img, photo, imageWidth, imageHeight){
-                return thumbnailManager.createThumbnailURL(img,  photo, imageWidth, imageHeight);
+            loadThumbnails: function(){
+                thumbnailManager.loadThumbnails();
+            },
+            getThumbnailUrl: function(imgID,  photo, widht, height ){
+                return thumbnailManager.createThumbnailURL(imgID,  photo, widht, height, function(src, imageID) {});
             },
             imageMouseOverHandler: function (data, event) {
                 var $imgDiv = $(event.target).closest(".gallery-image"),
@@ -250,7 +253,7 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
             for(var i = 0; i < directories.length; i++){
 
                 var directory = directories[i];
-
+/*
                 directory.renderSize = rowHeight;
 
                 if(directory.samplePhotos.length > 0){
@@ -265,7 +268,81 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
                     }
                 }
 
-                koViewModel.directories.push(directory);
+
+
+                koViewModel.directories.push(directory);*/
+
+
+              var calcPhotoDimension = function(photo){
+                  var width, height;
+                  if(photo.width < photo.height){
+                      height = ko.observable(getScaledHeight(directory.samplePhotos[0].width, directory.samplePhotos[0].height, rowHeight));
+                      width = ko.observable(rowHeight);
+                  }else{
+                      height = ko.observable(rowHeight);
+                      width = ko.observable(getScaledWidth(directory.samplePhotos[0].width, directory.samplePhotos[0].height, rowHeight));
+                  }
+                  return {height: height, width:width};
+              }
+
+              var directoryClickHandler = function ( event) {
+                    console.log("clicked");
+                    var path = $(event.target).closest("a").data("path");
+                    that.showContent(contentManager.getContent(path, that));
+                    return false;
+               };
+                //update picture on mouse move
+               var mouseMoveHandler = function( event ) {
+                   var $targetDiv = $(event.target).closest(".gallery-directory-image");
+                   var lastUpdate = $targetDiv.data("lastUpdate");
+
+                    if( Date.now() -lastUpdate < 500)
+                        return;
+                    lastUpdate = Date.now();
+
+                    var $img = $targetDiv.find('img');
+
+                    var directory = directories[$targetDiv.data("directoryId")];
+                    var dirCounter = $targetDiv.data("dirCounter");
+                    dirCounter++;
+                    if(dirCounter >= directory.samplePhotos.length)
+                        dirCounter = 0;
+                    $targetDiv.data("dirCounter",dirCounter);
+
+                      $img.fadeOut(400, function () {
+                          var dimension = calcPhotoDimension(directory.samplePhotos[dirCounter]);
+                          thumbnailManager.loadThumbnailToDiv($img , directory.samplePhotos[dirCounter],dimension.width, dimension.height);
+                          $img.fadeIn();
+                       });
+                };
+
+             var $samplePhoto = null;
+
+              if(directory.samplePhotos.length > 0){
+                  var dimension = calcPhotoDimension(directory.samplePhotos[0]);
+                  $samplePhoto = thumbnailManager.createThumbnail(directory.samplePhotos[0],dimension.width, dimension.height);
+                  $samplePhoto.mousemove(mouseMoveHandler);
+               }else{
+                  $samplePhoto = $('<img>', {src: 'img/gallery-icon.jpg'}).width('100%');
+              }
+
+
+             var $imgDiv = $('<div>').append(
+                 $('<a>' ,{href:"?dir="+ directory.path+directory.directoryName+"/", title: directory.directoryName , "data-path": directory.path+directory.directoryName+"/"}).append(
+                 $samplePhoto
+                 ).click(directoryClickHandler)
+             ).addClass("gallery-directory-image").height(rowHeight).width(rowHeight).data("dirCounter","0").data("directoryId",i).data("lastUpdate",Date.now());
+
+
+             $directoryGalleryDiv.append(
+                 $('<div>').append(
+                     $imgDiv,
+                     $('<div>').append(
+                         $('<span>').html(directory.directoryName).addClass('pull-left')
+                     ).addClass("gallery-directory-description")
+                 ).addClass("gallery-directory-wrapper")
+                 .height(rowHeight).width(rowHeight)
+             );
             }
         }
 
@@ -276,17 +353,41 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
                 width += ((photoRow[i].width) / (photoRow[i].height)); //summing up aspect ratios
             }
             var height = ($photoGalleryDiv.width() - photoRow.length * (IMAGE_MARGIN * 2) - 1) / width; //cant be equal -> width-1
+
             return  height +(IMAGE_MARGIN * 2);
         }
 
 
         this.showImages = function(photos){
+            var minRowHeight = $photoGalleryDiv.parent().parent().parent().height() / MAX_ROW_COUNT; //TODO make phone friendly
+            var maxRowHeight = $photoGalleryDiv.parent().parent().parent().height() / MIN_ROW_COUNT;
 
-            var minRowHeight = $photoGalleryDiv.parent().height() / MAX_ROW_COUNT; //TODO make phone friendly
-            var maxRowHeight = $photoGalleryDiv.parent().height() / MIN_ROW_COUNT;
+            var keywordClickHandler= function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                contentManager.getSearchResult($(event.target).closest('a').data("keyword"), that);
+            };
+
+            var  imageMouseOverHandler= function ( event) {
+                var $imgDiv = $(event.target).closest(".gallery-image"),
+                    $descDiv = $imgDiv.find(".gallery-image-description"),
+                    $keywordsDiv = $descDiv.find(".galley-image-keywords"),
+                    $filenameDiv = $descDiv.find("span"),
+                    height = $keywordsDiv.height() + $filenameDiv.height() + IMAGE_DESCRIPTION_PADDING * 2;
+
+                $descDiv.css({height: height, "bottom": height + "px"});
+
+            };
+            var imageMouseOutHandler= function (event) {
+                var $imgDiv = $(event.target).closest(".gallery-image");
+                var $descDiv = $imgDiv.find(".gallery-image-description");
+                var $filenameDiv = $descDiv.find("span");
+                var height =   $filenameDiv.height() + IMAGE_DESCRIPTION_PADDING * 2;
+                $descDiv.css({height: height, "bottom": height + "px"});
+            };
+
 
             for (var i=0 ; i < photos.length; i++) {
-
                 //get the next 3 photos
                 var photoRow = [photos[i]];
 
@@ -322,15 +423,77 @@ define(["jquery", "knockout", "PiGallery/ThumbnailManager", "underscore", 'PiGal
 
                 var imageHeight = rowHeight - (IMAGE_MARGIN * 2);
 
-                for(var j = 0; j < photoRow.length; j++){
+            /*    for(var j = 0; j < photoRow.length; j++){
                     var photo = photoRow[j];
                     var imageWidth = imageHeight * (photo.width / photo.height);
 
                     photo.renderHeight = imageHeight;
                     photo.renderWidth = imageWidth;
-                    koViewModel.photos.push(photo);
-                }
+
+                    photo.$img = thumbnailManager.createThumbnail(photo,imageWidth,imageHeight);
+                //    photo.src = thumbnailManager.createThumbnailURL(photo.id,  photo,  photo.renderWidth, photo.renderHeight);
+                  //  koViewModel.photos.push(photo);
+
+
+
+                }*/
+
+
+
+                //add images to div
+                 for(var j = 0; j < photoRow.length; j++){
+                     var photo = photoRow[j];
+
+                     /*rendering keywords*/
+                     var $keywordsDiv = $('<div>').addClass("galley-image-keywords");
+
+                     if(PiGallery.searchSupported){
+                         _.each(photo.keywords, function(keyword){
+                             $keywordsDiv.append(
+                             $('<a>', {href: "#"}).html("#" + keyword).click(keywordClickHandler),", ");
+                         });
+                     }else{
+                         _.each(photo.keywords, function(keyword){
+                             $keywordsDiv.append(
+                                 $('<span>').html("#" + keyword),", ");
+                         });
+                     }
+
+                     /*rednering imgae description div*/
+                     var $imageDescriptioDiv =  $('<div>').append(
+                                                  $keywordsDiv,
+                                                  $("<span>").html(photo.fileName).addClass("pull-left").addClass("image-name")
+                                                ).addClass("gallery-image-description");
+
+
+                     var imageWidth = imageHeight * (photo.width / photo.height);
+                     //add image to div
+                     $photoGalleryDiv.append(
+                         $('<div>').append(
+                                 $('<a>' ,{href:"image.php?path="+ photo.path + photo.fileName, title: photo.fileName, "data-galxlery":""}).append(
+                                     thumbnailManager.createThumbnail(photo,imageWidth, imageHeight)
+                                 ),
+                                 $imageDescriptioDiv
+                             )
+                             .addClass("gallery-image")
+                             .height(imageHeight)
+                             .width(imageWidth)
+                             .css("display","none")
+                             .mouseover(imageMouseOverHandler)
+                             .mouseout(imageMouseOutHandler)
+                         );
+                 }
+
+                //Fading in photos
+                var delayTime = 0;
+                $photoGalleryDiv.children("div:hidden").each(function(){
+                    $(this).delay( delayTime ).fadeIn();
+                    delayTime+=50;
+                });
+
+
             }
+
 
 
         }
