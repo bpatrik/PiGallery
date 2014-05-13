@@ -89,7 +89,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
                     $photoGalleryDiv.append(
                         $('<div>').append(
                             $('<a>' ,{href:"image.php?path="+ photo.path + photo.fileName, title: photo.fileName, "data-galxlery":""}).append(
-                                thumbnailManager.createThumbnail(photo,imageWidth, imageHeight)
+                                thumbnailManager.createThumbnail(photo,imageWidth, imageHeight).data({"origWidth": photo.width, "origHeight": photo.height})
                             ),
                             $imageDescriptioDiv
                         )

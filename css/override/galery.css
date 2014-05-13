@@ -113,3 +113,21 @@
     left: 30px;
     position: absolute;
 }
+
+/*Blue imp override*/
+.blueimp-gallery  .slides  .slide  .slide-content {
+    height: auto;
+    margin: auto;
+    max-height: 100%;
+    max-width: 100%;
+    opacity: 1;
+    width: auto;
+}
+.blueimp-gallery  .slides  .slide  .slide-content {
+    backface-visibility: hidden;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+}

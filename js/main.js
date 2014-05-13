@@ -33,6 +33,9 @@ require.config({
         },
         'jquery_cookie': {
             deps: ['jquery']
+        },
+        'jquery_ui':{
+            deps: ['jquery']
         }
 
     }
@@ -91,7 +94,7 @@ PiGallery.showGallery = function(){
                 var target = event.target || event.srcElement,
                     link = target.src ? target.parentNode : target,
                     options = $.extend({}, $('#blueimp-gallery').data(),
-                        {index: link, event: event}),
+                        {index: link, event: event, preloadRange: 1}),
                     links = $('#photo-gallery [data-galxlery]');
 
                 $('.full-screen').show();

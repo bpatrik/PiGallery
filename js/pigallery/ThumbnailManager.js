@@ -6,7 +6,6 @@ define(["jquery", "underscore"], function ($, _) {
 
 
         var thumbnailQueue = [];
-        var FinishedThumbnailQueue = [];
         var loadingInProgress = false;
         var that = this;
 
@@ -109,6 +108,10 @@ define(["jquery", "underscore"], function ($, _) {
                 loadThumbnails();
             }
 
+        }
+
+        this.clearQueue = function (){
+            thumbnailQueue.length = 0;
         }
 
 /*

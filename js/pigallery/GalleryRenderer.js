@@ -48,6 +48,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
 
             $directoryGalleryDiv.empty();
             $photoGalleryDiv.empty();
+            thumbnailManager.clearQueue();
 
             this.showSearchedText(searchContent.searchString);
             directoryRenderer.showDirectories(searchContent.directories);
@@ -71,6 +72,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
                 if (this.directoryContent.currentPath !== directoryContent.currentPath) {//directory changed, empty gallery
                     $directoryGalleryDiv.empty();
                     $photoGalleryDiv.empty();
+                    thumbnailManager.clearQueue();
                 } else { //dir name remained
 
                     //filter already shown photos and dirs

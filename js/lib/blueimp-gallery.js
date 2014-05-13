@@ -13,7 +13,6 @@
  */
 
 /* global define, window, document, DocumentTouch */
-
 (function (factory) {
     'use strict';
     if (typeof define === 'function' && define.amd) {
@@ -940,7 +939,7 @@
         },
 
         imageFactory: function (obj, callback) {
-            var that = this,
+          /*  var that = this,
                 img = this.imagePrototype.cloneNode(false),
                 url = obj,
                 backgroundSize = this.options.stretchImages,
@@ -990,7 +989,49 @@
                 element.title = title;
             }
             $(img).on('load error', callbackWrapper);
+*/
+           // img.src = url;
+           // return element;
+            var $thIMg = jQuery(obj).find('img'),
+                width = $thIMg.data("origWidth"),
+                height = $thIMg.data("origHeight"),
+                slideWidth = jQuery('.slide').width(),
+                slideHeight = jQuery('.slide').height(),
+                thumbnailUrl = $thIMg.attr('src'),
+                thumbnailImg = this.imagePrototype.cloneNode(false),
+                img = this.imagePrototype.cloneNode(false),
+                element = this.elementPrototype.cloneNode(false),
+                url = obj,
+                title;
+            if(width > slideWidth){
+                height = height / (width / slideWidth);
+            //    width  = slideWidth;
+            }
+            if(height > slideHeight){
+               // width = width / (height / slideHeight);
+                height  = slideHeight;
+            }
+
+            if (typeof url !== 'string') {
+                url = this.getItemProperty(obj, this.options.urlProperty);
+                title = this.getItemProperty(obj, this.options.titleProperty);
+            }
+
+            thumbnailImg.src = thumbnailUrl;
+            thumbnailImg.style.height = height+"px";
+            $(thumbnailImg).addClass("slide-content");
+
             img.src = url;
+            img.style.height = height+"px";
+            $(img).addClass("slide-content");
+
+            element.appendChild(thumbnailImg);
+            element.appendChild(img);
+
+            if (title) {
+                element.title = title;
+            }
+
             return element;
         },
 
@@ -1010,6 +1051,23 @@
             return element;
         },
 
+       /* createElement: function (obj, callback) {
+            var type = obj && this.getItemProperty(obj, this.options.typeProperty),
+                factory = (type && this[type.split('/')[0] + 'Factory']) ||
+                    this.imageFactory,
+            //   element = obj && factory.call(this, obj, callback);
+                element = obj && factory.call(this, jQuery(obj).find('img').attr('src')+"", callback);
+            if (!element) {
+                element = this.elementPrototype.cloneNode(false);
+                this.setTimeout(callback, [{
+                    type: 'error',
+                    target: element
+                }]);
+            }
+            $(element).addClass(this.options.slideContentClass);
+            return element;
+        },*/
+
         loadElement: function (index) {
             if (!this.elements[index]) {
                 if (this.slides[index].firstChild) {
@@ -1017,7 +1075,7 @@
                         .hasClass(this.options.slideErrorClass) ? 3 : 2;
                 } else {
                     this.elements[index] = 1; // Loading
-                    $(this.slides[index]).addClass(this.options.slideLoadingClass);
+                  //  $(this.slides[index]).addClass(this.options.slideLoadingClass);
                     this.slides[index].appendChild(this.createElement(
                         this.list[index],
                         this.proxyListener
