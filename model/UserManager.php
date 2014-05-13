@@ -2,8 +2,8 @@
 
 namespace piGallery\model;
 
-require_once __DIR__."./../config.php";
-require_once __DIR__."./../db/entities/User.php";
+require_once __DIR__."/../config.php";
+require_once __DIR__."/../db/entities/User.php";
 
 use piGallery\db\entities\User;
 use piGallery\Properties;

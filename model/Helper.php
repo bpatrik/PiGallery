@@ -4,8 +4,8 @@ namespace piGallery\model;
 
 use piGallery\Properties;
 
-require_once __DIR__ ."./../db/entities/Photo.php";
-require_once __DIR__ ."./../config.php";
+require_once __DIR__."/../db/entities/Photo.php";
+require_once __DIR__."/../config.php";
 
 class Helper {
 

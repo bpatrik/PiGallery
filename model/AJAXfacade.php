@@ -4,12 +4,12 @@ namespace piGallery\model;
 
 
 /*LOGIC*/
-require_once __DIR__ ."./../db/DB.php";
-require_once __DIR__ ."./Helper.php";
-require_once __DIR__ ."./../config.php";
-require_once __DIR__ ."./DirectoryScanner.php";
-require_once __DIR__ ."./../config.php";
-require_once __DIR__ ."./UserManager.php";
+require_once __DIR__."/../db/DB.php";
+require_once __DIR__."/Helper.php";
+require_once __DIR__."/../config.php";
+require_once __DIR__."/DirectoryScanner.php";
+require_once __DIR__."/../config.php";
+require_once __DIR__."/UserManager.php";
 
 use piGallery\db\DB;
 use piGallery\Properties;
@@ -26,8 +26,8 @@ foreach ($_REQUEST as $key => $value){
 function authenticate($role = Role::User) {
 
     /*Authenticating*/
-    require_once __DIR__."./AuthenticationManager.php";
-    require_once __DIR__ ."./../db/entities/Role.php";
+    require_once __DIR__."/AuthenticationManager.php";
+    require_once __DIR__."/../db/entities/Role.php";
 
     /*Authentication need for images*/
     AuthenticationManager::authenticate($role);

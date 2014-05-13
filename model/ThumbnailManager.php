@@ -1,18 +1,12 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: VirtualPc-Win7x64
- * Date: 2014.04.28.
- * Time: 20:38
- */
 
 namespace piGallery\model;
 
 use piGallery\db\entities\ThumbnailInfo;
 use piGallery\Properties;
 
-require_once __DIR__."./../config.php";
-require_once __DIR__."./../db/entities/ThumbnailInfo.php";
+require_once __DIR__."/../config.php";
+require_once __DIR__."/../db/entities/ThumbnailInfo.php";
 
 class ThumbnailManager {
 

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: VirtualPc-Win7x64
- * Date: 2014.04.28.
- * Time: 21:46
- */
 
 namespace piGallery\db\entities;
 

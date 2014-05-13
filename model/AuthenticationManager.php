@@ -2,8 +2,8 @@
 
 namespace piGallery\model;
 
-require_once __DIR__."./../db/entities/Role.php";
-require_once __DIR__."./UserManager.php";
+require_once __DIR__."/../db/entities/Role.php";
+require_once __DIR__."/UserManager.php";
 
 use piGallery\db\entities\Role;
 use piGallery\Properties;

@@ -39,11 +39,11 @@
 
     <?php
         /*Preload directory content*/
-        require_once __DIR__ ."./db/DB.php";
-        require_once __DIR__ ."./model/Helper.php";
-        require_once __DIR__ ."./model/DirectoryScanner.php";
-        require_once __DIR__ ."./model/UserManager.php";
-        require_once __DIR__ ."./config.php";
+        require_once __DIR__."/db/DB.php";
+        require_once __DIR__."/model/Helper.php";
+        require_once __DIR__."/model/DirectoryScanner.php";
+        require_once __DIR__."/model/UserManager.php";
+        require_once __DIR__."/config.php";
 
         use \piGallery\model\Helper;
         use \piGallery\model\UserManager;

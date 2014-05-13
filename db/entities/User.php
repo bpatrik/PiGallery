@@ -2,7 +2,7 @@
 
 namespace piGallery\db\entities;
 
-require_once __DIR__."./JSONParsable.php";
+require_once __DIR__."/JSONParsable.php";
 
 use piGallery\db\entities\SessionID;
 

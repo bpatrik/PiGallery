@@ -3,7 +3,7 @@
 namespace piGallery\db\entities;
 
 
-require_once __DIR__ ."./JSONParsable.php";
+require_once __DIR__."/JSONParsable.php";
 
 
 class Content extends JSONParsable {

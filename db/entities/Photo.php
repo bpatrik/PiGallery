@@ -1,7 +1,7 @@
 <?php
 namespace piGallery\db\entities;
 
-require_once __DIR__ ."./Content.php";
+require_once __DIR__ ."/Content.php";
 /**
  * Class Photo
  * @package piGallery

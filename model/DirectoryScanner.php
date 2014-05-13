@@ -2,10 +2,10 @@
 
 namespace piGallery\model;
 
-require_once __DIR__ ."./../config.php";
-require_once __DIR__ ."./../db/entities/Photo.php";
-require_once __DIR__ ."./../db/entities/Directory.php";
-require_once __DIR__ ."./ThumbnailManager.php";
+require_once __DIR__."/../config.php";
+require_once __DIR__."/../db/entities/Photo.php";
+require_once __DIR__."/../db/entities/Directory.php";
+require_once __DIR__."/ThumbnailManager.php";
 
 
 use piGallery\db\entities\Directory;
