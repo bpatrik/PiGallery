@@ -1,5 +1,10 @@
+<?php
+require_once __DIR__."/config.php";
+use \piGallery\Properties;
+require_once __DIR__."/lang/".Properties::$language.".php";
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $LANG['html_language_code']; ?>">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -47,7 +52,6 @@
 
         use \piGallery\model\Helper;
         use \piGallery\model\UserManager;
-        use \piGallery\Properties;
 
         $dir =  Helper::get_REQUEST('dir','/');
         if(Properties::$databaseEnabled){
@@ -77,6 +81,7 @@
         PiGallery.searchSupported = <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>;
         PiGallery.documentRoot = "<?php echo Properties::$documentRoot; ?>";
         PiGallery.user =  <?php echo $jsonUser; ?>;
+        PiGallery.LANG = <?php echo json_encode($LANG); ?>;
 
     </script>
 
@@ -89,10 +94,10 @@
 
         <form class="form-signin" role="form">
             <h2 class="form-signin-heading">Please sign in</h2>
-            <input id="userNameBox" type="text" class="form-control" placeholder="User name" required autofocus>
-            <input id="passwordBox" type="password" class="form-control" placeholder="Password" required>
+            <input id="userNameBox" type="text" class="form-control" placeholder="<?php echo $LANG['username']; ?>" required autofocus>
+            <input id="passwordBox" type="password" class="form-control" placeholder="<?php echo $LANG['password']; ?>" required>
             <label class="checkbox">
-                <input id="rememberMeBox" type="checkbox" value="remember-me"> Remember me
+                <input id="rememberMeBox" type="checkbox" value="remember-me"> <?php echo $LANG['rememberme']; ?>
             </label>
             <button id="loginButton" class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
         </form>
@@ -115,7 +120,7 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="#">Gallery</a></li>
+                    <li class="active"><a href="#"><?php echo $LANG['gallery']; ?></a></li>
                   <!--  <li><a href="#">Admin</a></li>
                     <li><a href="#">Monitor</a></li> -->
                 </ul>
@@ -123,8 +128,8 @@
                     <?php if(\piGallery\Properties::$databaseEnabled) { ?>
                          <li><a href="#"><span class="glyphicon glyphicon-share-alt"> Share</span></a></li>
                     <?php } ?>
-                    <li><a href="#" id="userNameButon">User</a></li>
-                    <li><a href="#" id="logOutButton">Log out</a></li>
+                    <li><a href="#" id="userNameButton">User</a></li>
+                    <li><a href="#" id="logOutButton"><?php echo $LANG['logout']; ?></a></li>
                 </ul>
                 <?php if(\piGallery\Properties::$databaseEnabled) { ?>
                 <form class="navbar-form navbar-right" role="search">

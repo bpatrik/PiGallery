@@ -9,6 +9,9 @@ use piGallery\db\entities\User;
 
 
 class Properties{
+    /*The language of the site, pick one from the lang directory*/
+    public static $language = "hun";
+
     /*The base directory relative to the document root (the www folder)*/
 	public static $documentRoot  = "PiGallery";
 

@@ -45,9 +45,9 @@ class ThumbnailManager {
 
         // save thumbnail into a file
         imagejpeg( $tmp_img, Helper::concatPath(Helper::getAbsoluteThumbnailFolderPath(),$outFileName.".jpg"), Properties::$thumbnailJPEGQuality  );
+
         //freeup
         imagedestroy($tmp_img);
-        sleep(1);
     }
 
     /**

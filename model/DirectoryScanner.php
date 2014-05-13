@@ -60,15 +60,12 @@ class DirectoryScanner {
 
                     //TODO: simplify
                     $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
-                        Helper::toDirectoryPath(
-                            Helper::toURLPath(
-                                Helper::relativeToImageDirectory($contentPath))));
+                        Helper::relativeToImageDirectory($contentPath));
 
                     array_push($photos, new Photo(md5($contentPath), urlencode(Helper::toURLPath(Helper::relativeToImageDirectory($path))), $value,$width, $height, $keywords, $availableThumbnails ));
                 }
             }
         }
-        sleep(1);
         return array("currentPath" => $relativePath ,"directories" => $directories , "photos" => $photos);
     }
 
@@ -96,9 +93,7 @@ class DirectoryScanner {
                     }
 
                     $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
-                        Helper::toDirectoryPath(
-                            Helper::toURLPath(
-                                Helper::relativeToImageDirectory($contentPath))));
+                        Helper::relativeToImageDirectory($contentPath));
 
                     array_push($photos, new Photo(md5($contentPath), urlencode (Helper::toURLPath(Helper::relativeToImageDirectory($path))), $value,$width, $height, $keywords, $availableThumbnails ));
                     $maxCount--;

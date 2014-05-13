@@ -144,11 +144,11 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
             /*Show alias for root directory*/
             var $li = null;
             if(0 == dirs.length ){ //is it the root directory?
-                $li = $("<li>").html("Images");
+                $li = $("<li>").html(PiGallery.LANG.images);
             }else{
                 $li = $("<li>").append(
                     $("<a>",{href: "index.php?dir=/", "data-path": "/"})
-                        .html("Images")
+                        .html(PiGallery.LANG.images)
                         .click(dirClickHandler));
 
             }

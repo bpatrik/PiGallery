@@ -68,7 +68,9 @@ class Helper {
     public static function toDirectoryPath($path){
         $path = str_replace("/", DIRECTORY_SEPARATOR,$path);
         $path = str_replace("\\", DIRECTORY_SEPARATOR,$path);
+        $path = str_replace("..".DIRECTORY_SEPARATOR, "..\\".DIRECTORY_SEPARATOR,$path);
         $path = str_replace(".".DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR,$path);
+        $path = str_replace( "..\\".DIRECTORY_SEPARATOR ,"..".DIRECTORY_SEPARATOR,$path);
         $path = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR,$path); //clean duplicated separators
         return $path;
     }
