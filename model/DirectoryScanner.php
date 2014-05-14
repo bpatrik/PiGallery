@@ -25,15 +25,11 @@ class DirectoryScanner {
         $path = Helper::toDirectoryPath($path);
 
         //is image folder already added?
-        if(!Helper::isSubPath($path,Properties::$imageFolder)){
-            $path = Helper::concatPath(Properties::$imageFolder,$path);
+        if(!Helper::isSubPath(Helper::getAbsoluteImageFolderPath(),Properties::$imageFolder)){
+            $path = Helper::concatPath(Helper::getAbsoluteImageFolderPath(),$path);
         }
 
-		$documentRoot = Helper::concatPath(Helper::toDirectoryPath($_SERVER['DOCUMENT_ROOT']), Properties::$documentRoot);
-        //set absolute positition
-        if(!Helper::isSubPath($path,$documentRoot)){
-            $path = Helper::concatPath($documentRoot,$path);
-        }
+
 
 
         $dirContent = scandir($path);
@@ -41,13 +37,18 @@ class DirectoryScanner {
         $photos = array();
         foreach ($dirContent as &$value) { //search for directories and other files
             if($value != "." && $value != ".."){
+
                 $contentPath = Helper::concatPath($path,$value);
+
                 if(is_dir($contentPath) == true){
+
                     $value = utf8_encode($value);
                     array_push($directories, new Directory(0, Helper::toURLPath(Helper::relativeToImageDirectory($path)),$value, 0, DirectoryScanner::getPhotos($contentPath,5)));
 
                 }else{
+
                     list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
+
                     //loading lightroom keywords
                     $keywords = array();
                     if(isset($info['APP13'])) {
@@ -58,7 +59,6 @@ class DirectoryScanner {
                         }
                     }
 
-                    //TODO: simplify
                     $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                         Helper::relativeToImageDirectory($contentPath));
 
@@ -76,12 +76,14 @@ class DirectoryScanner {
         $path = Helper::concatPath($path,DIRECTORY_SEPARATOR);
         $dirContent = scandir($path);
         $photos = array();
+
         foreach ($dirContent as &$value) { //search for directories and other files
             if($value != "." && $value != ".."){
                 $contentPath = Helper::concatPath($path,$value);
                 if(is_dir($contentPath) == true){
                 }else{
                     list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
+
                     //loading lightroom keywords
                     $keywords = array();
                     if(isset($info['APP13'])) {

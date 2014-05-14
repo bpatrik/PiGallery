@@ -16,7 +16,7 @@ class ThumbnailManager {
         return md5($pathToImage.$size);
     }
 
-    private static function createThumbnail($pathToImage, $size){//TODO: support png and gif too
+    private static function createThumbnail($pathToImage, $size){
 
        // Logger::v("ThumbnailManager::createThumbnail","creating thumbnail: " . $pathToImage);
         $pixelCount = $size * $size;
@@ -24,13 +24,26 @@ class ThumbnailManager {
         $outFileName = ThumbnailManager::getThumbnailFileName($pathToImage,$size);
 
         // load image and get image size
-        $img = imagecreatefromjpeg($pathToImage);
-        $width = imagesx( $img );
-        $height = imagesy( $img );
+        list($width, $height, $type) = @getimagesize($pathToImage);
+
+        if($width < 1) return false;
 
         $scale = sqrt($pixelCount / ($width * $height));
         if($scale > 1) //do not scale up
             $scale = 1;
+
+        $src_img = null;
+        // find image type and create temp image and variable
+        if ($type == IMAGETYPE_JPEG) {
+            $src_img = @imagecreatefromjpeg($pathToImage);
+        } else if ($type == IMAGETYPE_GIF) {
+            $src_img = @imagecreatefromgif($pathToImage);
+        } else if ($type == IMAGETYPE_PNG) {
+            $src_img = @imagecreatefrompng($pathToImage );
+        }
+        if(!$src_img) return false;
+
+
 
         // calculate thumbnail size
         $new_width  = floor( $width  * $scale );
@@ -38,10 +51,26 @@ class ThumbnailManager {
         // create a new temporary image
         $tmp_img = imagecreatetruecolor( $new_width, $new_height );
 
-        // copy and resize old image into new image
-        //imagecopyresized( $tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height );
+        if($type == IMAGETYPE_GIF || $type == IMAGETYPE_PNG){
+            // create temp image
+            $tmp_img = imagecreatetruecolor($new_width, $new_height);
+            $white = imagecolorallocate($tmp_img, 255, 255, 255);
+            imagefill($tmp_img, 0, 0, $white);
 
-        imagecopyresampled($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height ); //better quality than simple resize
+         /*   // make the new temp image all transparent
+            imagecolortransparent($tmp_img, $white);
+            imagealphablending($tmp_img, false);
+            imagesavealpha($tmp_img, true);*/
+        }
+
+        // copy and resize old image into new image
+
+        if(Properties::$EnableThumbnailResample){
+            imagecopyresampled($tmp_img, $src_img, 0, 0, 0, 0, $new_width, $new_height, $width, $height ); //better quality than simple resize
+        }else{
+            imagecopyresized( $tmp_img, $src_img, 0, 0, 0, 0, $new_width, $new_height, $width, $height );
+        }
+
 
         // save thumbnail into a file
         imagejpeg( $tmp_img, Helper::concatPath(Helper::getAbsoluteThumbnailFolderPath(),$outFileName.".jpg"), Properties::$thumbnailJPEGQuality  );

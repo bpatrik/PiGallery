@@ -25,6 +25,9 @@ class Properties{
     public static $thumbnailSizes = array(300, 600);
     /*The JPEG quality of the thumbnail*/
     public static $thumbnailJPEGQuality = 75;
+    /*Set true for resampling or false for resizing only. */
+    public static $EnableThumbnailResample = true;
+
 
     /*Enables thumbnail and image caching for the browser, true is recommended.*/
     public static $enableImageCaching = false;

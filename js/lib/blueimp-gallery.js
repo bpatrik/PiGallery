@@ -1002,7 +1002,11 @@
                 img = this.imagePrototype.cloneNode(false),
                 element = this.elementPrototype.cloneNode(false),
                 url = obj,
-                title;
+                title,
+                onloadCallback = function(event){
+                    thumbnailImg.style.display = "none";
+                    $(img).off("load",onloadCallback);
+                };
             if(width > slideWidth){
                 height = height / (width / slideWidth);
             //    width  = slideWidth;
@@ -1024,7 +1028,7 @@
             img.src = url;
             img.style.height = height+"px";
             $(img).addClass("slide-content");
-
+            $(img).on('load', onloadCallback);
             element.appendChild(thumbnailImg);
             element.appendChild(img);
 
