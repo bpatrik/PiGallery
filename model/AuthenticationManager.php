@@ -3,8 +3,10 @@
 namespace piGallery\model;
 
 require_once __DIR__."/../db/entities/Role.php";
-require_once __DIR__."/UserManager.php";
+require_once __DIR__."/../db/DB_UserManager.php";
+require_once __DIR__."/NoDBUserManager.php";
 
+use piGallery\db\DB_UserManager;
 use piGallery\db\entities\Role;
 use piGallery\Properties;
 
@@ -23,11 +25,14 @@ class AuthenticationManager {
 
             if(Properties::$databaseEnabled){ //Using database enabled?
 
-                return null;
+                $user = DB_UserManager::loginWithSessionID($sessionID);
+                if($user != null && $user->getRole() >= $roleNeeded){
+                    return $user;
+                }
 
             }else{//No-database mode
 
-                $user = UserManager::loginWithSessionID($sessionID);
+                $user = NoDBUserManager::loginWithSessionID($sessionID);
                 if($user != null && $user->getRole() >= $roleNeeded){
                     return $user;
                 }

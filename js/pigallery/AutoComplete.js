@@ -49,13 +49,18 @@ define(["jquery", "jquery_ui"], function($) {
                         dataType: "json",
                         data: {
                             method: "autoComplete",
-                            count: 5,
+                            count: 8,
                             searchText: request.term
                         }
-                    }).done( function (data) {
-                        response($.map(data, function (item) {
-                            return item;
-                        }));
+                    }).done( function (result) {
+                        if(result.error == null){
+
+                            response($.map(result.data, function (item) {
+                                return item;
+                            }));
+                        }else{
+                            console.log(result.error);
+                        }
                     }).fail( function (error) {
                         console.log("Error: cant get auto complete data from server");
                     })

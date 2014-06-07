@@ -26,7 +26,6 @@ define(["jquery", "underscore"], function ($, _) {
 
             //find the best size
             var foundThumbnailInfo = calcThumbanilSize(photo,width,height);
-            console.log(photo.fileName +"in" + foundThumbnailInfo.size);
             var thumbnailPath = "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + foundThumbnailInfo.size;
             if(foundThumbnailInfo.available == true){
                 return $('<img>', { src: thumbnailPath, height: height, width: width});

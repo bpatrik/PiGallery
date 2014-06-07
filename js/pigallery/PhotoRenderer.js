@@ -70,7 +70,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
 
                             if (keyword != "") {
                                 $keywordsDiv.append(
-                                    $('<a>', {href: "#"}).html("#" + keyword).click(keywordClickHandler), ", ");
+                                    $('<a>', {href: "#", "data-keyword": keyword}).html("#" + keyword).click(keywordClickHandler), ", ");
                             }
                         });
                     }else{

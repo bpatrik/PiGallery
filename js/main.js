@@ -19,7 +19,7 @@ require.config({
         jquery:  'jquery-2.1.1.min',
         jquery_ui: 'jquery-ui-1.10.4_min',
         underscore: 'underscorejs-1.6.0.min',
-        bootstrap: 'bootstrap.min',
+        bootstrap: 'bootstrap',
         jquery_cookie: 'jquery.cookie',
         blueImpGallery: 'blueimp-gallery-indicator'
     },
@@ -33,6 +33,9 @@ require.config({
         'jquery_blueimp-gallery_min': {
             deps: ["jquery"]
 
+        },
+        'bootstrap-confirmation':{
+            deps: ['jquery','bootstrap']
         },
         'underscore': {
             exports: '_'
@@ -48,11 +51,152 @@ require.config({
 
 });
 
+
+
+PiGallery.adminSiteInitDone = false;
+PiGallery.initAdminSite = function(){
+    require(['jquery', 'bootstrap-confirmation'], function   ($) {
+
+        //Reset database button
+        $('#resetDatabaseButton').confirmation({
+            singleton:true,
+            popout:true,
+            btnOkLabel: "Yes",
+            onConfirm:  function(){
+                        $.ajax({
+                            type: "POST",
+                            url: "model/AJAXfacade.php",
+                            data: {method: "recreateDatabase"},
+                            dataType: "json"
+                        }).done(function(result) {
+                            if(result.error == null){
+                                PiGallery.logOut();
+                            }else{
+                                alert(result.error);
+                            }
+                        }).fail(function(errMsg) {
+                            console.log("Error during resetting db");
+                        });
+                        return false;
+                    }
+         });
+
+        //Clear Photos Table
+        $('#clearTableButton').confirmation({
+            singleton:true,
+            popout:true,
+            btnOkLabel: "Yes",
+            onConfirm:  function(){
+                $.ajax({
+                    type: "POST",
+                    url: "model/AJAXfacade.php",
+                    data: {method: "clearGalleryDatabase"},
+                    dataType: "json"
+                }).done(function(result) {
+                    if(result.error == null){
+                    }else{
+                        alert(result.error);
+                    }
+                }).fail(function(errMsg) {
+                    console.log("Error during clearing tables");
+                });
+                return false;
+            }
+        });
+
+        var directoriesToIndex = [];
+        var indexDirectory = function(directory){
+            $('#indexingProgress').html("Indexing: \"" + directory + "\" ("+ directoriesToIndex.length +" left)")
+            $.ajax({
+                type: "POST",
+                url: "model/AJAXfacade.php",
+                data: {method: "indexDirectory", dir: directory},
+                dataType: "json"
+            }).done(function(result) {
+                if(result.error == null){
+                    directoriesToIndex = directoriesToIndex.concat(result.data.foundDirectories);
+                    if(directoriesToIndex.length > 0){
+                        indexDirectory(directoriesToIndex.pop())
+                    }else{
+                        $('#indexingProgress').html("Indexing done.");
+                    }
+                }else{
+                    alert(result.error);
+                }
+            }).fail(function(errMsg) {
+                console.log("Error during indexind directories");
+            });
+        };
+
+        $('#indexPhotosButton').click(function(){
+            indexDirectory("/");
+        });
+
+        PiGallery.adminSiteInitDone = true;
+    });
+};
+
+PiGallery.showAdminSite = function(){
+    if(PiGallery.adminSiteInitDone == false){
+        PiGallery.initAdminSite();
+    }
+    require(['jquery'], function   ($) {
+        $('#gallerySite').show();
+        $('#signInSite').hide();
+        $('#gallery-container').hide();
+        $('#admin-container').show();
+
+        $('#galleryButton').removeClass("active");
+        $('#adminButton').addClass("active");
+    });
+};
+
+PiGallery.initSite = function(){
+    require(['jquery'], function   ($) {
+
+        $('#galleryButton').click(function () {
+            PiGallery.showGallery();
+        });
+            if (PiGallery.user.role >= 1) {//is it an admin?
+                $('#adminButton').show();
+                $('#adminButton').click(function () {
+                    PiGallery.showAdminSite();
+                });
+            } else {
+                $('#adminButton').hide();
+            }
+        });
+
+
+};
+
 PiGallery.showGallery = function(){
+
+    require(['jquery'], function   ($) {
+        $('#gallerySite').show();
+        $('#signInSite').hide();
+        $('#gallery-container').show();
+        $('#admin-container').hide();
+
+        $('#galleryButton').addClass("active");
+        $('#adminButton').removeClass("active");
+
+    });
+};
+
+PiGallery.logOut = function(){
+    $.removeCookie("pigallery-sessionid");
+    PiGallery.user = null;
+    PiGallery.showLogin();
+};
+
+PiGallery.initGallery = function(){
     require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete", 'jquery_cookie' ],
         function   ($,blueimpGallery,ContentManager, GalleryRenderer, AutoComplete) {
-            $('#gallerySite').show();
-            $('#signInSite').hide();
+
+
+            PiGallery.initSite();
+
             $("#userNameButton").html(PiGallery.user.userName);
 
             var contentManager = new ContentManager();
@@ -68,7 +212,7 @@ PiGallery.showGallery = function(){
 
             $("#search-button").click(function(event) {
                 event.preventDefault();
-                contentManager.getSearchResult($("#auto-complete-box").val(),contentRenderer );
+                contentManager.getSearchResult($("#auto-complete-box").val(),galleryRenderer );
             });
 
 
@@ -82,9 +226,7 @@ PiGallery.showGallery = function(){
                     dataType: "json"
                 }).done(function(result) {
                     if(result.error == null){
-                        $.removeCookie("pigallery-sessionid");
-                        PiGallery.user = null;
-                        PiGallery.showLogin();
+                        PiGallery.logOut();
                     }else{
                         alert(result.error);
                     }
@@ -148,7 +290,7 @@ PiGallery.showLogin = function(){
                 $('#loginButton').removeAttr("disabled");
                 $('#loginButton').html(PiGallery.LANG.signin);
             }
-        }
+        };
 
         $('#signinForm').submit(function() {
 
@@ -160,7 +302,7 @@ PiGallery.showLogin = function(){
                 data: {method: "login",
                        userName: $('#userNameBox').val(),
                        password: $('#passwordBox').val(),
-                       rememberMe: $('#rememberMeBox').attr('checked')},
+                       rememberMe: $('#rememberMeBox').prop('checked')},
                 dataType: "json"
             }).done(function(result) {
                 if(result.error == null){
@@ -172,7 +314,9 @@ PiGallery.showLogin = function(){
                     $('#userNameBox').val(""),
                     $('#passwordBox').val(""),
                     PiGallery.user = result.data;
+                    PiGallery.initGallery();
                     PiGallery.showGallery();
+                    showSignProgress(false);
                 }else{
                     alert(result.error);
                     showSignProgress(false);
@@ -184,9 +328,10 @@ PiGallery.showLogin = function(){
             return false;
         });
     });
-}
+};
 
 if(PiGallery.user != null){
+    PiGallery.initGallery();
     PiGallery.showGallery();
 }else{
     PiGallery.showLogin();

@@ -102,9 +102,12 @@ class Helper {
     }
 
     public static function contentArrayToJSONable($array){
+        if($array == null)
+            return $array;
 
-
-        $convertedPath = utf8_encode(Helper::toURLPath($array['currentPath']));
+        reset($array);
+        $first_key = key($array);
+        $convertedPath = utf8_encode(Helper::toURLPath($array[$first_key]));
         $convertedDirectories =  $array['directories'];
         $convertedPhotos =  $array['photos'];
 
@@ -127,7 +130,7 @@ class Helper {
             $photo->setPath(utf8_encode($photo->getPath()));
         }
 
-        $array = array("currentPath" => $convertedPath ,"directories" => $convertedDirectories , "photos" => $convertedPhotos);
+        $array = array($first_key => $convertedPath ,"directories" => $convertedDirectories , "photos" => $convertedPhotos);
 
         //convert to jsonable
          $JSON_array = array();

@@ -14,3 +14,4 @@ $LANG['images'] = "Képek";
 $LANG['logout'] = "Kijelentkezés";
 $LANG['search'] = "Keresés";
 $LANG['share'] = "Megosztás";
+$LANG['searchingfor'] = "Keresés:";

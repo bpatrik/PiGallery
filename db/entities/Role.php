@@ -7,5 +7,4 @@ class Role {
 
     const User = 0;
     const Admin = 1;
-
-} 
+}

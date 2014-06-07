@@ -54,3 +54,16 @@ body {
 .blueimp-gallery > .close {
     font-size: 40px;
 }
+
+/*navbar override */
+
+.navbar-inverse {
+    opacity: 0.97;
+    background-color: rgba(34,34,34,0.97);
+    transition: all 0.3s;
+}
+
+.navbar-inverse:hover {
+    background-color: rgba(34,34,34,1);
+    opacity: 1;
+}

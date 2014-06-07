@@ -14,3 +14,4 @@ $LANG['images'] = "Images";
 $LANG['logout'] = "Log out";
 $LANG['search'] = "Search";
 $LANG['share'] = "Share";
+$LANG['searchingfor'] = "Searching for:";

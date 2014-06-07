@@ -23,6 +23,11 @@ class User extends JSONParsable {
     protected $password;
 
     /**
+     * @var string
+     */
+    protected $passwordSalt;
+
+    /**
      * @var int
      */
     protected $role;
@@ -107,6 +112,22 @@ class User extends JSONParsable {
     public function getSessionID()
     {
         return $this->sessionID;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPasswordSalt()
+    {
+        return $this->passwordSalt;
+    }
+
+    /**
+     * @param string $passwordSalt
+     */
+    public function setPasswordSalt($passwordSalt)
+    {
+        $this->passwordSalt = $passwordSalt;
     }
 
 

@@ -63,8 +63,12 @@ define(["jquery"], function ($) {
                     url: "model/AJAXfacade.php",
                     data: {method: "search", searchString: searchString},
                     dataType: "json"
-                }).done(function(data) {
-                    galleryRenderer.showSearchResult(data);
+                }).done(function(result) {
+                    if(result.error == null){
+                        galleryRenderer.showSearchResult(result.data);
+                    }else{
+                        console.log(result.error);
+                    }
 
                 }).fail(function(errMsg) {
                     console.log("Error during downloading search result content");

@@ -34,7 +34,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
         };
 
         this.searchFor = function(path, url){
-            that.showContent(contentManager.getSearchResult(path, that));
+            contentManager.getSearchResult(path, that);
             saveHistory(url);
         };
 
@@ -113,7 +113,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
 
         this.showSearchedText = function (text) {
             $directoryPathOl.empty();
-            $directoryPathOl.append($("<li>").html("Showing search results for: " + text));
+            $directoryPathOl.append($("<li>").html(PiGallery.LANG.searchingfor +" "+ text));
         };
         /**
          * Show the given path at the path row

@@ -8,7 +8,7 @@ require_once __DIR__."/../db/entities/User.php";
 use piGallery\db\entities\User;
 use piGallery\Properties;
 
-class UserManager {
+class NoDBUserManager {
 
 
     public static function login($userName, $password){

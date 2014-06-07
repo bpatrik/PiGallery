@@ -45,19 +45,21 @@ require_once __DIR__."/lang/".Properties::$language.".php";
     <?php
         /*Preload directory content*/
         require_once __DIR__."/db/DB.php";
+        require_once __DIR__."/db/DB_UserManager.php";
+        require_once __DIR__."/db/DB_ContentManager.php";
         require_once __DIR__."/model/Helper.php";
         require_once __DIR__."/model/DirectoryScanner.php";
-        require_once __DIR__."/model/UserManager.php";
+        require_once __DIR__."/model/NoDBUserManager.php";
         require_once __DIR__."/config.php";
 
         use \piGallery\model\Helper;
-        use \piGallery\model\UserManager;
+        use \piGallery\model\NoDBUserManager;
 
         $dir =  Helper::toDirectoryPath(utf8_decode(Helper::get_REQUEST('dir','/')));
         $content = null;
         try{
             if(Properties::$databaseEnabled){
-                $content = \piGallery\db\DB::getDirectoryContent($dir);
+                $content = \piGallery\db\DB_ContentManager::getDirectoryContent($dir);
             }else{
                 $content = \piGallery\model\DirectoryScanner::getDirectoryContent($dir);
             }
@@ -73,15 +75,22 @@ require_once __DIR__."/lang/".Properties::$language.".php";
         }catch (Exception $ex){
             $dir = "/";
         }
-
-        $jsonUser = json_encode(null);
+        $user = null;
         if(isset($_COOKIE["pigallery-sessionid"]) && !empty($_COOKIE["pigallery-sessionid"])){
-            $user = UserManager::loginWithSessionID($_COOKIE["pigallery-sessionid"]);
-            if($user != null){
-                $user->setPassword(null);
-                $jsonUser = json_encode($user->getJsonData());
+
+            if(Properties::$databaseEnabled) {
+                $user = \piGallery\db\DB_UserManager::loginWithSessionID($_COOKIE["pigallery-sessionid"]);
+                if ($user != null) {
+                    $user->setPassword(null);
+                }
+            }else{
+                $user = NoDBUserManager::loginWithSessionID($_COOKIE["pigallery-sessionid"]);
+                if ($user != null) {
+                    $user->setPassword(null);
+                }
             }
         }
+        $jsonUser = json_encode($user->getJsonData());
 
 
 
@@ -138,14 +147,17 @@ require_once __DIR__."/lang/".Properties::$language.".php";
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><img id="loading-sign" src="img/loading.gif"/></li>
-                    <li class="active"><a href="#"><?php echo $LANG['gallery']; ?></a></li>
-                  <!--  <li><a href="#">Admin</a></li>
+                    <li id="galleryButton" class="active"><a href="#"><?php echo $LANG['gallery']; ?></a></li>
+                    <li id="adminButton"><a href="#">Admin</a></li>
+                        <!--  <li><a href="#">Admin</a></li>
                     <li><a href="#">Monitor</a></li> -->
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
+                    <!-- Not supported yet
                     <?php if(\piGallery\Properties::$databaseEnabled) { ?>
                          <li><a href="#"><span class="glyphicon glyphicon-share-alt"> <?php echo $LANG['share']; ?></span></a></li>
                     <?php } ?>
+                    -->
                     <li><a href="#" id="userNameButton">User</a></li>
                     <li><a href="#" id="logOutButton"><?php echo $LANG['logout']; ?></a></li>
                 </ul>
@@ -161,7 +173,10 @@ require_once __DIR__."/lang/".Properties::$language.".php";
         </div>
     </div>
 
-    <!-- Error dialoge-->
+
+
+
+    <!-- Error dialog-->
     <div id="alerts"></div>
 
 
@@ -202,13 +217,33 @@ require_once __DIR__."/lang/".Properties::$language.".php";
         </div>
     </div>
 
-    <div class="container gallery-container">
+    <div id="gallery-container" class="container">
         <ol id="directory-path" class="breadcrumb">
         </ol>
         <div id="gallery">
             <div id="directory-gallery"  data-bind="template: { name: 'directoryList'}"  ></div>
             <hr/>
             <div id="photo-gallery"  data-bind="template: { name: 'photoList' }"  > </div>
+        </div>
+    </div> <!-- /container -->
+
+    <div id="admin-container" class="container" style="display: none;">
+        <div id="adminUsers">
+            <h3>Users</h3>
+
+            <hr/>
+        </div>
+        <div id="adminPhotos">
+            <h3>Photos</h3>
+            <hr/>
+            <div id="indexingProgress" class="well well-sm">...</div>
+            <button id="clearTableButton" type="button" class="btn btn-default btn-danger">Clear Index</button>
+            <button id="indexPhotosButton" type="button" class="btn btn-default btn-info">Index photos</button>
+        </div>
+        <div id="adminDatabase">
+            <h3>Database</h3>
+            <hr/>
+            <button id="resetDatabaseButton" type="button" class="btn btn-default btn-danger">Reset database</button>
         </div>
     </div> <!-- /container -->
 </div>
