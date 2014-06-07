@@ -22,7 +22,7 @@ use \Exception;
  */
 class DB {
 
-    private static function getDatabseConnection(){
+    private static function getDatabaseConnection(){
 
         $mysqli = new mysqli(Properties::$databaseAddress,
                              Properties::$databseUserName,
@@ -69,7 +69,7 @@ class DB {
 
         try{
 
-            $mysqli = DB::getDatabseConnection();
+            $mysqli = DB::getDatabaseConnection();
 
             //Dropping table
             $mysqli->query($dropPhotoTableSql);
@@ -98,99 +98,277 @@ class DB {
 
     }
 
+    private static function loadDirectory($path, $mysqli){
+
+        $path_parts = pathinfo($path);
+        $directory = null;
+        $stmt = $mysqli->prepare("SELECT id,lastModification FROM directories WHERE path = ? AND directoryName = ?");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+        $dirName = Helper::toDirectoryPath($path_parts['dirname']);
+        $baseName = Helper::toDirectoryPath($path_parts['basename']);
+
+        if(empty($baseName)){
+            $baseName = $dirName;
+            $dirName = "";
+        }
+
+
+        $stmt->bind_param('ss', $dirName, $baseName);
+        $stmt->execute();
+        $stmt->bind_result($dirID,  $dirLastMod);
+        if($stmt->fetch()){
+            $directory = new Directory($dirID, $dirName, $baseName, $dirLastMod, null);
+        }
+        $stmt->close();
+
+        return $directory;
+    }
+
     /**
-     * @param string $path
-     * @return array
+     * @param $directory Directory
+     * @param $mysqli
+     * @throws \Exception
      */
-    public static function getDirectoryContent($path = "/"){
-        $relativePath = $path;
-        $path = utf8_decode(urldecode($path));
+    private static function loadSamplePhotosToDirectory($directory, $mysqli){
+
+        $photos = array();
+        $stmt = $mysqli->prepare("SELECT  p.ID, p.fileName, p.width, p.height
+                                    FROM photos p
+                                    WHERE
+                                    p.directory_id = ?
+                                    LIMIT 0,5 ");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+        $dirId = $directory->getId();
+        $stmt->bind_param('i', $dirId);
+        $stmt->execute();
+        $stmt->bind_result($id, $fileName, $width, $height);
+
+        $directoryPath = Helper::concatPath($directory->getPath(),$directory->getDirectoryName());
+
+        while($stmt->fetch()) {
+            $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
+                Helper::relativeToImageDirectory(Helper::concatPath($directoryPath, $fileName)));
+             array_push($photos, new Photo($id, $directoryPath, $fileName, $width, $height, null, $availableThumbnails));
+         }
+        $stmt->close();
+
+        return $photos;
+    }
+
+    private static function saveDirectory($dirName, $baseName, $mysqli){
+
+        if(empty($baseName)){
+            $baseName = $dirName;
+            $dirName = "";
+        }
+
+        $directory = null;
+        $stmt = $mysqli->prepare("INSERT INTO directories (path, directoryName, lastModification) VALUES (?, ?, NOW())");
+
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+
+        $dirName = Helper::toDirectoryPath($dirName);
+        $baseName = Helper::toDirectoryPath($baseName);
+
+        $stmt->bind_param('ss', $dirName, $baseName);
+        $stmt->execute();
+
+        $directory = new Directory($stmt->insert_id, $dirName, $baseName, null, null);
+        $stmt ->close();
+        return $directory;
+    }
+
+    public static function scanDirectory($path = "/"){
+        $currentPath = $path;
         $path = Helper::toDirectoryPath($path);
 
         //is image folder already added?
-        if(!Helper::isSubPath($path,Properties::$imageFolder)){
-            $path = Helper::concatPath(Properties::$imageFolder,$path);
+        if(!Helper::isSubPath(Helper::getAbsoluteImageFolderPath(),Properties::$imageFolder)){
+            $path = Helper::concatPath(Helper::getAbsoluteImageFolderPath(),$path);
         }
 
-        //set absolute positition
-        if(!Helper::isSubPath($path,$_SERVER['DOCUMENT_ROOT'])){
-            $path = Helper::concatPath($_SERVER['DOCUMENT_ROOT'],$path);
+        if(!is_dir($path)){
+            throw new \Exception('No such directory: '.$path);
         }
 
 
-        $dirContent = scandir($path);
+        $mysqli = DB::getDatabaseConnection();
+
+        //read current directory
+        $currentDirectory = DB::loadDirectory($currentPath, $mysqli);
+        if($currentDirectory == null){
+            $path_parts = pathinfo($currentPath);
+            $currentDirectory = DB::saveDirectory($path_parts['dirname'],$path_parts['basename'], $mysqli);
+        }
+
+        $foundDirectories = array();
+        $handle = opendir($path);
+        while (false !== ($value = readdir($handle))) {
+            if($value != "." && $value != ".."){
+                $contentPath = Helper::concatPath($path,$value);
+                //read directory
+                if(is_dir($contentPath) == true){
+                    array_push($foundDirectories, DB::saveDirectory($currentPath, $value, $mysqli));
+
+                //read photo
+                }else{
+
+                    list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
+
+                    if($type != IMAGETYPE_JPEG && $type != IMAGETYPE_PNG && $type != IMAGETYPE_GIF)
+                        continue;
+
+                    //loading lightroom keywords
+                    $keywords = array();
+                    if(isset($info['APP13'])) {
+                        $iptc = iptcparse($info['APP13']);
+
+                        if(isset($iptc['2#025'])) {
+                            $keywords = $iptc['2#025'];
+                        }
+                    }
+
+                    $stmt = $mysqli->prepare("INSERT INTO photos (directory_id, fileName, width, height, keywords) VALUES (?, ?, ?, ?, ?)");
+
+                    if($stmt === false) {
+                        closedir($handle);
+                        $error = $mysqli->error;
+                        $mysqli->close();
+                        throw new \Exception("Error: ". $error);
+                    }
+                    $keywordsStr = implode(",", $keywords);
+                    $currentDirPath = $currentDirectory->getId();
+                    $stmt->bind_param('isiis', $currentDirPath, $value, $width, $height, $keywordsStr);
+                    $stmt->execute();
+                    $stmt->close();
+
+                }
+            }
+        }
+        closedir($handle);
+        $mysqli->close();
+        return array("directories" => $foundDirectories);
+    }
+
+    /**
+     * @param string $path
+     * @throws \Exception
+     */
+    public static function reScanDirectory($path = "/"){
+
+        $mysqli = DB::getDatabaseConnection();
+        $path = Helper::toDirectoryPath($path);
+        $insertDirectoryQuery = "DELETE FROM directories WHERE path = ?";
+        $stmt = $mysqli->prepare($insertDirectoryQuery);
+
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+        $stmt->bind_param('s', $path);
+        $stmt->execute();
+        $stmt->close();
+        $mysqli->close();
+
+        $result =  DB::scanDirectory($path);
+
+        //TODO: think again
+        foreach($result['directories'] as $dir){
+            $fullPath = Helper::concatPath($dir->getPath(),$dir->getDirectoryName());
+            DB::reScanDirectory($fullPath);
+        }
+    }
+
+
+    /**
+     * @param string $path
+     * @return array
+     * @throws \Exception
+     */
+    public static function getDirectoryContent($path = "/"){
         $directories = array();
         $photos = array();
-        foreach ($dirContent as &$value) { //search for directories and other files
-            if($value != "." && $value != ".."){
-                $contentPath = Helper::concatPath($path,$value);
-                if(is_dir($contentPath) == true){
-                    $value = utf8_encode($value);
-                    array_push($directories, new Directory(0, Helper::toURLPath(Helper::relativeToDocumentRoot($path)),$value, 0, DB::getPhotos($contentPath,5)));
+        $path_parts = pathinfo($path);
 
-                }else{
-                    list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
-                    //loading lightroom keywords
-                    $keywords = array();
-                    if(isset($info['APP13'])) {
-                        $iptc = iptcparse($info['APP13']);
 
-                        if(isset($iptc['2#025'])) {
-                            $keywords = $iptc['2#025'];
-                        }
-                    }
+        $mysqli = DB::getDatabaseConnection();
 
-                    //TODO: simplify
-                    $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
-                                                Helper::toDirectoryPath(
-                                                        Helper::toURLPath(
-                                                            Helper::relativeToDocumentRoot($contentPath))));
-
-                    array_push($photos, new Photo(0, urlencode(Helper::toURLPath(Helper::relativeToDocumentRoot($path))), $value,$width, $height, $keywords, $availableThumbnails ));
-                }
-            }
+        //load directories
+        $stmt = $mysqli->prepare("SELECT d.ID, d.directoryName,  d.lastModification
+                                    FROM directories d
+                                    WHERE
+                                    d.path = ?");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
         }
-        sleep(1);
-         return array("currentPath" => $relativePath ,"directories" => $directories , "photos" => $photos);
+        $stmt->bind_param('s', $path);
+        $stmt->execute();
+        $stmt->bind_result($dirID, $baseName, $dirLastMod);
+        while($stmt->fetch()){
+            array_push($directories, new Directory($dirID, $path, $baseName, $dirLastMod, null));
+        }
+        $stmt->close();
+
+        //get sample photos for directories
+        foreach($directories as $dir){
+            $dir->setSamplePhotos(DB::loadSamplePhotosToDirectory($dir, $mysqli));
+        }
+
+        //load photos
+        $stmt = $mysqli->prepare("SELECT p.ID, p.fileName, p.width, p.height, p.keywords
+                                    FROM directories d, photos p
+                                    WHERE
+                                    d.path = ? AND
+                                    d.directoryName = ? AND
+                                    d.ID = p.directory_id");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+
+        $dirName = Helper::toDirectoryPath($path_parts['dirname']);
+        $baseName = Helper::toDirectoryPath($path_parts['basename']);
+
+        if(empty($baseName)){
+            $baseName = $dirName;
+            $dirName = "";
+        }
+
+        $stmt->bind_param('ss', $dirName, $baseName);
+        $stmt->execute();
+        $stmt->bind_result($photoID, $fileName, $width, $height, $keywords);
+        while($stmt->fetch()){
+            $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
+                Helper::relativeToImageDirectory(Helper::concatPath($path, $fileName)));
+            array_push($photos, new Photo($photoID, $path, $fileName, $width, $height, explode(",", $keywords), $availableThumbnails));
+        }
+        $stmt->close();
+
+
+
+        $mysqli->close();
+        return array("currentPath" => $path ,"directories" => $directories , "photos" => $photos);
     }
 
 
 
-    public static function getPhotos($path, $maxCount){
 
-        $path = Helper::concatPath($path,DIRECTORY_SEPARATOR);
-        $dirContent = scandir($path);
-        $photos = array();
-        foreach ($dirContent as &$value) { //search for directories and other files
-            if($value != "." && $value != ".."){
-                $contentPath = Helper::concatPath($path,$value);
-                if(is_dir($contentPath) == true){
-                }else{
-                    list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
-                    //loading lightroom keywords
-                    $keywords = array();
-                    if(isset($info['APP13'])) {
-                        $iptc = iptcparse($info['APP13']);
-
-                        if(isset($iptc['2#025'])) {
-                            $keywords = $iptc['2#025'];
-                        }
-                    }
-
-                    $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
-                        Helper::toDirectoryPath(
-                            Helper::toURLPath(
-                                Helper::relativeToDocumentRoot($contentPath))));
-
-                    array_push($photos, new Photo(0, urlencode (Helper::toURLPath(Helper::relativeToDocumentRoot($path))), $value,$width, $height, $keywords, $availableThumbnails ));
-                    $maxCount--;
-                    if($maxCount <=0)
-                        break;
-                }
-            }
-        }
-        return $photos;
-    }
 
     public static function getSearchResult($searchString, $path = "/"){
         $relativePath = $path;
@@ -265,70 +443,69 @@ class DB {
 
 
 
-    public static function getAutoComplete($prefix, $count, $path = "/"){
-        if($count <= 0)
-            return array();
-        //is image folder already added?
-        if(!Helper::isSubPath($path,Properties::$imageFolder)){
-            $path = Helper::concatPath(Properties::$imageFolder,$path);
+    public static function getAutoComplete($searchText, $count ){
+        $SQLsearchText = '%' . $searchText . '%';
+
+        $foundKeywords = array();
+        $foundImages = array();
+
+        $mysqli = DB::getDatabaseConnection();
+        //look in keywords
+        $stmt = $mysqli->prepare("SELECT
+                                    photos.keywords
+                                    from photos
+                                    WHERE
+                                    photos.keywords LIKE ?
+                                    GROUP BY keywords
+                                    LIMIT 0,100");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
         }
 
-        //set absolute positition
-        if(!Helper::isSubPath($path,$_SERVER['DOCUMENT_ROOT'])){
-            $path = Helper::concatPath($_SERVER['DOCUMENT_ROOT'],$path);
-        }
-
-        $dirContent = scandir($path);
-        $foundItems = array();
-        $directories = array();
-        foreach ($dirContent as &$value) { //search for directories and other files
-            if($value != "." && $value != ".."){
-                $contentPath = Helper::concatPath($path,$value);
-                if(is_dir($contentPath) == true){
-
-                    if(stripos($value, $prefix) !== FALSE){
-                        $count--;
-                        array_push($foundItems, array("text" => $value, "type"=>"dir"));
-                        if($count <= 0)
-                            return $foundItems;
-                    }
-                    array_push($directories,Helper::relativeToDocumentRoot($contentPath));
-                }else{
-                    getimagesize($contentPath, $info);
-
-                    //loading lightroom keywords
-                    $keywords = array();
-                    if(isset($info['APP13'])) {
-                        $iptc = iptcparse($info['APP13']);
-
-                        if(isset($iptc['2#025'])) {
-                            $keywords = $iptc['2#025'];
-                        }
-                    }
-
-                    foreach($keywords as &$keyword){
-                        if(stripos($keyword, $prefix) !== FALSE){
-                            $count--;
-                            if($count <= 0)
-                                return $foundItems;
-                            array_push($foundItems, array("text" => $keyword, "type"=>"keyword"));
-                        }
-                    }
-
-                    if(stripos($value, $prefix) !== FALSE){
-                        $count--;
-                        array_push($foundItems, array("text" => $value, "type"=>"photo"));
-                        if($count <= 0)
-                            return $foundItems;
-                    }
-
-
+        $stmt->bind_param('s', $SQLsearchText);
+        $stmt->execute();
+        $stmt->bind_result($DBkeywords);
+        while($stmt->fetch()){
+            $keywords =  explode(",", $DBkeywords);
+            foreach($keywords as $keyword) {
+                if (stripos($keyword, $searchText) !== FALSE && array_search($keyword, $foundKeywords) == FALSE) {
+                    array_push($foundKeywords, array("text" => $keyword, "type" => "keyword"));
                 }
+                if (count($foundKeywords) >= $count)
+                    break;
             }
         }
-        foreach ($directories as &$dir) {
-            $foundItems = array_merge($foundItems,DB::getAutoComplete($prefix,$count,$dir));
-        }
+        $stmt->close();
+
+            //load photos
+            $stmt = $mysqli->prepare("SELECT
+                                        photos.fileName
+                                        from photos
+                                        WHERE
+                                        photos.fileName LIKE ?
+                                        GROUP BY fileName
+                                        LIMIT 0,?");
+            if($stmt === false) {
+                $error = $mysqli->error;
+                $mysqli->close();
+                throw new \Exception("Error: ". $error);
+            }
+
+            $stmt->bind_param('si', $SQLsearchText, $count);
+            $stmt->execute();
+            $stmt->bind_result($filename);
+            while($stmt->fetch()) {
+                if (array_search($filename, $foundImages) == FALSE) {
+                    array_push($foundImages, array("text" => $filename, "type" => "photo"));
+                }
+            }
+
+        $stmt->close();
+        $mysqli->close();
+
+        $foundItems = array_merge($foundKeywords, $foundImages);
 
         return $foundItems;
 

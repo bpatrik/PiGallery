@@ -130,7 +130,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
                     i--;
                 }
             }
-            var actualPath = "";
+            var actualPath = "/";
 
             var dirClickHandler = function(event){
                 event.preventDefault();
@@ -156,7 +156,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
             $directoryPathOl.append($li);
 
             for(var i = 0; i < dirs.length; i++){
-                actualPath += dirs[i]+"/";
+                actualPath += dirs[i] ;
                 if(i == dirs.length - 1 ){//is it the current directory?
                     $li = $("<li>").html(dirs[i]);
                 }else{ //add link to parent directories
@@ -166,6 +166,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
                             .click(dirClickHandler)
                     );
                 }
+                actualPath += "/";
 
                 //show il
                 $directoryPathOl.append($li);

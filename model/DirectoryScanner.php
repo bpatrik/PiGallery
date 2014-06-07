@@ -17,11 +17,12 @@ class DirectoryScanner {
     /**
      * @param string $path
      * @return array
+     * @throws \Exception
      */
     public static function getDirectoryContent($path = "/"){
 
         $relativePath = $path;
-        $path = utf8_decode(urldecode($path));
+        $path = utf8_decode($path);
         $path = Helper::toDirectoryPath($path);
 
         //is image folder already added?
@@ -29,25 +30,28 @@ class DirectoryScanner {
             $path = Helper::concatPath(Helper::getAbsoluteImageFolderPath(),$path);
         }
 
+        if(!is_dir($path)){
+            throw new \Exception('No such directory: '.$path);
+        }
 
-
-
-        $dirContent = scandir($path);
         $directories = array();
         $photos = array();
-        foreach ($dirContent as &$value) { //search for directories and other files
+
+        $handle = opendir($path);
+        while (false !== ($value = readdir($handle))) {
             if($value != "." && $value != ".."){
-
                 $contentPath = Helper::concatPath($path,$value);
-
+                //read directory
                 if(is_dir($contentPath) == true){
-
                     $value = utf8_encode($value);
-                    array_push($directories, new Directory(0, Helper::toURLPath(Helper::relativeToImageDirectory($path)),$value, 0, DirectoryScanner::getPhotos($contentPath,5)));
-
+                    array_push($directories, new Directory(0, utf8_encode(Helper::toURLPath(Helper::relativeToImageDirectory($path))),$value, 0, DirectoryScanner::getPhotos($contentPath,5)));
+                //read photo
                 }else{
 
                     list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
+
+                    if($type != IMAGETYPE_JPEG && $type != IMAGETYPE_PNG && $type != IMAGETYPE_GIF)
+                        continue;
 
                     //loading lightroom keywords
                     $keywords = array();
@@ -66,6 +70,7 @@ class DirectoryScanner {
                 }
             }
         }
+        closedir($handle);
         return array("currentPath" => $relativePath ,"directories" => $directories , "photos" => $photos);
     }
 
@@ -74,10 +79,10 @@ class DirectoryScanner {
     public static function getPhotos($path, $maxCount){
 
         $path = Helper::concatPath($path,DIRECTORY_SEPARATOR);
-        $dirContent = scandir($path);
         $photos = array();
 
-        foreach ($dirContent as &$value) { //search for directories and other files
+        $handle = opendir($path);
+        while (false !== ($value = readdir($handle))) {
             if($value != "." && $value != ".."){
                 $contentPath = Helper::concatPath($path,$value);
                 if(is_dir($contentPath) == true){
@@ -104,6 +109,7 @@ class DirectoryScanner {
                 }
             }
         }
+        closedir($handle);
         return $photos;
     }
 

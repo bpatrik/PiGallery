@@ -13,7 +13,7 @@ require_once __DIR__."/lang/".Properties::$language.".php";
     <meta name="author" content="">
     <link rel="shortcut icon" href="../../assets/ico/favicon.ico">
 
-    <title>PiGallery</title>
+    <title><?php echo $LANG['site_name']; ?></title>
 
     <!--jquerry ui-->
     <link rel="stylesheet" href="./css/ui-bootstrap/jquery-ui-1.10.3.custom.css">
@@ -53,11 +53,25 @@ require_once __DIR__."/lang/".Properties::$language.".php";
         use \piGallery\model\Helper;
         use \piGallery\model\UserManager;
 
-        $dir =  Helper::get_REQUEST('dir','/');
-        if(Properties::$databaseEnabled){
-            $content = \piGallery\db\DB::getDirectoryContent($dir);
-        }else{
-            $content = \piGallery\model\DirectoryScanner::getDirectoryContent($dir);
+        $dir =  Helper::toDirectoryPath(utf8_decode(Helper::get_REQUEST('dir','/')));
+        $content = null;
+        try{
+            if(Properties::$databaseEnabled){
+                $content = \piGallery\db\DB::getDirectoryContent($dir);
+            }else{
+                $content = \piGallery\model\DirectoryScanner::getDirectoryContent($dir);
+            }
+
+          /*  foreach($content['directories'] as $directory){
+                $directory->setPath(Helper::toURLPath($directory->getPath()));
+                $directory->toUTF8();
+            }
+            foreach($content['photos'] as $photo){
+                $photo->setPath(Helper::toURLPath($photo->getPath()));
+                $photo->toUTF8();
+            }*/
+        }catch (Exception $ex){
+            $dir = "/";
         }
 
         $jsonUser = json_encode(null);
@@ -77,7 +91,8 @@ require_once __DIR__."/lang/".Properties::$language.".php";
         var PiGallery = PiGallery || {};
 
         //Preloaded directory content
-        PiGallery.preLoadedDirectoryContent= <?php echo Helper::contentArrayToJSON($content); ?>;
+        PiGallery.currentPath = "<?php echo Helper::toURLPath($dir); ?>";
+        PiGallery.preLoadedDirectoryContent= <?php echo ($content == null ?  "null" : Helper::contentArrayToJSON($content)); ?>;
         PiGallery.searchSupported = <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>;
         PiGallery.documentRoot = "<?php echo Properties::$documentRoot; ?>";
         PiGallery.user =  <?php echo $jsonUser; ?>;
@@ -91,19 +106,21 @@ require_once __DIR__."/lang/".Properties::$language.".php";
 <body>
 <div id="signInSite" style="display: none;">
     <div class="container">
+        <h1 class="signin-title"><?php echo $LANG['site_name']; ?></h1>
 
-        <form class="form-signin" role="form">
-            <h2 class="form-signin-heading">Please sign in</h2>
+        <form class="form-signin" role="form" id="signinForm">
+            <h2 class="form-signin-heading"><?php echo $LANG['PleaseSignIn']; ?></h2>
             <input id="userNameBox" type="text" class="form-control" placeholder="<?php echo $LANG['username']; ?>" required autofocus>
             <input id="passwordBox" type="password" class="form-control" placeholder="<?php echo $LANG['password']; ?>" required>
             <label class="checkbox">
                 <input id="rememberMeBox" type="checkbox" value="remember-me"> <?php echo $LANG['rememberme']; ?>
             </label>
-            <button id="loginButton" class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+            <button id="loginButton" class="btn btn-lg btn-primary btn-block" type="submit"><?php echo $LANG['signin']; ?></button>
         </form>
 
     </div> <!-- /container -->
 </div>
+
 
 <div id="gallerySite" style="display: none;">
     <!-- Fixed navbar -->
@@ -116,17 +133,18 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.php">PiGalery</a>
+                <a class="navbar-brand" href="index.php"><?php echo $LANG['site_name']; ?></a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
+                    <li><img id="loading-sign" src="img/loading.gif"/></li>
                     <li class="active"><a href="#"><?php echo $LANG['gallery']; ?></a></li>
                   <!--  <li><a href="#">Admin</a></li>
                     <li><a href="#">Monitor</a></li> -->
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <?php if(\piGallery\Properties::$databaseEnabled) { ?>
-                         <li><a href="#"><span class="glyphicon glyphicon-share-alt"> Share</span></a></li>
+                         <li><a href="#"><span class="glyphicon glyphicon-share-alt"> <?php echo $LANG['share']; ?></span></a></li>
                     <?php } ?>
                     <li><a href="#" id="userNameButton">User</a></li>
                     <li><a href="#" id="logOutButton"><?php echo $LANG['logout']; ?></a></li>
@@ -136,12 +154,16 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                     <div class="form-group">
                         <input type="text" id="auto-complete-box"  class="form-control" placeholder="Search">
                     </div>
-                    <button type="submit" id="search-button" class="btn btn-default">Submit</button>
+                    <button type="submit" id="search-button" class="btn btn-default"><?php echo $LANG['search']; ?></button>
                 </form>
                 <?php } ?>
             </div><!--/.nav-collapse -->
         </div>
     </div>
+
+    <!-- Error dialoge-->
+    <div id="alerts"></div>
+
 
 
     <!-- The Bootstrap Image Gallery lightbox, should be a child element of the document body -->

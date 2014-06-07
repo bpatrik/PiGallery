@@ -101,27 +101,60 @@ class Helper {
         return $path;
     }
 
-    public static function contentArrayToJSON($array){
+    public static function contentArrayToJSONable($array){
 
-        $JSON_array = array();
 
-        foreach($array as $key => $value){
-            if(is_array($value)){
-                $tmp_array = array();
-                foreach ($value as $row) {
-                    if(is_object($row) && method_exists($row,'getJsonData')){
-                        $row = $row->getJsonData();
-                    }
-                    $tmp_array[] =  $row;
+        $convertedPath = utf8_encode(Helper::toURLPath($array['currentPath']));
+        $convertedDirectories =  $array['directories'];
+        $convertedPhotos =  $array['photos'];
+
+        foreach($convertedDirectories as $directory){
+            $directory->setPath(Helper::toURLPath($directory->getPath()));
+            $directory->setDirectoryName(Helper::toURLPath($directory->getDirectoryName()));
+            $directory->setPath(utf8_encode($directory->getPath()));
+            $directory->setDirectoryName(utf8_encode($directory->getDirectoryName()));
+
+            if($directory->getSamplePhotos() != null){
+                foreach($directory->getSamplePhotos() as $photo){
+                    $photo->setPath(Helper::toURLPath($photo->getPath()));
+                    $photo->setPath(utf8_encode($photo->getPath()));
                 }
-                 $JSON_array[$key] = $tmp_array;
-             }else{
-                $JSON_array[$key] = $value;
             }
-
         }
 
-        return  json_encode($JSON_array);
+        foreach($convertedPhotos as $photo){
+            $photo->setPath(Helper::toURLPath($photo->getPath()));
+            $photo->setPath(utf8_encode($photo->getPath()));
+        }
+
+        $array = array("currentPath" => $convertedPath ,"directories" => $convertedDirectories , "photos" => $convertedPhotos);
+
+        //convert to jsonable
+         $JSON_array = array();
+
+          foreach($array as $key => $value){
+              if(is_array($value)){
+                  $tmp_array = array();
+                  foreach ($value as $row) {
+                      if(is_object($row) && method_exists($row,'getJsonData')){
+                          $row = $row->getJsonData();
+                      }
+                      $tmp_array[] =  $row;
+                  }
+                  $JSON_array[$key] = $tmp_array;
+              }else{
+                  $JSON_array[$key] = $value;
+              }
+
+          }
+
+        return  $JSON_array;
+    }
+
+
+    public static function contentArrayToJSON($array){
+
+        return  json_encode(Helper::contentArrayToJSONable($array));
     }
 
     public static function phpObjectArrayToJSON($array){

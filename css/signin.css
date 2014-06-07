@@ -46,3 +46,11 @@
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
+
+
+.signin-title {
+    font-size: 85px;
+    font-weight: bold;
+    margin-bottom: 50px;
+    text-align: center;
+}

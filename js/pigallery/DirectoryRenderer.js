@@ -88,7 +88,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
 
                 //Rendering image Div
                 var $imgDiv = $('<div>').append(
-                    $('<a>', {href: "index.php?dir=" + directory.path + directory.directoryName + "/", title: directory.directoryName, "data-path": directory.path + directory.directoryName + "/"}).append(
+                    $('<a>', {href: "index.php?dir=" + directory.path + "/"  + directory.directoryName, title: directory.directoryName, "data-path": directory.path + "/" + directory.directoryName}).append(
                         $samplePhoto
                     ).click(directoryClickHandler)
                 ).addClass("gallery-directory-image").height(rowHeight).width(rowHeight).data("dirCounter", "0").data("directoryId", i).data("lastUpdate", Date.now());

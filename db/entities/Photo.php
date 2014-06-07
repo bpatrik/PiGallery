@@ -142,7 +142,9 @@ class Photo extends Content {
         return $this->width;
     }
 
-
+    public function toUTF8(){
+        $this->path = utf8_encode($this->path);
+    }
 
 
 } 

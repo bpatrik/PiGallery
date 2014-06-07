@@ -39,5 +39,66 @@ class Directory extends Content {
         $this->samplePhotos = $samplePhotos;
     }
 
+    /**
+     * @return string
+     */
+    public function getDirectoryName()
+    {
+        return $this->directoryName;
+    }
+
+    /**
+     * @param string $directoryName
+     */
+    public function setDirectoryName($directoryName)
+    {
+        $this->directoryName = $directoryName;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLastModification()
+    {
+        return $this->lastModification;
+    }
+
+    /**
+     * @param int $lastModification
+     */
+    public function setLastModification($lastModification)
+    {
+        $this->lastModification = $lastModification;
+    }
+
+    /**
+     * @return Photo[]
+     */
+    public function getSamplePhotos()
+    {
+        return $this->samplePhotos;
+    }
+
+    /**
+     * @param Photo[] $samplePhotos
+     */
+    public function setSamplePhotos($samplePhotos)
+    {
+        $this->samplePhotos = $samplePhotos;
+    }
+
+
+
+    public function toUTF8(){
+        $this->path = utf8_encode($this->path);
+        $this->directoryName = utf8_encode($this->directoryName);
+        if($this->samplePhotos != null){
+            foreach($this->samplePhotos as $photo){
+                $photo->toUTF8();
+            }
+        }
+    }
+
+
 
 } 

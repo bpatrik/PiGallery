@@ -14,21 +14,20 @@ define(["jquery", "underscore"], function ($, _) {
             //find the best size
             var foundThumbnailInfo = photo.availableThumbnails[0];
             for(var i = 0; i < photo.availableThumbnails.length; i++){
-                var thumbnailInfo = photo.availableThumbnails[i];
-                if(thumbnailInfo.size * thumbnailInfo.size >= width* height){
-                    foundThumbnailInfo = thumbnailInfo;
-                    break;
+                foundThumbnailInfo = photo.availableThumbnails[i];
+                if(foundThumbnailInfo.size * foundThumbnailInfo.size >= width* height){
+                      break;
                 }
             }
-            return foundThumbnailInfo;
+           return foundThumbnailInfo;
         }
 
         this.createThumbnail = function(photo,width,height){
 
             //find the best size
             var foundThumbnailInfo = calcThumbanilSize(photo,width,height);
-
-            var thumbnailPath = "thumbnail.php?image=" + photo.path + photo.fileName + "&size=" + foundThumbnailInfo.size;
+            console.log(photo.fileName +"in" + foundThumbnailInfo.size);
+            var thumbnailPath = "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + foundThumbnailInfo.size;
             if(foundThumbnailInfo.available == true){
                 return $('<img>', { src: thumbnailPath, height: height, width: width});
             }else{
@@ -43,7 +42,7 @@ define(["jquery", "underscore"], function ($, _) {
             //find the best size
             var foundThumbnailInfo = calcThumbanilSize(photo,width,height);
 
-            var thumbnailPath = "thumbnail.php?image=" + photo.path + photo.fileName + "&size=" + foundThumbnailInfo.size;
+            var thumbnailPath = "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + foundThumbnailInfo.size;
             $img.css({height: height, width: width});
             if(foundThumbnailInfo.available == true){
                 $img.attr("src", thumbnailPath);

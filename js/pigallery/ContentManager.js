@@ -1,6 +1,11 @@
 define(["jquery"], function ($) {
     "use strict";
+
+
+
    return function ContentManager() {
+
+
         this.lastXhr = null;
         var that = this;
         this.getContent = function(path, galleryRenderer){
@@ -16,14 +21,22 @@ define(["jquery"], function ($) {
                 url: "model/AJAXfacade.php",
                 data: {method: "getContent", dir: path},
                 dataType: "json"
-            }).done(function(data) {
+            }).done(function(result) {
+                    if(result.error != null){
+                        $('#alerts').append('<div class="alert  alert-danger">' + result.error  + '</div>');
+                    }else if(result.data != null){
+                        that.storeContent(result.data);
+                        galleryRenderer.showContent(result.data);
+                    }
                     that.lastXhr = null;
-                    that.storeContent(data);
-                    galleryRenderer.showContent(data);
+                    $("#loading-sign").css("opacity",0);
 
             }).fail(function(errMsg) {
-                    console.log("Error during downloading directory content");
+                    $('#alerts').append('<div class="alert  alert-danger">' + "Error during downloading directory content"  + '</div>');
+                    that.lastXhr = null;
+                    $("#loading-sign").css("opacity",0);
             });
+            $("#loading-sign").css("opacity",1);
             return getLocalStoredContent(path);
         };
 

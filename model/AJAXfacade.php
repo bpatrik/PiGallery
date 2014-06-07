@@ -38,22 +38,40 @@ switch (Helper::require_REQUEST('method')){
 
     case 'getContent':
         authenticate();
-        $dir = Helper::require_REQUEST('dir');
 
-        if(Properties::$databaseEnabled){
-            die(Helper::contentArrayToJSON(DB::getDirectoryContent($dir)));
-        }else{
-            die(Helper::contentArrayToJSON(DirectoryScanner::getDirectoryContent($dir)));
+        $dir = Helper::toDirectoryPath(utf8_decode(Helper::require_REQUEST('dir')));
+
+        $error = null;
+        $data = null;
+        try {
+            if (Properties::$databaseEnabled) {
+                $data = DB::getDirectoryContent($dir);
+            } else {
+                $data = DirectoryScanner::getDirectoryContent($dir);
+            }
+        }catch(\Exception $ex){
+            $error = utf8_encode($ex->getMessage());
         }
+
+       /* foreach($data['directories'] as $dir){
+            $dir->toUTF8();
+        }
+        foreach($data['photos'] as $photo){
+            $photo->toUTF8();
+        }*/
+
+        die(json_encode(array("error" => $error, "data" => Helper::contentArrayToJSONable($data))));
         break;
+
     case 'autoComplete':
+
         authenticate();
         $count= intval(Helper::get_REQUEST('count',5));
         $searchText= Helper::require_REQUEST('searchText');
 
 
         if(Properties::$databaseEnabled){
-            die(json_encode(DB::getAutoComplete($searchText,$count,"/")));
+            die(json_encode(DB::getAutoComplete($searchText,$count)));
         }else{
             die("Error: not supported");
         }
@@ -70,18 +88,10 @@ switch (Helper::require_REQUEST('method')){
         }
 
         break;
-    case 'recreateDatabase':
-        authenticate();
-        if(Properties::$databaseEnabled){
-            die(DB::recreateDatabase(Role::Admin));
-        }else{
-            die("Error: not supported");
-        }
-        break;
     case 'login':
         $userName =  Helper::require_REQUEST('userName');
         $password = Helper::require_REQUEST('password');
-        $rememberMe= filter_var(Helper::get_REQUEST('rememberMe',"false"), FILTER_VALIDATE_BOOLEAN);
+        $rememberMe = filter_var(Helper::get_REQUEST('rememberMe',"false"), FILTER_VALIDATE_BOOLEAN);
 
         $error = null;
         $data = null;
@@ -111,4 +121,21 @@ switch (Helper::require_REQUEST('method')){
         die(json_encode(array("error" => $error, "data" =>$data)));
         break;
 
+    case 'recreateDatabase':
+        authenticate(Role::Admin);
+        if(Properties::$databaseEnabled){
+            die(DB::recreateDatabase());
+        }else{
+            die("Error: not supported");
+        }
+        break;
+    case 'reScanDirectory':
+        authenticate(Role::Admin);
+        $dir = Helper::require_REQUEST('dir');
+        if(Properties::$databaseEnabled){
+            die(DB::reScanDirectory($dir));
+        }else{
+            die("Error: not supported");
+        }
+        break;
 }

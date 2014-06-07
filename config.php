@@ -5,11 +5,11 @@ require_once __DIR__."/db/entities/User.php";
 require_once __DIR__."/db/entities/Role.php";
 
 use piGallery\db\entities\Role;
-use piGallery\db\entities\User;
 
 
 class Properties{
-    /*The language of the site, pick one from the lang directory*/
+    /* The language of the site, pick one from the lang directory.
+     * If your language not exist, translate from eng :) */
     public static $language = "hun";
 
     /*The base directory relative to the document root (the www folder)*/
@@ -22,7 +22,7 @@ class Properties{
     /*The thumbnail folder relative to the base folder. !IMPORTANT the folder must be writable! */
     public static $thumbnailFolder = "./thumbnails";
     /*The thumbnail sizes that the site generates automatically. (Thumbnail generation is a long process, give only 1 or 2 sizes only)*/
-    public static $thumbnailSizes = array(300, 600);
+    public static $thumbnailSizes = array(200, 500);
     /*The JPEG quality of the thumbnail*/
     public static $thumbnailJPEGQuality = 75;
     /*Set true for resampling or false for resizing only. */
@@ -34,7 +34,7 @@ class Properties{
 
 
     /*Enable the database usage*/
-    public static $databaseEnabled = false;
+    public static $databaseEnabled = true;
 
     /*-------------Database settings----------(Not supported yet)*/
     /*if $databaseEnabled == true*/
@@ -45,8 +45,12 @@ class Properties{
 
     /*No-Database settings*/
     /*if $databaseEnabled == false*/
+    /*Following roles are available:
+     * - User -- code: 0
+     * - Admin -- code: 1
+     * */
     public static $users = array(
-        array("userName" => "test", "password" => "test", "role" => 1)
+        array("userName" => "admin", "password" => "admin", "role" => Role::Admin)
     );
 
 }

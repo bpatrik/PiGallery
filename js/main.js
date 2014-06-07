@@ -10,12 +10,18 @@ require.config({
         // is using jQuery 1.9.0 located at
         // js/lib/jquery-1.9.0.js, relative to
         // the HTML page.
-        jquery: ['//code.jquery.com/jquery-2.1.1.min','jquery-2.1.1.min'],
+     /*   jquery: ['//code.jquery.com/jquery-2.1.1.min','jquery-2.1.1.min'],
         jquery_ui: ['//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min','jquery-ui-1.10.4_min'],
         underscore: ['//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min','underscorejs-1.6.0.min'],
         bootstrap: ['//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min','bootstrap.min'],
-        blueImpGallery: 'blueimp-gallery-indicator',
-        jquery_cookie: ['//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min', 'jquery.cookie']
+        jquery_cookie: ['//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min', 'jquery.cookie'],
+*/
+        jquery:  'jquery-2.1.1.min',
+        jquery_ui: 'jquery-ui-1.10.4_min',
+        underscore: 'underscorejs-1.6.0.min',
+        bootstrap: 'bootstrap.min',
+        jquery_cookie: 'jquery.cookie',
+        blueImpGallery: 'blueimp-gallery-indicator'
     },
     shim:  {
         'blueImpGallery' : {
@@ -50,11 +56,15 @@ PiGallery.showGallery = function(){
             $("#userNameButton").html(PiGallery.user.userName);
 
             var contentManager = new ContentManager();
-            var galleryRenderer = new GalleryRenderer($("#directory-path"),$("#gallery"),contentManager);
+            var galleryRenderer = new GalleryRenderer($("#directory-path"), $("#gallery"), contentManager);
 
             galleryRenderer.reset();
-            contentManager.storeContent(PiGallery.preLoadedDirectoryContent);
-            galleryRenderer.showContent(PiGallery.preLoadedDirectoryContent);
+            if (PiGallery.preLoadedDirectoryContent != null) {
+                contentManager.storeContent(PiGallery.preLoadedDirectoryContent);
+                galleryRenderer.showContent(PiGallery.preLoadedDirectoryContent);
+            }else{
+                contentManager.getContent(PiGallery.currentPath, galleryRenderer);
+            }
 
             $("#search-button").click(function(event) {
                 event.preventDefault();
@@ -123,7 +133,27 @@ PiGallery.showLogin = function(){
             $('#gallerySite').hide();
             $('#signInSite').show();
 
-        $('#loginButton').click(function() {
+        var showSignProgress = function(show){
+            if(show == true){
+
+                $('#userNameBox').attr("disabled", "disabled");
+                $('#passwordBox').attr("disabled", "disabled");
+                $('#loginButton').attr("disabled", "disabled");
+                $('#loginButton').html(PiGallery.LANG.signinInProgress);
+
+            }else{
+
+                $('#userNameBox').removeAttr("disabled");
+                $('#passwordBox').removeAttr("disabled");
+                $('#loginButton').removeAttr("disabled");
+                $('#loginButton').html(PiGallery.LANG.signin);
+            }
+        }
+
+        $('#signinForm').submit(function() {
+
+            showSignProgress(true);
+
             $.ajax({
                 type: "POST",
                 url: "model/AJAXfacade.php",
@@ -145,9 +175,11 @@ PiGallery.showLogin = function(){
                     PiGallery.showGallery();
                 }else{
                     alert(result.error);
+                    showSignProgress(false);
                 }
             }).fail(function(errMsg) {
                 console.log("Error during downloading singing in");
+                showSignProgress(false);
             });
             return false;
         });

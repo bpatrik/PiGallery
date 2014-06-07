@@ -27,7 +27,7 @@ use piGallery\model\Helper;
 
 
 
-$image= Helper::toDirectoryPath(Helper::require_REQUEST("image"));
+$image= Helper::toDirectoryPath(utf8_decode(Helper::require_REQUEST("image")));
 $size= Helper::require_REQUEST("size");
 
 

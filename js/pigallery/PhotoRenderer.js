@@ -66,9 +66,12 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
                     var $keywordsDiv = $('<div>').addClass("galley-image-keywords");
 
                     if(PiGallery.searchSupported){
-                        _.each(photo.keywords, function(keyword){
-                            $keywordsDiv.append(
-                                $('<a>', {href: "#"}).html("#" + keyword).click(keywordClickHandler),", ");
+                        _.each(photo.keywords, function(keyword) {
+
+                            if (keyword != "") {
+                                $keywordsDiv.append(
+                                    $('<a>', {href: "#"}).html("#" + keyword).click(keywordClickHandler), ", ");
+                            }
                         });
                     }else{
                         _.each(photo.keywords, function(keyword){
