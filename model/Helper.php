@@ -66,10 +66,17 @@ class Helper {
     }
 
     public static function toDirectoryPath($path){
-        $path = str_replace("/", DIRECTORY_SEPARATOR,$path);
-        $path = str_replace("\\", DIRECTORY_SEPARATOR,$path);
-        $path = str_replace("..".DIRECTORY_SEPARATOR, "..\\".DIRECTORY_SEPARATOR,$path);
-        $path = str_replace(".".DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR,$path);
+
+        $search  = array("/",
+                        "\\",
+                        "..".DIRECTORY_SEPARATOR,
+                        ".".DIRECTORY_SEPARATOR);
+        $replace = array(DIRECTORY_SEPARATOR,
+                         DIRECTORY_SEPARATOR,
+                        "..\\".DIRECTORY_SEPARATOR,
+                        DIRECTORY_SEPARATOR);
+
+        $path = str_replace($search, $replace,$path);
         $path = str_replace( "..\\".DIRECTORY_SEPARATOR ,"..".DIRECTORY_SEPARATOR,$path);
         $path = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR,$path); //clean duplicated separators
         return $path;
@@ -101,6 +108,7 @@ class Helper {
         return $path;
     }
 
+
     public static function contentArrayToJSONable($array){
         if($array == null)
             return $array;
@@ -111,47 +119,37 @@ class Helper {
         $convertedDirectories =  $array['directories'];
         $convertedPhotos =  $array['photos'];
 
-        foreach($convertedDirectories as $directory){
+        foreach($convertedDirectories as $directory) {
             $directory->setPath(Helper::toURLPath($directory->getPath()));
             $directory->setDirectoryName(Helper::toURLPath($directory->getDirectoryName()));
-            $directory->setPath(utf8_encode($directory->getPath()));
-            $directory->setDirectoryName(utf8_encode($directory->getDirectoryName()));
-
+            if (Properties::$enableUTF8Encode) {
+                $directory->setPath(utf8_encode($directory->getPath()));
+                $directory->setDirectoryName(utf8_encode($directory->getDirectoryName()));
+            }
             if($directory->getSamplePhotos() != null){
                 foreach($directory->getSamplePhotos() as $photo){
                     $photo->setPath(Helper::toURLPath($photo->getPath()));
-                    $photo->setPath(utf8_encode($photo->getPath()));
+                    if (Properties::$enableUTF8Encode) {
+                        $photo->setPath(utf8_encode($photo->getPath()));
+                    }
                 }
             }
         }
 
         foreach($convertedPhotos as $photo){
             $photo->setPath(Helper::toURLPath($photo->getPath()));
-            $photo->setPath(utf8_encode($photo->getPath()));
+            if (Properties::$enableUTF8Encode) {
+                $photo->setPath(utf8_encode($photo->getPath()));
+            }
         }
 
         $array = array($first_key => $convertedPath ,"directories" => $convertedDirectories , "photos" => $convertedPhotos);
 
         //convert to jsonable
-         $JSON_array = array();
 
-          foreach($array as $key => $value){
-              if(is_array($value)){
-                  $tmp_array = array();
-                  foreach ($value as $row) {
-                      if(is_object($row) && method_exists($row,'getJsonData')){
-                          $row = $row->getJsonData();
-                      }
-                      $tmp_array[] =  $row;
-                  }
-                  $JSON_array[$key] = $tmp_array;
-              }else{
-                  $JSON_array[$key] = $value;
-              }
 
-          }
 
-        return  $JSON_array;
+        return  Helper::phpObjectArrayToJSONable($array);
     }
 
 
@@ -160,18 +158,26 @@ class Helper {
         return  json_encode(Helper::contentArrayToJSONable($array));
     }
 
-    public static function phpObjectArrayToJSON($array){
+    public static function phpObjectArrayToJSONable($array){
 
         $JSON_array = array();
 
-
-        foreach ($array as $row) {
-            if(is_object($row) && method_exists($row,'getJsonData')){
-                $row = $row->getJsonData();
+        foreach($array as $key => $value){
+            if(is_array($value)){
+                $tmp_array = array();
+                foreach ($value as $row) {
+                    if(is_object($row) && method_exists($row,'getJsonData')){
+                        $row = $row->getJsonData();
+                    }
+                    $tmp_array[] =  $row;
+                }
+                $JSON_array[$key] = $tmp_array;
+            }else{
+                $JSON_array[$key] = $value;
             }
-            $JSON_array[] =  $row;
+
         }
 
-        return  json_encode($JSON_array);
+        return  $JSON_array;
     }
 } 

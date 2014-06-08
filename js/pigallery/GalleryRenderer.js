@@ -38,6 +38,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
             saveHistory(url);
         };
 
+        /*-------History handler-----------*/
         window.onpopstate = function(event){
             var path = event.state ? event.state.path : "/";
             that.showContent(contentManager.getContent(path,that));

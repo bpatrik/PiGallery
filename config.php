@@ -32,11 +32,14 @@ class Properties{
     /*Enables thumbnail and image caching for the browser, true is recommended.*/
     public static $enableImageCaching = false;
 
+    /*Set it false, if the directory names don't appear properly*/
+    public static $enableUTF8Encode = true;
+
 
     /*Enable the database usage*/
     public static $databaseEnabled = true;
 
-    /*-------------Database settings----------(Not supported yet)*/
+    /*-------------Database settings----------*/
     /*if $databaseEnabled == true*/
     public static $databaseAddress = "localhost";
     public static $databseUserName = "root";

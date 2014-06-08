@@ -15,6 +15,7 @@ require_once __DIR__."/NoDBUserManager.php";
 use piGallery\db\DB;
 use piGallery\db\DB_ContentManager;
 use piGallery\db\DB_UserManager;
+use piGallery\db\entities\User;
 use piGallery\Properties;
 use piGallery\db\entities\Role;
 use piGallery\model\AuthenticationManager;
@@ -26,6 +27,10 @@ foreach ($_REQUEST as $key => $value){
     }
 }
 
+/**
+ * @param int $role
+ * @return null|User
+ */
 function authenticate($role = Role::User) {
 
     /*Authenticating*/
@@ -33,16 +38,20 @@ function authenticate($role = Role::User) {
     require_once __DIR__."/../db/entities/Role.php";
 
     /*Authentication need for images*/
-    AuthenticationManager::authenticate($role);
+    return AuthenticationManager::authenticate($role);
 }
 
 
-switch (Helper::require_REQUEST('method')){
+switch (Helper::require_REQUEST('method')) {
 
     case 'getContent':
         authenticate();
 
-        $dir = Helper::toDirectoryPath(utf8_decode(Helper::require_REQUEST('dir')));
+        $dir = Helper::require_REQUEST('dir');
+        if (Properties::$enableUTF8Encode) {
+            $dir = utf8_decode($dir);
+        }
+        $dir = Helper::toDirectoryPath($dir);
 
         $error = null;
         $data = null;
@@ -55,13 +64,6 @@ switch (Helper::require_REQUEST('method')){
         }catch(\Exception $ex){
             $error = utf8_encode($ex->getMessage());
         }
-
-       /* foreach($data['directories'] as $dir){
-            $dir->toUTF8();
-        }
-        foreach($data['photos'] as $photo){
-            $photo->toUTF8();
-        }*/
 
         die(json_encode(array("error" => $error, "data" => Helper::contentArrayToJSONable($data))));
         break;
@@ -144,18 +146,24 @@ switch (Helper::require_REQUEST('method')){
 
         break;
     case 'logout':
+        $user = authenticate();
         $sessionID =  Helper::require_REQUEST('sessionID');
         $error = null;
         $data = null;
-        if(Properties::$databaseEnabled){
-            //TODO: do
+        try {
+            if(Properties::$databaseEnabled){
+                $data = DB_UserManager::logout($user->getId(), $sessionID);
+            }
+        }catch(\Exception $ex){
+            $error = utf8_encode($ex->getMessage());
         }
 
         die(json_encode(array("error" => $error, "data" =>$data)));
         break;
 
 
-    //Admin methods
+/*-------------ADMIN methodes--------------*/
+
     case 'recreateDatabase':
         authenticate(Role::Admin);
 
@@ -209,16 +217,67 @@ switch (Helper::require_REQUEST('method')){
         for($i = 0; $i < count($data['foundDirectories']); $i++){
             $data['foundDirectories'][$i] = utf8_encode($data['foundDirectories'][$i] );
         }
+
         die(json_encode(array("error" => $error, "data" =>$data)));
         break;
 
-    case 'reScanDirectory':
+
+
+    case 'getUsersList':
         authenticate(Role::Admin);
-        $dir = Helper::require_REQUEST('dir');
-        if(Properties::$databaseEnabled){
-            die(DB::reScanDirectory($dir));
-        }else{
-            die("Error: not supported");
+        $error = null;
+        $data = null;
+        try {
+            if(Properties::$databaseEnabled){
+                $data = DB_UserManager::getUsersList();
+            }else{
+                $error = "Error: not supported";
+            }
+        }catch(\Exception $ex){
+            $error = utf8_encode($ex->getMessage());
         }
+        die(json_encode(array("error" => $error, "data" => Helper::phpObjectArrayToJSONable($data))));
+        break;
+
+    case 'registerUser':
+        authenticate(Role::Admin);
+
+        $error = null;
+        $data = null;
+        $userName = Helper::require_REQUEST('userName');
+        $password = Helper::require_REQUEST('password');
+        $role = filter_var(Helper::get_REQUEST('role',0), FILTER_VALIDATE_INT);
+        try {
+            if(Properties::$databaseEnabled){
+                $data = DB_UserManager::register(new User($userName, $password, $role));
+            }else{
+                $error = "Error: not supported";
+            }
+        }catch(\Exception $ex){
+            $error = utf8_encode($ex->getMessage());
+        }
+        die(json_encode(array("error" => $error, "data" => $data)));
+        break;
+    case 'deleteUser':
+        $user = authenticate(Role::Admin);
+
+        $error = null;
+        $data = null;
+        $id = Helper::require_REQUEST('id');
+        if ($user->getId() == $id){
+            $error = "You cant delete yourself!";
+        }else{
+            try {
+                if(Properties::$databaseEnabled){
+                    $data = DB_UserManager::deleteUser($id);
+                }else{
+                    $error = "Error: not supported";
+                }
+            }catch(\Exception $ex){
+                $error = utf8_encode($ex->getMessage());
+            }
+        }
+        die(json_encode(array("error" => $error, "data" => $data)));
+
         break;
 }

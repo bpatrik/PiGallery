@@ -11,8 +11,7 @@ class JSONParsable {
         foreach($var as &$value){
             if(is_object($value) && method_exists($value,'getJsonData')){
                 $value = $value->getJsonData();
-            }
-            if(is_array($value)){
+            }else  if(is_array($value)){
                 $JSON_array = array();
                 foreach ($value as $row) {
                     if(is_object($row) && method_exists($row,'getJsonData')){

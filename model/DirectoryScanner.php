@@ -22,8 +22,6 @@ class DirectoryScanner {
     public static function getDirectoryContent($path = "/"){
 
         $relativePath = $path;
-        $path = utf8_decode($path);
-        $path = Helper::toDirectoryPath($path);
 
         //is image folder already added?
         if(!Helper::isSubPath(Helper::getAbsoluteImageFolderPath(),Properties::$imageFolder)){
@@ -43,8 +41,7 @@ class DirectoryScanner {
                 $contentPath = Helper::concatPath($path,$value);
                 //read directory
                 if(is_dir($contentPath) == true){
-                    $value = utf8_encode($value);
-                    array_push($directories, new Directory(0, utf8_encode(Helper::toURLPath(Helper::relativeToImageDirectory($path))),$value, 0, DirectoryScanner::getPhotos($contentPath,5)));
+                    array_push($directories, new Directory(0, Helper::relativeToImageDirectory($path),$value, 0, DirectoryScanner::getPhotos($contentPath,5)));
                 //read photo
                 }else{
 
@@ -66,7 +63,7 @@ class DirectoryScanner {
                     $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                         Helper::relativeToImageDirectory($contentPath));
 
-                    array_push($photos, new Photo(md5($contentPath), urlencode(Helper::toURLPath(Helper::relativeToImageDirectory($path))), $value,$width, $height, $keywords, $availableThumbnails ));
+                    array_push($photos, new Photo(md5($contentPath), Helper::relativeToImageDirectory($path), $value,$width, $height, $keywords, $availableThumbnails ));
                 }
             }
         }
@@ -102,7 +99,7 @@ class DirectoryScanner {
                     $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                         Helper::relativeToImageDirectory($contentPath));
 
-                    array_push($photos, new Photo(md5($contentPath), urlencode (Helper::toURLPath(Helper::relativeToImageDirectory($path))), $value,$width, $height, $keywords, $availableThumbnails ));
+                    array_push($photos, new Photo(md5($contentPath), Helper::relativeToImageDirectory($path), $value,$width, $height, $keywords, $availableThumbnails ));
                     $maxCount--;
                     if($maxCount <=0)
                         break;

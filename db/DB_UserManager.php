@@ -5,12 +5,14 @@ namespace piGallery\db;
 require_once __DIR__ ."/../config.php";
 require_once __DIR__ ."/entities/Photo.php";
 require_once __DIR__ ."/entities/Directory.php";
+require_once __DIR__ ."/DB.php";
 require_once __DIR__ ."/../model/ThumbnailManager.php";
 
 
 use piGallery\db\entities\Directory;
 use piGallery\db\entities\Photo;
 use piGallery\db\entities\Role;
+use piGallery\db\DB;
 use piGallery\db\entities\User;
 use piGallery\model\Helper;
 use piGallery\model\ThumbnailManager;
@@ -34,20 +36,6 @@ class DB_UserManager {
         return sprintf('%04X%04X-%04X-%04X-%04X-%04X%04X%04X', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
     }
 
-    private static function getDatabaseConnection(){
-
-        $mysqli = new mysqli(Properties::$databaseAddress,
-                             Properties::$databseUserName,
-                             Properties::$databsePassword,
-                             Properties::$databseName);
-
-        if ($mysqli->connect_errno) {
-            throw new Exception("Failed to connect to MySQL: " . $mysqli->connect_error);
-        }
-
-        return $mysqli;
-
-    }
 
 
     /**
@@ -55,7 +43,7 @@ class DB_UserManager {
      * @throws \Exception
      */
     public static function register($user){
-        $mysqli = DB_UserManager::getDatabaseConnection();
+        $mysqli = DB::getDatabaseConnection();
         $stmt = $mysqli->prepare("INSERT INTO users (userName, password, passwordSalt, role) VALUES (?, ?, ?, ?)");
 
         if($stmt === false) {
@@ -74,10 +62,42 @@ class DB_UserManager {
 
         $stmt ->close();
         $mysqli->close();
+
+        return "ok";
+    }
+
+    public static function logout($userId, $sessionID){
+        $mysqli = DB::getDatabaseConnection();
+        $stmt = $mysqli->prepare("DELETE FROM sessionids WHERE session_id = ? AND user_id = ?");
+
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+
+        $stmt->bind_param('si', $sessionID, $userId);
+        $stmt->execute();
+
+        $stmt ->close();
+        $mysqli->close();
+
+        return "ok";
+    }
+
+    private static function clearSessionIDTable($mysqli){
+        $stmt = $mysqli->prepare("DELETE FROM sessionids WHERE sessionids.validTime < NOW()");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+        $stmt->execute();
+        $stmt->close();
     }
 
     public static function login($userName, $password, $rememberMe){
-        $mysqli = DB_UserManager::getDatabaseConnection();
+        $mysqli = DB::getDatabaseConnection();
 
         $user = null;
         $stmt = $mysqli->prepare("SELECT
@@ -132,16 +152,20 @@ class DB_UserManager {
             $user->setSessionID($GUID);
         }
 
+        DB_UserManager::clearSessionIDTable($mysqli);
+
         $mysqli->close();
+
 
         return $user;
     }
 
     public static function loginWithSessionID($sessionID){
-        $mysqli = DB_UserManager::getDatabaseConnection();
+        $mysqli = DB::getDatabaseConnection();
 
         $user = null;
         $stmt = $mysqli->prepare("SELECT
+                                    u.ID,
                                     u.userName,
                                     u.role
                                     FROM
@@ -157,17 +181,68 @@ class DB_UserManager {
         }
         $stmt->bind_param('s', $sessionID);
         $stmt->execute();
-        $stmt->bind_result($userName, $role);
+        $stmt->bind_result($userID, $userName, $role);
 
 
-        while($stmt->fetch()) {
+        if($stmt->fetch()) {
                 $user = new User($userName, null, $role);
                 $user->setSessionID($sessionID);
+                $user->setID($userID);
         }
         $stmt->close();
 
         $mysqli->close();
 
         return $user;
+    }
+
+    public static function getUsersList(){
+        $mysqli = DB::getDatabaseConnection();
+
+        $users = array();
+        $stmt = $mysqli->prepare("SELECT
+                                    u.ID,
+                                    u.userName,
+                                    u.role
+                                    FROM
+                                    users u ");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+        $stmt->execute();
+        $stmt->bind_result($userID, $userName, $role);
+
+
+        while($stmt->fetch()) {
+            $user = new User($userName, null, $role);
+            $user->setId($userID);
+            array_push($users, $user);
+        }
+        $stmt->close();
+
+        $mysqli->close();
+
+        return array('users' => $users);
+    }
+
+    public static function deleteUser($id){
+        $mysqli = DB::getDatabaseConnection();
+
+        $stmt = $mysqli->prepare("DELETE FROM users WHERE users.ID = ?");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+
+        $stmt->close();
+
+        $mysqli->close();
+
+        return "ok";
     }
 } 

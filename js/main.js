@@ -54,102 +54,8 @@ require.config({
 
 
 PiGallery.adminSiteInitDone = false;
-PiGallery.initAdminSite = function(){
-    require(['jquery', 'bootstrap-confirmation'], function   ($) {
-
-        //Reset database button
-        $('#resetDatabaseButton').confirmation({
-            singleton:true,
-            popout:true,
-            btnOkLabel: "Yes",
-            onConfirm:  function(){
-                        $.ajax({
-                            type: "POST",
-                            url: "model/AJAXfacade.php",
-                            data: {method: "recreateDatabase"},
-                            dataType: "json"
-                        }).done(function(result) {
-                            if(result.error == null){
-                                PiGallery.logOut();
-                            }else{
-                                alert(result.error);
-                            }
-                        }).fail(function(errMsg) {
-                            console.log("Error during resetting db");
-                        });
-                        return false;
-                    }
-         });
-
-        //Clear Photos Table
-        $('#clearTableButton').confirmation({
-            singleton:true,
-            popout:true,
-            btnOkLabel: "Yes",
-            onConfirm:  function(){
-                $.ajax({
-                    type: "POST",
-                    url: "model/AJAXfacade.php",
-                    data: {method: "clearGalleryDatabase"},
-                    dataType: "json"
-                }).done(function(result) {
-                    if(result.error == null){
-                    }else{
-                        alert(result.error);
-                    }
-                }).fail(function(errMsg) {
-                    console.log("Error during clearing tables");
-                });
-                return false;
-            }
-        });
-
-        var directoriesToIndex = [];
-        var indexDirectory = function(directory){
-            $('#indexingProgress').html("Indexing: \"" + directory + "\" ("+ directoriesToIndex.length +" left)")
-            $.ajax({
-                type: "POST",
-                url: "model/AJAXfacade.php",
-                data: {method: "indexDirectory", dir: directory},
-                dataType: "json"
-            }).done(function(result) {
-                if(result.error == null){
-                    directoriesToIndex = directoriesToIndex.concat(result.data.foundDirectories);
-                    if(directoriesToIndex.length > 0){
-                        indexDirectory(directoriesToIndex.pop())
-                    }else{
-                        $('#indexingProgress').html("Indexing done.");
-                    }
-                }else{
-                    alert(result.error);
-                }
-            }).fail(function(errMsg) {
-                console.log("Error during indexind directories");
-            });
-        };
-
-        $('#indexPhotosButton').click(function(){
-            indexDirectory("/");
-        });
-
-        PiGallery.adminSiteInitDone = true;
-    });
-};
-
-PiGallery.showAdminSite = function(){
-    if(PiGallery.adminSiteInitDone == false){
-        PiGallery.initAdminSite();
-    }
-    require(['jquery'], function   ($) {
-        $('#gallerySite').show();
-        $('#signInSite').hide();
-        $('#gallery-container').hide();
-        $('#admin-container').show();
-
-        $('#galleryButton').removeClass("active");
-        $('#adminButton').addClass("active");
-    });
-};
+PiGallery.gallerySiteInitDone = false;
+PiGallery.loginSiteInitDone = false;
 
 PiGallery.initSite = function(){
     require(['jquery'], function   ($) {
@@ -157,38 +63,82 @@ PiGallery.initSite = function(){
         $('#galleryButton').click(function () {
             PiGallery.showGallery();
         });
-            if (PiGallery.user.role >= 1) {//is it an admin?
-                $('#adminButton').show();
-                $('#adminButton').click(function () {
-                    PiGallery.showAdminSite();
-                });
-            } else {
-                $('#adminButton').hide();
-            }
-        });
+        if (PiGallery.user.role >= 1) {//is it an admin?
+            $('#adminButton').show();
+            $('#adminButton').click(function () {
+                PiGallery.showAdminSite();
+            });
+        } else {
+            $('#adminButton').hide();
+        }
+    });
 
 
 };
 
-PiGallery.showGallery = function(){
 
-    require(['jquery'], function   ($) {
-        $('#gallerySite').show();
-        $('#signInSite').hide();
-        $('#gallery-container').show();
-        $('#admin-container').hide();
+PiGallery.initLogin = function(){
+    require(['jquery', 'jquery_cookie'],  function   ($) {
+        $('#gallerySite').hide();
+        $('#signInSite').show();
 
-        $('#galleryButton').addClass("active");
-        $('#adminButton').removeClass("active");
+        var showSignProgress = function(show){
+            if(show == true){
+
+                $('#userNameBox').attr("disabled", "disabled");
+                $('#passwordBox').attr("disabled", "disabled");
+                $('#loginButton').attr("disabled", "disabled");
+                $('#loginButton').html(PiGallery.LANG.signinInProgress);
+
+            }else{
+
+                $('#userNameBox').removeAttr("disabled");
+                $('#passwordBox').removeAttr("disabled");
+                $('#loginButton').removeAttr("disabled");
+                $('#loginButton').html(PiGallery.LANG.signin);
+            }
+        };
+
+        $('#signinForm').submit(function(event) {
+
+            showSignProgress(true);
+
+            $.ajax({
+                type: "POST",
+                url: "model/AJAXfacade.php",
+                data: {method: "login",
+                    userName: $('#userNameBox').val(),
+                    password: $('#passwordBox').val(),
+                    rememberMe: $('#rememberMeBox').prop('checked')},
+                dataType: "json"
+            }).done(function(result) {
+                if(result.error == null){
+                    if($('#rememberMeBox').attr('checked')){
+                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires : 30 });
+                    }else{
+                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires : 1 });
+                    }
+                    $('#userNameBox').val(""),
+                        $('#passwordBox').val(""),
+                        PiGallery.user = result.data;
+                    PiGallery.showGallery();
+                    showSignProgress(false);
+                }else{
+                    alert(result.error);
+                    showSignProgress(false);
+                }
+            }).fail(function(errMsg) {
+                console.log("Error during downloading singing in");
+                showSignProgress(false);
+            });
+            return false;
+        });
+
+        PiGallery.loginSiteInitDone = true;
 
     });
 };
 
-PiGallery.logOut = function(){
-    $.removeCookie("pigallery-sessionid");
-    PiGallery.user = null;
-    PiGallery.showLogin();
-};
 
 PiGallery.initGallery = function(){
     require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete", 'jquery_cookie' ],
@@ -222,7 +172,7 @@ PiGallery.initGallery = function(){
                     type: "POST",
                     url: "model/AJAXfacade.php",
                     data: {method: "logout",
-                           sessionID: $.cookie("pigallery-sessionid") },
+                        sessionID: $.cookie("pigallery-sessionid") },
                     dataType: "json"
                 }).done(function(result) {
                     if(result.error == null){
@@ -238,7 +188,7 @@ PiGallery.initGallery = function(){
 
             /*---------------light box setup--------------------*/
 
-          //   $('#blueimp-gallery').data('useBootstrapModal', false);
+            //   $('#blueimp-gallery').data('useBootstrapModal', false);
             PiGallery.lightbox = null;
 
             $('#photo-gallery').click(function (event) {
@@ -265,73 +215,81 @@ PiGallery.initGallery = function(){
 
             /*----------AutoComplete setup */
             if(PiGallery.searchSupported){
-              new AutoComplete($("#auto-complete-box"));
+                new AutoComplete($("#auto-complete-box"));
             }
-    });
-}
 
-PiGallery.showLogin = function(){
-    require(['jquery', 'jquery_cookie'],  function   ($) {
-            $('#gallerySite').hide();
-            $('#signInSite').show();
 
-        var showSignProgress = function(show){
-            if(show == true){
-
-                $('#userNameBox').attr("disabled", "disabled");
-                $('#passwordBox').attr("disabled", "disabled");
-                $('#loginButton').attr("disabled", "disabled");
-                $('#loginButton').html(PiGallery.LANG.signinInProgress);
-
-            }else{
-
-                $('#userNameBox').removeAttr("disabled");
-                $('#passwordBox').removeAttr("disabled");
-                $('#loginButton').removeAttr("disabled");
-                $('#loginButton').html(PiGallery.LANG.signin);
-            }
-        };
-
-        $('#signinForm').submit(function() {
-
-            showSignProgress(true);
-
-            $.ajax({
-                type: "POST",
-                url: "model/AJAXfacade.php",
-                data: {method: "login",
-                       userName: $('#userNameBox').val(),
-                       password: $('#passwordBox').val(),
-                       rememberMe: $('#rememberMeBox').prop('checked')},
-                dataType: "json"
-            }).done(function(result) {
-                if(result.error == null){
-                    if($('#rememberMeBox').attr('checked')){
-                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires : 30 });
-                    }else{
-                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires : 1 });
-                    }
-                    $('#userNameBox').val(""),
-                    $('#passwordBox').val(""),
-                    PiGallery.user = result.data;
-                    PiGallery.initGallery();
-                    PiGallery.showGallery();
-                    showSignProgress(false);
-                }else{
-                    alert(result.error);
-                    showSignProgress(false);
-                }
-            }).fail(function(errMsg) {
-                console.log("Error during downloading singing in");
-                showSignProgress(false);
-            });
-            return false;
+            PiGallery.gallerySiteInitDone = true;
         });
+};
+
+PiGallery.initAdminSite = function(){
+    require(['PiGallery/AdminPage'], function   (AdminPage) {
+        var adminPage = new AdminPage($('#admin-container'));
+        adminPage.init();
+        PiGallery.adminSiteInitDone = true;
     });
 };
 
+PiGallery.showAdminSite = function(){
+    if(PiGallery.adminSiteInitDone == false){
+        PiGallery.initAdminSite();
+    }
+    require(['jquery'], function   ($) {
+        $('#gallerySite').show();
+        $('#signInSite').hide();
+        $('#gallery-container').hide();
+        $('#admin-container').show();
+        $('#autocompleteForm').hide();
+
+        $('#galleryButton').removeClass("active");
+        $('#adminButton').addClass("active");
+    });
+};
+
+
+PiGallery.showGallery = function(){
+
+    if(PiGallery.gallerySiteInitDone == false){
+        PiGallery.initGallery();
+    }
+    require(['jquery'], function   ($) {
+        $('#gallerySite').show();
+        $('#signInSite').hide();
+        $('#gallery-container').show();
+        $('#admin-container').hide();
+        $('#autocompleteForm').show();
+
+        $('#galleryButton').addClass("active");
+        $('#adminButton').removeClass("active");
+
+    });
+};
+
+PiGallery.showLogin = function(){
+
+    if(PiGallery.loginSiteInitDone == false){
+        PiGallery.initLogin();
+    }
+    require(['jquery'], function   ($) {
+        $('#gallerySite').hide();
+        $('#signInSite').show();
+
+    });
+};
+
+PiGallery.logOut = function(){
+    $.removeCookie("pigallery-sessionid");
+    PiGallery.user = null;
+    PiGallery.showLogin();
+};
+
+
+
+
+
+
 if(PiGallery.user != null){
-    PiGallery.initGallery();
     PiGallery.showGallery();
 }else{
     PiGallery.showLogin();

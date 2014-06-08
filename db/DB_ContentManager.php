@@ -75,7 +75,7 @@ class DB_ContentManager {
      * @return array
      * @throws \Exception
      */
-    public static function getDirectoryContent($path = "/"){
+    public static function getDirectoryContent($path = DIRECTORY_SEPARATOR){
         $directories = array();
         $photos = array();
         $path_parts = pathinfo($path);

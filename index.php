@@ -76,6 +76,7 @@ require_once __DIR__."/lang/".Properties::$language.".php";
             $dir = "/";
         }
         $user = null;
+        $jsonUser = json_encode(null);
         if(isset($_COOKIE["pigallery-sessionid"]) && !empty($_COOKIE["pigallery-sessionid"])){
 
             if(Properties::$databaseEnabled) {
@@ -90,7 +91,9 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                 }
             }
         }
-        $jsonUser = json_encode($user->getJsonData());
+        if($user != null){
+         $jsonUser = json_encode($user->getJsonData());
+        }
 
 
 
@@ -148,7 +151,9 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                 <ul class="nav navbar-nav">
                     <li><img id="loading-sign" src="img/loading.gif"/></li>
                     <li id="galleryButton" class="active"><a href="#"><?php echo $LANG['gallery']; ?></a></li>
-                    <li id="adminButton"><a href="#">Admin</a></li>
+                    <?php if(\piGallery\Properties::$databaseEnabled) { ?>
+                    <li id="adminButton"><a>Admin</a></li>
+                    <?php } ?>
                         <!--  <li><a href="#">Admin</a></li>
                     <li><a href="#">Monitor</a></li> -->
                 </ul>
@@ -162,7 +167,7 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                     <li><a href="#" id="logOutButton"><?php echo $LANG['logout']; ?></a></li>
                 </ul>
                 <?php if(\piGallery\Properties::$databaseEnabled) { ?>
-                <form class="navbar-form navbar-right" role="search">
+                <form id="autocompleteForm" class="navbar-form navbar-right" role="search">
                     <div class="form-group">
                         <input type="text" id="auto-complete-box"  class="form-control" placeholder="Search">
                     </div>
@@ -228,22 +233,79 @@ require_once __DIR__."/lang/".Properties::$language.".php";
     </div> <!-- /container -->
 
     <div id="admin-container" class="container" style="display: none;">
-        <div id="adminUsers">
-            <h3>Users</h3>
 
-            <hr/>
+        <div  id="adminUsers" class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Users</h3>
+            </div>
+            <div class="panel-body">
+                <h4>Users:</h4>
+                <table class="table table-condensed">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="adminUsersList">
+                </tbody>
+                </table>
+                <hr/>
+                    <form id="adminRegisterForm" class="form-inline" role="form">
+                            <h4>Add new user:</h4>
+
+
+                            <div class="form-group">
+                                <label class="sr-only" for="exampleInputEmail2">Username</label>
+                                <input type="text" required="required" class="form-control" id="adminRegisterUserName" placeholder="Username">
+                            </div>
+                            <div class="form-group">
+                                <label class="sr-only" for="exampleInputPassword2">Password</label>
+                                <input type="password" required="required" class="form-control" id="adminRegisterPassword" placeholder="Password">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="sr-only" for="exampleInputPassword2">Role</label>
+                                <select id="adminRegisterRole" name="role" class="form-control">
+                                    <option value="0">User</option>
+                                    <option value="1">Admin</option>
+                                </select>
+                            </div>
+
+                            <button id="adminAddUserButton" type="submit" class="btn btn-default btn-primary">Add</button>
+                    </form>
+
+
+            </div>
         </div>
-        <div id="adminPhotos">
-            <h3>Photos</h3>
-            <hr/>
-            <div id="indexingProgress" class="well well-sm">...</div>
-            <button id="clearTableButton" type="button" class="btn btn-default btn-danger">Clear Index</button>
-            <button id="indexPhotosButton" type="button" class="btn btn-default btn-info">Index photos</button>
+
+        <div  id="adminPhotos" class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Photos</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button id="clearTableButton" type="button" class="btn btn-default btn-danger">Clear Index</button>
+                        <button id="indexPhotosButton" type="button" class="btn btn-default btn-success">Index photos</button>
+                    </div>
+                    <div class="col-md-8">
+                        <div id="indexingProgress" class="well well-sm">...</div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div id="adminDatabase">
-            <h3>Database</h3>
-            <hr/>
-            <button id="resetDatabaseButton" type="button" class="btn btn-default btn-danger">Reset database</button>
+
+
+        <div  id="adminPhotos" class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Database</h3>
+            </div>
+            <div class="panel-body">
+                <button id="resetDatabaseButton" type="button" class="btn btn-default btn-danger">Reset database</button>
+            </div>
         </div>
     </div> <!-- /container -->
 </div>

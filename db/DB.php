@@ -82,7 +82,8 @@ class DB {
                                         userName NVARCHAR(128),
                                         password NVARCHAR(128),
                                         passwordSalt NVARCHAR(128),
-                                        role TINYINT
+                                        role TINYINT,
+                                        UNIQUE (userName)
                                     )";
 
 
