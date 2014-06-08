@@ -236,16 +236,16 @@ require_once __DIR__."/lang/".Properties::$language.".php";
 
         <div  id="adminUsers" class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">Users</h3>
+                <h3 class="panel-title"><?php echo $LANG['admin_users']; ?></h3>
             </div>
             <div class="panel-body">
-                <h4>Users:</h4>
+                <h4><?php echo $LANG['admin_users']; ?>:</h4>
                 <table class="table table-condensed">
                 <thead>
                 <tr>
                     <th>#</th>
-                    <th>Username</th>
-                    <th>Role</th>
+                    <th><?php echo $LANG['admin_userName']; ?></th>
+                    <th><?php echo $LANG['admin_role']; ?></th>
                     <th></th>
                 </tr>
                 </thead>
@@ -254,27 +254,27 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                 </table>
                 <hr/>
                     <form id="adminRegisterForm" class="form-inline" role="form">
-                            <h4>Add new user:</h4>
+                            <h4><?php echo $LANG['admin_addNewUser']; ?>:</h4>
 
 
                             <div class="form-group">
-                                <label class="sr-only" for="exampleInputEmail2">Username</label>
-                                <input type="text" required="required" class="form-control" id="adminRegisterUserName" placeholder="Username">
+                                <label class="sr-only" for="adminRegisterUserName"><?php echo $LANG['admin_userName']; ?></label>
+                                <input type="text" required="required" class="form-control" id="adminRegisterUserName" placeholder="<?php echo $LANG['admin_userName']; ?>">
                             </div>
                             <div class="form-group">
-                                <label class="sr-only" for="exampleInputPassword2">Password</label>
-                                <input type="password" required="required" class="form-control" id="adminRegisterPassword" placeholder="Password">
+                                <label class="sr-only" for="adminRegisterPassword"><?php echo $LANG['admin_password']; ?></label>
+                                <input type="password" required="required" class="form-control" id="adminRegisterPassword" placeholder="<?php echo $LANG['admin_password']; ?>">
                             </div>
 
                             <div class="form-group">
-                                <label class="sr-only" for="exampleInputPassword2">Role</label>
+                                <label class="sr-only" for="exampleInputPassword2"><?php echo $LANG['admin_role']; ?></label>
                                 <select id="adminRegisterRole" name="role" class="form-control">
-                                    <option value="0">User</option>
-                                    <option value="1">Admin</option>
+                                    <option value="0"><?php echo $LANG['admin_role_user']; ?></option>
+                                    <option value="1"><?php echo $LANG['admin_role_admin']; ?></option>
                                 </select>
                             </div>
 
-                            <button id="adminAddUserButton" type="submit" class="btn btn-default btn-primary">Add</button>
+                            <button id="adminAddUserButton" type="submit" class="btn btn-default btn-primary"><?php echo $LANG['admin_add']; ?></button>
                     </form>
 
 
@@ -283,13 +283,13 @@ require_once __DIR__."/lang/".Properties::$language.".php";
 
         <div  id="adminPhotos" class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">Photos</h3>
+                <h3 class="panel-title"><?php echo $LANG['admin_photos']; ?></h3>
             </div>
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-4">
-                        <button id="clearTableButton" type="button" class="btn btn-default btn-danger">Clear Index</button>
-                        <button id="indexPhotosButton" type="button" class="btn btn-default btn-success">Index photos</button>
+                        <button id="clearTableButton" type="button" class="btn btn-default btn-danger"><?php echo $LANG['admin_clearIndex']; ?></button>
+                        <button id="indexPhotosButton" type="button" class="btn btn-default btn-success"><?php echo $LANG['admin_indexPhotos']; ?></button>
                     </div>
                     <div class="col-md-8">
                         <div id="indexingProgress" class="well well-sm">...</div>
@@ -301,10 +301,10 @@ require_once __DIR__."/lang/".Properties::$language.".php";
 
         <div  id="adminPhotos" class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">Database</h3>
+                <h3 class="panel-title"><?php echo $LANG['admin_database']; ?></h3>
             </div>
             <div class="panel-body">
-                <button id="resetDatabaseButton" type="button" class="btn btn-default btn-danger">Reset database</button>
+                <button id="resetDatabaseButton" type="button" class="btn btn-default btn-danger"><?php echo $LANG['admin_resetDatabase']; ?></button>
             </div>
         </div>
     </div> <!-- /container -->

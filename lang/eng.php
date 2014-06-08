@@ -15,3 +15,17 @@ $LANG['logout'] = "Log out";
 $LANG['search'] = "Search";
 $LANG['share'] = "Share";
 $LANG['searchingfor'] = "Searching for:";
+
+$LANG['admin_users'] = "Users";
+$LANG['admin_userName'] = "Username";
+$LANG['admin_role'] = "Role";
+$LANG['admin_addNewUser'] = "Add new user";
+$LANG['admin_password'] = "Password";
+$LANG['admin_role_user'] = "Users";
+$LANG['admin_role_admin'] = "Admin";
+$LANG['admin_add'] = "Add";
+$LANG['admin_photos'] = "Photos";
+$LANG['admin_clearIndex'] = "Clear Index";
+$LANG['admin_indexPhotos'] = "Index Photos";
+$LANG['admin_database'] = "Database";
+$LANG['admin_resetDatabase'] = "Reset Database";
