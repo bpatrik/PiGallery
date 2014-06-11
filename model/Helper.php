@@ -113,7 +113,7 @@ class Helper {
         reset($array);
         $first_key = key($array);
         $convertedPath = Helper::toURLPath($array[$first_key]);
-        if (Properties::$enableUTF8Encode) {
+        if (Properties::$enableUTF8Encode && $first_key != "searchString") {
             $convertedPath = utf8_encode($convertedPath );
         }
         $convertedDirectories =  $array['directories'];

@@ -10,12 +10,12 @@ define(["jquery"], function ($) {
         var that = this;
         this.getContent = function(path, galleryRenderer){
 
-            if (this.lastXhr  && this.lastXhr.readyState != 4){
-                this.lastXhr.abort();
-                this.lastXhr = null;
+            if (that.lastXhr  && that.lastXhr.readyState != 4){
+                that.lastXhr.abort();
+                that.lastXhr = null;
             }
 
-            this.lastXhr =
+            that.lastXhr =
                 $.ajax({
                 type: "POST",
                 url: "model/AJAXfacade.php",

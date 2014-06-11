@@ -42,9 +42,6 @@ define(["jquery", "underscore"], function ($, _) {
                 }
             }
 
-            console.log("need:" +photo.fileName);
-            console.log("need:" +imgSize);
-            console.log("found:" +ThumbnailInfos.best.size * ThumbnailInfos.best.size);
 
            return ThumbnailInfos;
         }

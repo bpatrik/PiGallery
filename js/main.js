@@ -119,8 +119,9 @@ PiGallery.initLogin = function(){
                         $.cookie("pigallery-sessionid", result.data.sessionID, { expires : 1 });
                     }
                     $('#userNameBox').val(""),
-                        $('#passwordBox').val(""),
-                        PiGallery.user = result.data;
+                    $('#passwordBox').val(""),
+                    PiGallery.user = result.data;
+                    $("#userNameButton").html(PiGallery.user.userName);
                     PiGallery.showGallery();
                     showSignProgress(false);
                 }else{

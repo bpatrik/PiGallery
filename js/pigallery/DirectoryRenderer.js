@@ -92,7 +92,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
                     $samplePhoto = thumbnailManager.createThumbnail(directory.samplePhotos[0], dimension.width, dimension.height);
                     $samplePhoto.mousemove(mouseMoveHandler);
                 } else {
-                    $samplePhoto = $('<img>', {src: 'img/gallery-icon.jpg'}).width('100%');
+                    $samplePhoto = $('<img>', {src: 'img/gallery-icon_' + ((directory.directoryName.length % 4) + 1) + '.jpg'}).width('100%');
                 }
 
                 //Rendering image Div
