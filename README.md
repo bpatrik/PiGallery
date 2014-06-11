@@ -34,3 +34,7 @@ Notes:
 * at large directories php timeout may occur, in this case increase the timeout in php.ini
 * for faster thumbnail generating user less thumbnail sizes (eg.: only one, with a low value, eg.: 150)
   and disable image resampling in config.php
+
+ScreenShot:
+--------
+![alt tag](screenshot.jpg)
