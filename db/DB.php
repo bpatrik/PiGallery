@@ -214,18 +214,19 @@ class DB {
 
 
 
-    public static function indexDirectory($path = "/"){
-        set_time_limit(300);  //set time limit for 5 mins
+    public static function indexDirectory($path = "/")
+    {
+        set_time_limit(300); //set time limit for 5 mins
         $currentPath = $path;
         $path = Helper::toDirectoryPath($path);
 
         //is image folder already added?
-        if(!Helper::isSubPath(Helper::getAbsoluteImageFolderPath(),Properties::$imageFolder)){
-            $path = Helper::concatPath(Helper::getAbsoluteImageFolderPath(),$path);
+        if (!Helper::isSubPath(Helper::getAbsoluteImageFolderPath(), Properties::$imageFolder)) {
+            $path = Helper::concatPath(Helper::getAbsoluteImageFolderPath(), $path);
         }
 
-        if(!is_dir($path)){
-            throw new \Exception('No such directory: '.$path);
+        if (!is_dir($path)) {
+            throw new \Exception('No such directory: ' . $path);
         }
 
 
@@ -233,12 +234,13 @@ class DB {
 
         //read current directory
         $path_parts = pathinfo($currentPath);
-        $currentDirectory = DB::loadDirectory($path_parts['dirname'],$path_parts['basename'], $mysqli);
-        if($currentDirectory == null){
-            $currentDirectory = DB::saveDirectory($path_parts['dirname'],$path_parts['basename'], $mysqli);
+        $currentDirectory = DB::loadDirectory($path_parts['dirname'], $path_parts['basename'], $mysqli);
+        if ($currentDirectory == null) {
+            $currentDirectory = DB::saveDirectory($path_parts['dirname'], $path_parts['basename'], $mysqli);
         }
 
         $foundDirectories = array();
+        $foundPhotos = array();
         $readyPhotos = array();
 
         /*Preload already indexed photos*/
@@ -247,70 +249,92 @@ class DB {
                                     from photos p
                                     WHERE
                                     p.directory_id = ?");
-        if($stmt === false) {
+        if ($stmt === false) {
             $error = $mysqli->error;
             $mysqli->close();
-            throw new \Exception("Error: ". $error);
+            throw new \Exception("Error: " . $error);
         }
         $dirId = $currentDirectory->getId();
         $stmt->bind_param('i', $dirId);
         $stmt->execute();
         $stmt->bind_result($photoName);
-        while($stmt->fetch()){
+        while ($stmt->fetch()) {
             $readyPhotos[$photoName] = true;
         }
 
         $stmt->close();
         $handle = opendir($path);
         while (false !== ($value = readdir($handle))) {
-            if($value != "." && $value != ".."){
-                $contentPath = Helper::concatPath($path,$value);
+            if ($value != "." && $value != "..") {
+                $contentPath = Helper::concatPath($path, $value);
                 //read directory
-                if(is_dir($contentPath) == true) {
+                if (is_dir($contentPath) == true) {
                     $directory = DB::loadDirectory($currentPath, $value, $mysqli);
                     if ($directory == null) {
                         $directory = DB::saveDirectory($currentPath, $value, $mysqli);
                     }
-                    array_push($foundDirectories, Helper::concatPath($directory->getPath(),$directory->getDirectoryName()));
-                //read photo
-                }else{
-                    if(isset($readyPhotos[$value]))
+                    array_push($foundDirectories, Helper::concatPath($directory->getPath(), $directory->getDirectoryName()));
+                    //read photo
+                } else {
+                    if (isset($readyPhotos[$value]))
                         continue;
 
                     list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
 
-                    if($type != IMAGETYPE_JPEG && $type != IMAGETYPE_PNG && $type != IMAGETYPE_GIF)
+                    if ($type != IMAGETYPE_JPEG && $type != IMAGETYPE_PNG && $type != IMAGETYPE_GIF)
                         continue;
 
                     //loading lightroom keywords
                     $keywords = array();
-                    if(isset($info['APP13'])) {
+                    if (isset($info['APP13'])) {
                         $iptc = iptcparse($info['APP13']);
 
-                        if(isset($iptc['2#025'])) {
+                        if (isset($iptc['2#025'])) {
                             $keywords = $iptc['2#025'];
                         }
                     }
                     $creationDate = date("Y-m-d H:i:s", filectime($contentPath));
-
-                    $stmt = $mysqli->prepare("INSERT INTO photos (directory_id, fileName, width, height, creationDate, keywords) VALUES (?, ?, ?, ?, ?, ?)");
-
-                    if($stmt === false) {
-                        closedir($handle);
-                        $error = $mysqli->error;
-                        $mysqli->close();
-                        throw new \Exception("Error: ". $error);
-                    }
                     $keywordsStr = implode(",", $keywords);
-                    $currentDirPath = $currentDirectory->getId();
-                    $stmt->bind_param('isiiss', $currentDirPath, $value, $width, $height, $creationDate, $keywordsStr);
-                    $stmt->execute();
-                    $stmt->close();
+
+                    //saving image for later commit for efficiency
+                    array_push($foundPhotos, array("fileName" => $value,
+                        "width" => $width,
+                        "height" => $height,
+                        "creationDate" => $creationDate,
+                        "keywords" => $keywordsStr));
+                    /*
+                                        $stmt = $mysqli->prepare("INSERT INTO photos (directory_id, fileName, width, height, creationDate, keywords) VALUES (?, ?, ?, ?, ?, ?)");
+
+                                        if($stmt === false) {
+                                            closedir($handle);
+                                            $error = $mysqli->error;
+                                            $mysqli->close();
+                                            throw new \Exception("Error: ". $error);
+                                        }
+                                        $currentDirPath = $currentDirectory->getId();
+                                        $stmt->bind_param('isiiss', $currentDirPath, $value, $width, $height, $creationDate, $keywordsStr);
+                                        $stmt->execute();
+                                        $stmt->close();*/
 
                 }
             }
         }
         closedir($handle);
+
+        if (count($foundPhotos) > 0) {
+            //Inserting found photos to database
+            $query = "INSERT INTO photos (directory_id, fileName, width, height, creationDate, keywords) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $mysqli->prepare($query);
+            $currentDirPath = $currentDirectory->getId();
+            $stmt ->bind_param('isiiss', $currentDirPath, $photoData["fileName"], $photoData["width"], $photoData["height"], $photoData["creationDate"], $photoData["keywords"]);
+
+            $mysqli->query("START TRANSACTION");
+            foreach ($foundPhotos as $photoData) {
+                $stmt->execute();
+            }
+            $stmt->close();
+            $mysqli->query("COMMIT");
+        }
         $mysqli->close();
         return array("foundDirectories" => $foundDirectories);
     }

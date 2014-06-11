@@ -11,26 +11,47 @@ define(["jquery", "underscore"], function ($, _) {
 
         var calcThumbanilSize = function(photo, width, height){
 
-            //find the best size
-            var foundThumbnailInfo = photo.availableThumbnails[0];
-            for(var i = 0; i < photo.availableThumbnails.length; i++){
-                foundThumbnailInfo = photo.availableThumbnails[i];
-                if(foundThumbnailInfo.size * foundThumbnailInfo.size >= width* height){
-                      break;
+            //find the best size and an alternative if the best not ready yet
+
+            var ThumbnailInfos = {
+                best : null,
+                available : null
+                };
+
+            for(var i = 0; i < photo.availableThumbnails.length; i++) {
+                //find the best
+                if (ThumbnailInfos.best == null &&
+                    photo.availableThumbnails[i].size * photo.availableThumbnails[i].size >= width * height) {
+                    ThumbnailInfos.best = photo.availableThumbnails[i];
+                }
+                //find an available alternative
+                if (photo.availableThumbnails[i].available == true) {
+                    ThumbnailInfos.available = photo.availableThumbnails[i];
+                }
+                if (ThumbnailInfos.best != null && ThumbnailInfos.available != null) {
+                    break;
                 }
             }
-           return foundThumbnailInfo;
+
+           return ThumbnailInfos;
         }
 
         this.createThumbnail = function(photo,width,height){
 
             //find the best size
-            var foundThumbnailInfo = calcThumbanilSize(photo,width,height);
-            var thumbnailPath = "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + foundThumbnailInfo.size;
-            if(foundThumbnailInfo.available == true){
+            var ThumbnailInfos = calcThumbanilSize(photo,width,height);
+            var thumbnailPath = "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.best.size;
+            if(ThumbnailInfos.best.available == true){
                 return $('<img>', { src: thumbnailPath, height: height, width: width});
             }else{
-                var $img = $('<img>', { src: "img/loading.gif", height: height, width: width});
+                var $img = null;
+                //put an alternative thumbnail there if available
+                if(ThumbnailInfos.available != null){
+                    $img = $('<img>', { src: "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.available.size, height: height, width: width});
+                }else{
+                    $img = $('<img>', { src: "img/loading.gif", height: height, width: width});
+                }
+
                 queuUpThumbanil($img, thumbnailPath);
                 return $img;
             }
@@ -39,18 +60,22 @@ define(["jquery", "underscore"], function ($, _) {
         this.loadThumbnailToDiv = function($img,photo, width, height){
 
             //find the best size
-            var foundThumbnailInfo = calcThumbanilSize(photo,width,height);
+            var ThumbnailInfos = calcThumbanilSize(photo,width,height);
 
-            var thumbnailPath = "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + foundThumbnailInfo.size;
+            var thumbnailPath = "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.best.size;
             $img.css({height: height, width: width});
-            if(foundThumbnailInfo.available == true){
+            if(ThumbnailInfos.best.available == true){
                 $img.attr("src", thumbnailPath);
             }else{
-                $img.attr("src", "img/loading.gif");
+                if(ThumbnailInfos.available != null){
+                    $img.attr("src", "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.available.size);
+                }else{
+                    $img.attr("src", "img/loading.gif");
+                }
                 queuUpThumbanil($img, thumbnailPath);
             }
-        }
-
+        };
+/*
         this.createThumbnailURL = function (imgID, photo, width, height, readyCallback) {
             console.log("get thumbnail " + "thumbnail.php?image=" + photo.path + photo.fileName);
             //find the best size
@@ -74,7 +99,7 @@ define(["jquery", "underscore"], function ($, _) {
              //   return $img;
             }
         }
-
+*/
 
         var queuUpThumbanil = function($image, thumbnailPath){
             thumbnailQueue.push({$image : $image , path: thumbnailPath});
@@ -88,10 +113,8 @@ define(["jquery", "underscore"], function ($, _) {
             loadingInProgress = true;
             var thumbnailInfo = thumbnailQueue.shift();
             var thumbnail = new Image();
-            console.log("loading: " + thumbnailInfo.path);
             thumbnail.src = thumbnailInfo.path;
             thumbnail.onload = function() {
-                console.log("ready: " + thumbnailInfo.path);
                 thumbnailInfo.$image.parent().parent().fadeOut(400, function(){
                     thumbnailInfo.$image.attr("src", thumbnailInfo.path);
                     thumbnailInfo.$image.parent().parent().fadeIn();
@@ -112,54 +135,6 @@ define(["jquery", "underscore"], function ($, _) {
             thumbnailQueue.length = 0;
         }
 
-/*
-        var queuUpThumbanil = function(imageID, thumbnailPath, readyCallback){
-            var contains = _.find(thumbnailQueue, function(data){ return data.thumbnailPath == thumbnailPath; }) || _.find(FinishedThumbnailQueue, function(data){ return data.thumbnailPath == thumbnailPath; });
-            if(!contains){
-                console.log("    queUp: " + thumbnailPath + " #"+thumbnailQueue.length);
-                thumbnailQueue.push({imageID : imageID , path: thumbnailPath, readyCallback: readyCallback});
-             //   loadThumbnails();
-            }
-        }
-
-        this.loadThumbnails = function(){
-            if(loadingInProgress || thumbnailQueue.length == 0)
-                return;
-
-            loadingInProgress = true;
-            var thumbnailInfo = _.first(thumbnailQueue);
-            var thumbnail = new Image();
-            console.log("    loading: " + thumbnailInfo.path);
-            thumbnail.src = thumbnailInfo.path;
-            thumbnail.onload = function() {
-                console.log("    ready: " + thumbnailInfo.path);
-                var $image =  $('#'+thumbnailInfo.imageID);
-                var $parent = null;
-                if($image.parents('div.gallery-directory-wrapper').length){
-                    $parent = $($image.parents('div.gallery-directory-wrapper')[0]);
-                }else{
-                    console.log($image.parents('div.gallery-image').length);
-                     $parent =   $($image.parents('div.gallery-image')[0]);
-                }
-                console.log($image);
-                console.log($parent);
-                $parent.fadeOut(400, function(){
-                    $image.attr("src", thumbnailInfo.path);
-                    $parent.fadeIn();
-                });
-                loadingInProgress = false;
-                thumbnailQueue.shift();
-                FinishedThumbnailQueue.push(thumbnailInfo);
-                that.loadThumbnails();
-            }
-            thumbnail.onerror = function(){
-                console.log("    error: " + thumbnailInfo.path);
-                thumbnailInfo.$image.attr("src", "img/noPreview.png");
-                loadingInProgress = false;
-                that.loadThumbnails();
-            }
-
-        }*/
 
     };
 });

@@ -286,7 +286,10 @@ PiGallery.logOut = function(){
 
 
 
+PiGallery.showErrorMessage = function(str){
+    $('#alerts').append('<div class="alert  alert-danger">' + str  + '</div>');
 
+};
 
 
 if(PiGallery.user != null){

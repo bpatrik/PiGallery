@@ -53,8 +53,10 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
             });
 
             var directoriesToIndex = [];
+            var lastDirectory = "";
             var indexDirectory = function (directory) {
                 $AdminPageDiv.find('#indexingProgress').html("Indexing: \"" + directory + "\" (" + directoriesToIndex.length + " left)")
+
                 $.ajax({
                     type: "POST",
                     url: "model/AJAXfacade.php",
@@ -64,7 +66,8 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                     if (result.error == null) {
                         directoriesToIndex = directoriesToIndex.concat(result.data.foundDirectories);
                         if (directoriesToIndex.length > 0) {
-                            indexDirectory(directoriesToIndex.pop())
+                            lastDirectory = directoriesToIndex.pop();
+                            indexDirectory(lastDirectory)
                         } else {
                             $AdminPageDiv.find('#indexingProgress').html("Indexing done.");
                         }
@@ -72,7 +75,8 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                         alert(result.error);
                     }
                 }).fail(function (errMsg) {
-                    console.log("Error during indexind directories");
+                    console.log("Error during indexing directories");
+                    PiGallery.showErrorMessage("Error during indexing directory: '" +lastDirectory + "' (Possibly php timeout)");
                 });
             };
 

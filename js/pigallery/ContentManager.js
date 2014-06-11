@@ -23,7 +23,7 @@ define(["jquery"], function ($) {
                 dataType: "json"
             }).done(function(result) {
                     if(result.error != null){
-                        $('#alerts').append('<div class="alert  alert-danger">' + result.error  + '</div>');
+                        PiGallery.showErrorMessage(result.error);
                     }else if(result.data != null){
                         that.storeContent(result.data);
                         galleryRenderer.showContent(result.data);
@@ -32,7 +32,7 @@ define(["jquery"], function ($) {
                     $("#loading-sign").css("opacity",0);
 
             }).fail(function(errMsg) {
-                    $('#alerts').append('<div class="alert  alert-danger">' + "Error during downloading directory content"  + '</div>');
+                    PiGallery.showErrorMessage("Error during downloading directory content");
                     that.lastXhr = null;
                     $("#loading-sign").css("opacity",0);
             });

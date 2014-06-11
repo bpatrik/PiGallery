@@ -209,7 +209,13 @@ switch (Helper::require_REQUEST('method')) {
         authenticate(Role::Admin);
         $error = null;
         $data = null;
-        $dir = Helper::toDirectoryPath(utf8_decode(Helper::require_REQUEST('dir')));
+
+        $dir = Helper::require_REQUEST('dir');
+        if (Properties::$enableUTF8Encode) {
+            $dir = utf8_decode($dir);
+        }
+        $dir = Helper::toDirectoryPath($dir);
+
         try {
             if(Properties::$databaseEnabled){
                $data = DB::indexDirectory($dir);
@@ -220,7 +226,9 @@ switch (Helper::require_REQUEST('method')) {
             $error = utf8_encode($ex->getMessage());
         }
         for($i = 0; $i < count($data['foundDirectories']); $i++){
-            $data['foundDirectories'][$i] = utf8_encode($data['foundDirectories'][$i] );
+            if (Properties::$enableUTF8Encode) {
+                $data['foundDirectories'][$i] = utf8_encode($data['foundDirectories'][$i]);
+            }
         }
 
         die(json_encode(array("error" => $error, "data" =>$data)));
