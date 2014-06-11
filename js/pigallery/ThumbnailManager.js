@@ -10,30 +10,41 @@ define(["jquery", "underscore"], function ($, _) {
         var that = this;
 
         var calcThumbanilSize = function(photo, width, height){
-
+            var i, imgSize = width * height;
             //find the best size and an alternative if the best not ready yet
+
+            photo.availableThumbnails.sort(function(a,b){
+                return a.size - b.size;
+            });
 
             var ThumbnailInfos = {
                 best : null,
                 available : null
                 };
 
-            for(var i = 0; i < photo.availableThumbnails.length; i++) {
-                //find the best
-                if (ThumbnailInfos.best == null &&
-                    photo.availableThumbnails[i].size * photo.availableThumbnails[i].size >= width * height) {
-                    ThumbnailInfos.best = photo.availableThumbnails[i];
-                }
-                //find an available alternative
+            //finding the smallest available
+            for(i = 0; i < photo.availableThumbnails.length; i++) {
                 if (photo.availableThumbnails[i].available == true) {
                     ThumbnailInfos.available = photo.availableThumbnails[i];
-                }
-                if (ThumbnailInfos.best != null && ThumbnailInfos.available != null) {
                     break;
                 }
             }
-            if(ThumbnailInfos.best == null)
-                ThumbnailInfos.best = photo.availableThumbnails[0];
+
+            //finding the best one (the closese to the needed size)
+
+            ThumbnailInfos.best = photo.availableThumbnails[0];
+            for(i = 1; i < photo.availableThumbnails.length; i++) {
+                if(Math.abs((photo.availableThumbnails[i].size * photo.availableThumbnails[i].size) - (imgSize)) <
+                    Math.abs((ThumbnailInfos.best.size * ThumbnailInfos.best.size) - (imgSize))
+                    )
+                {
+                    ThumbnailInfos.best = photo.availableThumbnails[i];
+                }
+            }
+
+            console.log("need:" +photo.fileName);
+            console.log("need:" +imgSize);
+            console.log("found:" +ThumbnailInfos.best.size * ThumbnailInfos.best.size);
 
            return ThumbnailInfos;
         }
