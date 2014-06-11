@@ -37,4 +37,4 @@ Notes:
 
 ScreenShot:
 --------
-![alt tag](screenshot.jpg)
+![screenshot](screenshot1.jpg)
