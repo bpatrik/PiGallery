@@ -32,6 +32,8 @@ define(["jquery", "underscore"], function ($, _) {
                     break;
                 }
             }
+            if(ThumbnailInfos.best == null)
+                ThumbnailInfos.best = photo.availableThumbnails[0];
 
            return ThumbnailInfos;
         }

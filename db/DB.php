@@ -216,6 +216,7 @@ class DB {
 
     public static function indexDirectory($path = "/")
     {
+
         set_time_limit(300); //set time limit for 5 mins
         $currentPath = $path;
         $path = Helper::toDirectoryPath($path);
@@ -264,6 +265,7 @@ class DB {
 
         $stmt->close();
         $handle = opendir($path);
+        date_default_timezone_set('UTC'); //set it if not set
         while (false !== ($value = readdir($handle))) {
             if ($value != "." && $value != "..") {
                 $contentPath = Helper::concatPath($path, $value);
@@ -318,6 +320,7 @@ class DB {
 
                 }
             }
+
         }
         closedir($handle);
 
@@ -326,10 +329,10 @@ class DB {
             $query = "INSERT INTO photos (directory_id, fileName, width, height, creationDate, keywords) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $mysqli->prepare($query);
             $currentDirPath = $currentDirectory->getId();
-            $stmt ->bind_param('isiiss', $currentDirPath, $photoData["fileName"], $photoData["width"], $photoData["height"], $photoData["creationDate"], $photoData["keywords"]);
 
             $mysqli->query("START TRANSACTION");
             foreach ($foundPhotos as $photoData) {
+                $stmt ->bind_param('isiiss', $currentDirPath, $photoData["fileName"], $photoData["width"], $photoData["height"], $photoData["creationDate"], $photoData["keywords"]);
                 $stmt->execute();
             }
             $stmt->close();

@@ -76,6 +76,7 @@ class DB_ContentManager {
      * @throws \Exception
      */
     public static function getDirectoryContent($path = DIRECTORY_SEPARATOR){
+        date_default_timezone_set('UTC'); //set it if not set
         $directories = array();
         $photos = array();
         $path_parts = pathinfo($path);
@@ -148,6 +149,7 @@ class DB_ContentManager {
 
 
     public static function getSearchResult($searchString){
+        date_default_timezone_set('UTC'); //set it if not set
         $SQLsearchText = '%' . $searchString . '%';
 
         $photos = array();
