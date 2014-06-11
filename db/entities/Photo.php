@@ -29,12 +29,18 @@ class Photo extends Content {
     protected $keywords;
 
     /**
+     * @var
+     */
+    protected $creationDate;
+
+    /**
      * transient
      * @var ThumbnailInfo[]
      */
     protected $availableThumbnails;
 
-    function __construct($id, $path, $fileName, $width, $height, $keywords, $availableThumbnails)
+
+    function __construct($id, $path, $fileName, $width, $height, $keywords, $creationDate, $availableThumbnails)
     {
         $this->id = $id;
         $this->path = $path;
@@ -42,6 +48,7 @@ class Photo extends Content {
         $this->width = $width;
         $this->height = $height;
         $this->keywords = $keywords;
+        $this->creationDate = $creationDate;
         $this->availableThumbnails = $availableThumbnails;
     }
 
@@ -142,9 +149,23 @@ class Photo extends Content {
         return $this->width;
     }
 
-    public function toUTF8(){
-        $this->path = utf8_encode($this->path);
+    /**
+     * @return mixed
+     */
+    public function getCreationDate()
+    {
+        return $this->creationDate;
     }
+
+    /**
+     * @param mixed $creationDate
+     */
+    public function setCreationDate($creationDate)
+    {
+        $this->creationDate = $creationDate;
+    }
+
+
 
 
 } 

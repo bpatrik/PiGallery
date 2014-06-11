@@ -23,8 +23,12 @@ use piGallery\model\Helper;
 use piGallery\model\Logger;
 use piGallery\Properties;
 
+$imagePath= Helper::require_REQUEST("path");
+if (Properties::$enableUTF8Encode) {
+    $imagePath= utf8_decode($imagePath);
+}
+$imagePath= Helper::toDirectoryPath($imagePath);
 
-$imagePath= Helper::toDirectoryPath(Helper::require_REQUEST("path")); 
 $imagePath =  Helper::concatPath(Helper::getAbsoluteImageFolderPath(), $imagePath);
 
 if(Properties::$enableImageCaching){

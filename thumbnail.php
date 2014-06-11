@@ -27,7 +27,12 @@ use piGallery\model\Helper;
 
 
 
-$image= Helper::toDirectoryPath(utf8_decode(Helper::require_REQUEST("image")));
+$image = Helper::require_REQUEST("image");
+if (Properties::$enableUTF8Encode) {
+    $image = utf8_decode($image);
+}
+$image= Helper::toDirectoryPath($image);
+
 $size= Helper::require_REQUEST("size");
 
 

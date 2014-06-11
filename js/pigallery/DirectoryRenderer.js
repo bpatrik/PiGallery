@@ -46,6 +46,15 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
 
         this.showDirectories = function (directories) {
 
+            //sort directories
+            directories.sort(function(a, b){
+                if ( a.directoryName.toLowerCase() < b.directoryName.toLowerCase() )
+                    return -1;
+                if ( a.directoryName.toLowerCase() > b.directoryName.toLowerCase() )
+                    return 1;
+                return 0;
+            });
+
             //update picture on mouse move
             var mouseMoveHandler = function (event) {
                 var $targetDiv = $(event.target).closest(".gallery-directory-image");

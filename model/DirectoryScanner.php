@@ -41,7 +41,7 @@ class DirectoryScanner {
                 $contentPath = Helper::concatPath($path,$value);
                 //read directory
                 if(is_dir($contentPath) == true){
-                    array_push($directories, new Directory(0, Helper::relativeToImageDirectory($path),$value, 0, DirectoryScanner::getPhotos($contentPath,5)));
+                    array_push($directories, new Directory(0, Helper::relativeToImageDirectory($path),$value, 0, DirectoryScanner::getSamplePhotos($contentPath,5)));
                 //read photo
                 }else{
 
@@ -59,11 +59,12 @@ class DirectoryScanner {
                             $keywords = $iptc['2#025'];
                         }
                     }
+                    $creationDate = filectime($contentPath);
 
                     $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                         Helper::relativeToImageDirectory($contentPath));
 
-                    array_push($photos, new Photo(md5($contentPath), Helper::relativeToImageDirectory($path), $value,$width, $height, $keywords, $availableThumbnails ));
+                    array_push($photos, new Photo(md5($contentPath), Helper::relativeToImageDirectory($path), $value,$width, $height, $keywords,$creationDate, $availableThumbnails ));
                 }
             }
         }
@@ -73,7 +74,7 @@ class DirectoryScanner {
 
 
 
-    public static function getPhotos($path, $maxCount){
+    public static function getSamplePhotos($path, $maxCount){
 
         $path = Helper::concatPath($path,DIRECTORY_SEPARATOR);
         $photos = array();
@@ -84,22 +85,13 @@ class DirectoryScanner {
                 $contentPath = Helper::concatPath($path,$value);
                 if(is_dir($contentPath) == true){
                 }else{
-                    list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
+                    list($width, $height, $type, $attr) = getimagesize($contentPath);
 
-                    //loading lightroom keywords
-                    $keywords = array();
-                    if(isset($info['APP13'])) {
-                        $iptc = iptcparse($info['APP13']);
-
-                        if(isset($iptc['2#025'])) {
-                            $keywords = $iptc['2#025'];
-                        }
-                    }
 
                     $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                         Helper::relativeToImageDirectory($contentPath));
 
-                    array_push($photos, new Photo(md5($contentPath), Helper::relativeToImageDirectory($path), $value,$width, $height, $keywords, $availableThumbnails ));
+                    array_push($photos, new Photo(md5($contentPath), Helper::relativeToImageDirectory($path), $value,$width, $height, null, null, $availableThumbnails ));
                     $maxCount--;
                     if($maxCount <=0)
                         break;

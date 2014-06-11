@@ -18,7 +18,10 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
 
 
         this.showImages = function(photos){
-
+            //sort directories
+            photos.sort(function(a, b){
+                return  a.creationDate - b.creationDate;
+            });
 
             for (var i=0 ; i < photos.length; i++) {
                 //get the next 3 photos
@@ -91,7 +94,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
                     //add image to div
                     $photoGalleryDiv.append(
                         $('<div>').append(
-                            $('<a>' ,{href:"image.php?path="+ photo.path + photo.fileName, title: photo.fileName, "data-galxlery":""}).append(
+                            $('<a>' ,{href:"image.php?path="+ photo.path + "/" + photo.fileName, title: photo.fileName, "data-galxlery":""}).append(
                                 thumbnailManager.createThumbnail(photo,imageWidth, imageHeight).data({"origWidth": photo.width, "origHeight": photo.height})
                             ),
                             $imageDescriptioDiv

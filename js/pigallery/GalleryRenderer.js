@@ -64,6 +64,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
          * @param directoryContent
          */
         this.showContent = function (directoryContent) {
+            console.log("showContent");
 
             var newPhotos = directoryContent.photos,
                 newDirectories = directoryContent.directories;
@@ -75,29 +76,36 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
                     $photoGalleryDiv.empty();
                     thumbnailManager.clearQueue();
                 } else { //dir name remained
+                    var i,j;
+
+                    /*cloning array is needed*/
+                    newPhotos = directoryContent.photos.slice();
+                    newDirectories = directoryContent.directories.slice();
 
                     //filter already shown photos and dirs
-                    for (var i = 0; i < this.directoryContent.photos.length; i++ ){
+                    for (i = 0; i < this.directoryContent.photos.length; i++ ){
                         var oldPhoto = this.directoryContent.photos[i];
 
-                        for( var j = 0; j <newPhotos.length; j++){
+                        for( j = 0; j <newPhotos.length; j++){
                             var newPhoto = newPhotos[j];
 
                             if(oldPhoto.fileName == newPhoto.fileName && oldPhoto.path == newPhoto.path){
                                 newPhotos.splice(j,1);
+                                break;
                              }
                         }
                     }
 
 
-                    for( var i = 0; i < this.directoryContent.directories.length; i++ ){
+                    for( i = 0; i < this.directoryContent.directories.length; i++ ){
                         var oldDir = this.directoryContent.directories[i];
 
-                        for( var j = 0; j <newDirectories.length; j++){
+                        for( j = 0; j <newDirectories.length; j++){
                             var newDir = newDirectories[j];
 
                             if(oldDir.directoryName == newDir.directoryName && oldDir.path == newDir.path){
                                 newDirectories.splice(j,1);
+                                break;
                             }
                         }
                     }

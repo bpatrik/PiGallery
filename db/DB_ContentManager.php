@@ -59,7 +59,7 @@ class DB_ContentManager {
         while($stmt->fetch()) {
             $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                 Helper::relativeToImageDirectory(Helper::concatPath($directoryPath, $fileName)));
-             array_push($photos, new Photo($id, $directoryPath, $fileName, $width, $height, null, $availableThumbnails));
+             array_push($photos, new Photo($id, $directoryPath, $fileName, $width, $height, null, null, $availableThumbnails));
          }
         $stmt->close();
 
@@ -107,7 +107,7 @@ class DB_ContentManager {
         }
 
         //load photos
-        $stmt = $mysqli->prepare("SELECT p.ID, p.fileName, p.width, p.height, p.keywords
+        $stmt = $mysqli->prepare("SELECT p.ID, p.fileName, p.width, p.height, p.creationDate, p.keywords
                                     FROM directories d, photos p
                                     WHERE
                                     d.path = ? AND
@@ -129,11 +129,11 @@ class DB_ContentManager {
 
         $stmt->bind_param('ss', $dirName, $baseName);
         $stmt->execute();
-        $stmt->bind_result($photoID, $fileName, $width, $height, $keywords);
+        $stmt->bind_result($photoID, $fileName, $width, $height, $creationDate, $keywords);
         while($stmt->fetch()){
             $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                 Helper::relativeToImageDirectory(Helper::concatPath($path, $fileName)));
-            array_push($photos, new Photo($photoID, $path, $fileName, $width, $height, explode(",", $keywords), $availableThumbnails));
+            array_push($photos, new Photo($photoID, $path, $fileName, $width, $height, explode(",", $keywords), strtotime($creationDate), $availableThumbnails));
         }
         $stmt->close();
 
@@ -156,7 +156,7 @@ class DB_ContentManager {
         $mysqli = DB::getDatabaseConnection();
         //look in keywords
         $stmt = $mysqli->prepare("SELECT
-                                    p.ID, d.path, d.directoryName, p.fileName, p.width, p.height, p.keywords
+                                    p.ID, d.path, d.directoryName, p.fileName, p.width, p.height, p.creationDate, p.keywords
                                     from photos p, directories d
                                     WHERE
                                     UPPER(p.keywords) LIKE UPPER(?) AND
@@ -169,19 +169,19 @@ class DB_ContentManager {
 
         $stmt->bind_param('s', $SQLsearchText);
         $stmt->execute();
-        $stmt->bind_result($photoID, $DirPath, $directoryName, $fileName, $width, $height, $keywords);
+        $stmt->bind_result($photoID, $DirPath, $directoryName, $fileName, $width, $height, $creationDate, $keywords);
         while($stmt->fetch()){
             $path = Helper::concatPath($DirPath, $directoryName);
             $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                 Helper::relativeToImageDirectory(Helper::concatPath($path, $fileName)));
-            array_push($photos, new Photo($photoID, $path, $fileName, $width, $height, explode(",", $keywords), $availableThumbnails));
+            array_push($photos, new Photo($photoID, $path, $fileName, $width, $height,  explode(",", $keywords),strtotime($creationDate), $availableThumbnails));
         }
 
         $stmt->close();
 
         //load photos
         $stmt = $mysqli->prepare("SELECT
-                                    p.ID, d.path, d.directoryName, p.fileName, p.width, p.height, p.keywords
+                                    p.ID, d.path, d.directoryName, p.fileName, p.width, p.height, p.creationDate, p.keywords
                                     from photos p, directories d
                                     WHERE
                                     UPPER(p.fileName) LIKE UPPER(?) AND
@@ -194,12 +194,12 @@ class DB_ContentManager {
 
         $stmt->bind_param('s', $SQLsearchText);
         $stmt->execute();
-        $stmt->bind_result($photoID, $DirPath, $directoryName, $fileName, $width, $height, $keywords);
+        $stmt->bind_result($photoID, $DirPath, $directoryName, $fileName, $width, $height, $creationDate, $keywords);
         while($stmt->fetch()){
             $path = Helper::concatPath($DirPath, $directoryName);
             $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
                 Helper::relativeToImageDirectory(Helper::concatPath($path, $fileName)));
-            array_push($photos, new Photo($photoID, $path, $fileName, $width, $height, explode(",", $keywords), $availableThumbnails));
+            array_push($photos, new Photo($photoID, $path, $fileName, $width, $height, explode(",", $keywords), strtotime($creationDate), $availableThumbnails));
         }
 
         $stmt->close();

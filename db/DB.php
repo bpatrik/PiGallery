@@ -60,6 +60,7 @@ class DB {
                                     width INT,
                                     height INT,
                                     keywords NVARCHAR(128),
+                                    creationDate DATETIME,
                                     FOREIGN KEY (directory_id)
                                         REFERENCES directories(ID)
                                         ON DELETE CASCADE
@@ -140,6 +141,18 @@ class DB {
 
     }
 
+    public static function isTablesExist(){
+        $mysqli = DB::getDatabaseConnection();
+        $result = $mysqli->query("SHOW TABLES LIKE 'users'");
+        $exist = false;
+        if ($result->num_rows > 0) {
+            $exist = true;
+        }
+
+        $mysqli->close();
+        return $exist;
+    }
+
     private static function loadDirectory($dirName, $baseName, $mysqli){
 
         if(empty($baseName)){
@@ -169,29 +182,6 @@ class DB {
         return $directory;
     }
 
-    private static function isPhotoExist($directory, $fileName, $mysqli){
-
-        $found = false;
-
-        $stmt = $mysqli->prepare("SELECT id FROM photos WHERE directory_id  = ? AND fileName = ?");
-        if($stmt === false) {
-            $error = $mysqli->error;
-            $mysqli->close();
-            throw new \Exception("Error: ". $error);
-        }
-
-        $dirId = $directory->getId();
-        $stmt->bind_param('is', $dirId, $fileName);
-        $stmt->execute();
-        $stmt->bind_result($dirIDd);
-        if($stmt->fetch()){
-            $found = true;
-        }
-
-        $stmt->close();
-
-        return $found;
-    }
 
 
 
@@ -225,6 +215,7 @@ class DB {
 
 
     public static function indexDirectory($path = "/"){
+        set_time_limit(300);  //set time limit for 5 mins
         $currentPath = $path;
         $path = Helper::toDirectoryPath($path);
 
@@ -248,6 +239,28 @@ class DB {
         }
 
         $foundDirectories = array();
+        $readyPhotos = array();
+
+        /*Preload already indexed photos*/
+        $stmt = $mysqli->prepare("SELECT
+                                    p.fileName
+                                    from photos p
+                                    WHERE
+                                    p.directory_id = ?");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+        $dirId = $currentDirectory->getId();
+        $stmt->bind_param('i', $dirId);
+        $stmt->execute();
+        $stmt->bind_result($photoName);
+        while($stmt->fetch()){
+            $readyPhotos[$photoName] = true;
+        }
+
+        $stmt->close();
         $handle = opendir($path);
         while (false !== ($value = readdir($handle))) {
             if($value != "." && $value != ".."){
@@ -261,7 +274,7 @@ class DB {
                     array_push($foundDirectories, Helper::concatPath($directory->getPath(),$directory->getDirectoryName()));
                 //read photo
                 }else{
-                    if(DB::isPhotoExist($currentDirectory,$value, $mysqli ) == true)
+                    if(isset($readyPhotos[$value]))
                         continue;
 
                     list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
@@ -278,8 +291,9 @@ class DB {
                             $keywords = $iptc['2#025'];
                         }
                     }
+                    $creationDate = date("Y-m-d H:i:s", filectime($contentPath));
 
-                    $stmt = $mysqli->prepare("INSERT INTO photos (directory_id, fileName, width, height, keywords) VALUES (?, ?, ?, ?, ?)");
+                    $stmt = $mysqli->prepare("INSERT INTO photos (directory_id, fileName, width, height, creationDate, keywords) VALUES (?, ?, ?, ?, ?, ?)");
 
                     if($stmt === false) {
                         closedir($handle);
@@ -289,7 +303,7 @@ class DB {
                     }
                     $keywordsStr = implode(",", $keywords);
                     $currentDirPath = $currentDirectory->getId();
-                    $stmt->bind_param('isiis', $currentDirPath, $value, $width, $height, $keywordsStr);
+                    $stmt->bind_param('isiiss', $currentDirPath, $value, $width, $height, $creationDate, $keywordsStr);
                     $stmt->execute();
                     $stmt->close();
 

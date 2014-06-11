@@ -53,28 +53,18 @@ require_once __DIR__."/lang/".Properties::$language.".php";
         require_once __DIR__."/config.php";
 
         use \piGallery\model\Helper;
+        use \piGallery\db\DB;
         use \piGallery\model\NoDBUserManager;
 
-        $dir =  Helper::toDirectoryPath(utf8_decode(Helper::get_REQUEST('dir','/')));
-        $content = null;
-        try{
-            if(Properties::$databaseEnabled){
-                $content = \piGallery\db\DB_ContentManager::getDirectoryContent($dir);
-            }else{
-                $content = \piGallery\model\DirectoryScanner::getDirectoryContent($dir);
-            }
 
-          /*  foreach($content['directories'] as $directory){
-                $directory->setPath(Helper::toURLPath($directory->getPath()));
-                $directory->toUTF8();
-            }
-            foreach($content['photos'] as $photo){
-                $photo->setPath(Helper::toURLPath($photo->getPath()));
-                $photo->toUTF8();
-            }*/
-        }catch (Exception $ex){
-            $dir = "/";
+
+        $dir = Helper::get_REQUEST('dir','/');
+        if (Properties::$enableUTF8Encode) {
+            $dir = utf8_decode($dir);
         }
+        $dir = Helper::toDirectoryPath($dir);
+        $content = null;
+
         $user = null;
         $jsonUser = json_encode(null);
         if(isset($_COOKIE["pigallery-sessionid"]) && !empty($_COOKIE["pigallery-sessionid"])){
@@ -91,7 +81,26 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                 }
             }
         }
+        /*is logged in*/
         if($user != null){
+            try{
+                if(Properties::$databaseEnabled){
+
+                    /*Check if Table exist*/
+                    if(DB::isTablesExist() == false){
+                        echo "db created";
+                        DB::recreateDatabase();
+                    }
+
+                    $content = \piGallery\db\DB_ContentManager::getDirectoryContent($dir);
+                }else{
+                    $content = \piGallery\model\DirectoryScanner::getDirectoryContent($dir);
+                }
+
+            }catch (Exception $ex){
+                $dir = "/";
+            }
+
          $jsonUser = json_encode($user->getJsonData());
         }
 
@@ -152,7 +161,7 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                     <li><img id="loading-sign" src="img/loading.gif"/></li>
                     <li id="galleryButton" class="active"><a href="#"><?php echo $LANG['gallery']; ?></a></li>
                     <?php if(\piGallery\Properties::$databaseEnabled) { ?>
-                    <li id="adminButton"><a>Admin</a></li>
+                    <li id="adminButton"><a href="#">Admin</a></li>
                     <?php } ?>
                         <!--  <li><a href="#">Admin</a></li>
                     <li><a href="#">Monitor</a></li> -->

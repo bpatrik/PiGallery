@@ -88,7 +88,9 @@ switch (Helper::require_REQUEST('method')) {
 
         foreach($data as &$item){
             $item['text'] = (Helper::toURLPath($item['text']));
-            $item['text'] = (utf8_encode($item['text']));
+            if (Properties::$enableUTF8Encode) {
+                $item['text'] = (utf8_encode($item['text']));
+            }
         }
         die(json_encode(array("error" => $error, "data" => $data)));
         break;
@@ -100,6 +102,9 @@ switch (Helper::require_REQUEST('method')) {
         $data = null;
 
         $searchString = Helper::require_REQUEST('searchString');
+        if (Properties::$enableUTF8Encode) {
+            $searchString = utf8_decode($searchString);
+        }
 
         try {
             if(Properties::$databaseEnabled){

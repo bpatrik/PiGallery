@@ -46,6 +46,7 @@ class Helper {
         $absolute = Helper::toDirectoryPath($absolute);
         $baseDir = Helper::concatPath(Helper::toDirectoryPath($_SERVER['DOCUMENT_ROOT']), Properties::$documentRoot);
         $baseDir = Helper::concatPath($baseDir, Properties::$imageFolder);
+        $baseDir = Helper::toDirectoryPath($baseDir);
         if(Helper::isSubPath($absolute,$baseDir)){
             return ltrim(str_replace($baseDir,"",$absolute),DIRECTORY_SEPARATOR);
         }
@@ -69,15 +70,12 @@ class Helper {
 
         $search  = array("/",
                         "\\",
-                        "..".DIRECTORY_SEPARATOR,
-                        ".".DIRECTORY_SEPARATOR);
+                         DIRECTORY_SEPARATOR.".".DIRECTORY_SEPARATOR);
         $replace = array(DIRECTORY_SEPARATOR,
                          DIRECTORY_SEPARATOR,
-                        "..\\".DIRECTORY_SEPARATOR,
-                        DIRECTORY_SEPARATOR);
+                         DIRECTORY_SEPARATOR);
 
         $path = str_replace($search, $replace,$path);
-        $path = str_replace( "..\\".DIRECTORY_SEPARATOR ,"..".DIRECTORY_SEPARATOR,$path);
         $path = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR,$path); //clean duplicated separators
         return $path;
     }
@@ -98,12 +96,11 @@ class Helper {
      * @return string
      */
     public static function concatPath($path1, $path2){
-        $path1 = Helper::toDirectoryPath($path1);
-        $path2 = Helper::toDirectoryPath($path2);
 
         $path = $path1. DIRECTORY_SEPARATOR.$path2;
+        $path = Helper::toDirectoryPath($path);
 
-        $path = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR,$path); //clean duplicated separators
+     //   $path = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR,$path); //clean duplicated separators
 
         return $path;
     }
@@ -115,7 +112,10 @@ class Helper {
 
         reset($array);
         $first_key = key($array);
-        $convertedPath = utf8_encode(Helper::toURLPath($array[$first_key]));
+        $convertedPath = Helper::toURLPath($array[$first_key]);
+        if (Properties::$enableUTF8Encode) {
+            $convertedPath = utf8_encode($convertedPath );
+        }
         $convertedDirectories =  $array['directories'];
         $convertedPhotos =  $array['photos'];
 
