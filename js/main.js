@@ -158,7 +158,7 @@ PiGallery.initGallery = function(){
                 contentManager.storeContent(PiGallery.preLoadedDirectoryContent);
                 galleryRenderer.showContent(PiGallery.preLoadedDirectoryContent);
             }else{
-                contentManager.getContent(PiGallery.currentPath, galleryRenderer);
+                galleryRenderer.showContent(contentManager.getContent(PiGallery.currentPath, galleryRenderer));
             }
 
             $("#search-button").click(function(event) {
