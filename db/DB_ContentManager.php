@@ -103,6 +103,8 @@ class DB_ContentManager {
         $stmt->bind_result($dirID,  $dirLastMod, $fileCount);
         if($stmt->fetch()){
             $currentDirectory = new Directory($dirID, $dirName, $baseName, $dirLastMod, $fileCount, null);
+        }else{
+            $currentDirectory =  new Directory(0, $dirName, $baseName, "NaN", 0, null);
         }
 
 

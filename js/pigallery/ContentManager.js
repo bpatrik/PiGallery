@@ -77,7 +77,7 @@ define(["jquery"], function ($) {
         };
 
         var getLocalStoredContent = function(path){
-            var storedContent =  JSON.parse(window.sessionStorage.getItem("PiGallery:Content:"+path));
+            var storedContent =  JSON.parse(window.localStorage.getItem("PiGallery:Content:"+path));
             if(storedContent == null){
                 return {currentPath: path, lastModificationDate: null, directories: [], photos: []};
             }
@@ -87,7 +87,7 @@ define(["jquery"], function ($) {
 
         this.storeContent = function(content){
 
-            window.sessionStorage.setItem("PiGallery:Content:"+content.currentPath, JSON.stringify(content));
+            window.localStorage.setItem("PiGallery:Content:"+content.currentPath, JSON.stringify(content));
         };
 
 

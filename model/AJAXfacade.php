@@ -85,7 +85,7 @@ switch (Helper::require_REQUEST('method')) {
 
             try {
                 if(Properties::$databaseEnabled){
-                    $data = DB::indexDirectory($dir);
+                    DB::indexDirectory($dir);
                     $data = DB_ContentManager::getDirectoryContent($dir, null);
                 }else{
                     $error = "Error: not supported";

@@ -56,6 +56,13 @@ require_once __DIR__."/lang/".Properties::$language.".php";
         use \piGallery\db\DB;
         use \piGallery\model\NoDBUserManager;
 
+        /*Check if Table exist*/
+        if(Properties::$databaseEnabled) {
+            if (DB::isTablesExist() == false) {
+                echo "db created";
+                DB::recreateDatabase();
+            }
+        }
 
 
         $dir = Helper::get_REQUEST('dir','/');
@@ -70,6 +77,7 @@ require_once __DIR__."/lang/".Properties::$language.".php";
         if(isset($_COOKIE["pigallery-sessionid"]) && !empty($_COOKIE["pigallery-sessionid"])){
 
             if(Properties::$databaseEnabled) {
+
                 $user = \piGallery\db\DB_UserManager::loginWithSessionID($_COOKIE["pigallery-sessionid"]);
                 if ($user != null) {
                     $user->setPassword(null);
@@ -86,13 +94,12 @@ require_once __DIR__."/lang/".Properties::$language.".php";
             try{
                 if(Properties::$databaseEnabled){
 
-                    /*Check if Table exist*/
-                    if(DB::isTablesExist() == false){
-                        echo "db created";
-                        DB::recreateDatabase();
+                    $content = \piGallery\db\DB_ContentManager::getDirectoryContent($dir);
+                    if($content['indexingNeeded'] == true && Properties::$enableOnTheFlyIndexing){
+                        DB::indexDirectory($dir);
+                        $content = DB_ContentManager::getDirectoryContent($dir);
                     }
 
-                    $content = \piGallery\db\DB_ContentManager::getDirectoryContent($dir);
                 }else{
                     $content = \piGallery\model\DirectoryScanner::getDirectoryContent($dir);
                 }
