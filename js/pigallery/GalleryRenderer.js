@@ -64,7 +64,6 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
          * @param directoryContent
          */
         this.showContent = function (directoryContent) {
-            console.log("showContent");
 
             var newPhotos = directoryContent.photos,
                 newDirectories = directoryContent.directories;

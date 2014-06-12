@@ -52,18 +52,53 @@ switch (Helper::require_REQUEST('method')) {
             $dir = utf8_decode($dir);
         }
         $dir = Helper::toDirectoryPath($dir);
+        $lastModificationDate = Helper::get_REQUEST('lastModificationDate',null);
+        if($lastModificationDate == "null")
+            $lastModificationDate = null;
 
         $error = null;
         $data = null;
         try {
             if (Properties::$databaseEnabled) {
-                $data = DB_ContentManager::getDirectoryContent($dir);
+                $data = DB_ContentManager::getDirectoryContent($dir, $lastModificationDate);
             } else {
                 $data = DirectoryScanner::getDirectoryContent($dir);
             }
         }catch(\Exception $ex){
             $error = utf8_encode($ex->getMessage());
         }
+
+        die(json_encode(array("error" => $error, "data" => Helper::contentArrayToJSONable($data))));
+        break;
+
+    case 'indexDirectoryAndGetContent':
+        authenticate();
+        $error = null;
+        $data = null;
+        if(Properties::$enableOnTheFlyIndexing){
+
+            $dir = Helper::require_REQUEST('dir');
+            if (Properties::$enableUTF8Encode) {
+                $dir = utf8_decode($dir);
+            }
+            $dir = Helper::toDirectoryPath($dir);
+
+            try {
+                if(Properties::$databaseEnabled){
+                    $data = DB::indexDirectory($dir);
+                    $data = DB_ContentManager::getDirectoryContent($dir, null);
+                }else{
+                    $error = "Error: not supported";
+                }
+            }catch(\Exception $ex){
+                $error = utf8_encode($ex->getMessage());
+            }
+
+
+        }else{
+            $error = "On the fly indexing is not enabled";
+        }
+
 
         die(json_encode(array("error" => $error, "data" => Helper::contentArrayToJSONable($data))));
         break;

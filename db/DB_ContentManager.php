@@ -67,59 +67,22 @@ class DB_ContentManager {
     }
 
 
-
-
-
     /**
      * @param string $path
+     * @param null $lastModificationDate
      * @return array
      * @throws \Exception
      */
-    public static function getDirectoryContent($path = DIRECTORY_SEPARATOR){
+    public static function getDirectoryContent($path = DIRECTORY_SEPARATOR, $lastModificationDate = null){
         date_default_timezone_set('UTC'); //set it if not set
         $directories = array();
         $photos = array();
+        $currentDirectory = null;
         $path_parts = pathinfo($path);
-
 
         $mysqli = DB::getDatabaseConnection();
 
-        //load directories
-        $stmt = $mysqli->prepare("SELECT d.ID, d.directoryName,  d.lastModification
-                                    FROM directories d
-                                    WHERE
-                                    d.path = ?");
-        if($stmt === false) {
-            $error = $mysqli->error;
-            $mysqli->close();
-            throw new \Exception("Error: ". $error);
-        }
-        $stmt->bind_param('s', $path);
-        $stmt->execute();
-        $stmt->bind_result($dirID, $baseName, $dirLastMod);
-        while($stmt->fetch()){
-            array_push($directories, new Directory($dirID, $path, $baseName, $dirLastMod, null));
-        }
-        $stmt->close();
-
-        //get sample photos for directories
-        foreach($directories as $dir){
-            $dir->setSamplePhotos(DB_ContentManager::loadSamplePhotosToDirectory($dir, $mysqli));
-        }
-
-        //load photos
-        $stmt = $mysqli->prepare("SELECT p.ID, p.fileName, p.width, p.height, p.creationDate, p.keywords
-                                    FROM directories d, photos p
-                                    WHERE
-                                    d.path = ? AND
-                                    d.directoryName = ? AND
-                                    d.ID = p.directory_id");
-        if($stmt === false) {
-            $error = $mysqli->error;
-            $mysqli->close();
-            throw new \Exception("Error: ". $error);
-        }
-
+        //load current directory
         $dirName = Helper::toDirectoryPath($path_parts['dirname']);
         $baseName = Helper::toDirectoryPath($path_parts['basename']);
 
@@ -128,20 +91,111 @@ class DB_ContentManager {
             $dirName = "";
         }
 
+        $stmt = $mysqli->prepare("SELECT id, lastModification, fileCount FROM directories WHERE path = ? AND directoryName = ?");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+
         $stmt->bind_param('ss', $dirName, $baseName);
         $stmt->execute();
-        $stmt->bind_result($photoID, $fileName, $width, $height, $creationDate, $keywords);
-        while($stmt->fetch()){
-            $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
-                Helper::relativeToImageDirectory(Helper::concatPath($path, $fileName)));
-            array_push($photos, new Photo($photoID, $path, $fileName, $width, $height, explode(",", $keywords), strtotime($creationDate), $availableThumbnails));
+        $stmt->bind_result($dirID,  $dirLastMod, $fileCount);
+        if($stmt->fetch()){
+            $currentDirectory = new Directory($dirID, $dirName, $baseName, $dirLastMod, $fileCount, null);
         }
+
+
         $stmt->close();
 
 
+        $noChange = false;
+        //check if there was an update
+        if($lastModificationDate != $currentDirectory->getLastModification()) {
+
+            //load directories
+            $stmt = $mysqli->prepare("SELECT d.ID, d.directoryName,  d.lastModification
+                                    FROM directories d
+                                    WHERE
+                                    d.path = ?");
+            if ($stmt === false) {
+                $error = $mysqli->error;
+                $mysqli->close();
+                throw new \Exception("Error: " . $error);
+            }
+            $stmt->bind_param('s', $path);
+            $stmt->execute();
+            $stmt->bind_result($dirID, $baseName, $dirLastMod);
+            while ($stmt->fetch()) {
+                array_push($directories, new Directory($dirID, $path, $baseName, $dirLastMod, 0, null));
+            }
+            $stmt->close();
+
+            //get sample photos for directories
+            foreach ($directories as $dir) {
+                $dir->setSamplePhotos(DB_ContentManager::loadSamplePhotosToDirectory($dir, $mysqli));
+            }
+
+            //load photos
+            $stmt = $mysqli->prepare("SELECT p.ID, p.fileName, p.width, p.height, p.creationDate, p.keywords
+                                    FROM directories d, photos p
+                                    WHERE
+                                    d.ID = ? AND
+                                    d.ID = p.directory_id");
+            if ($stmt === false) {
+                $error = $mysqli->error;
+                $mysqli->close();
+                throw new \Exception("Error: " . $error);
+            }
+
+
+            $currentDirectoryID = $currentDirectory->getId();
+            $stmt->bind_param('i', $currentDirectoryID);
+            $stmt->execute();
+            $stmt->bind_result($photoID, $fileName, $width, $height, $creationDate, $keywords);
+            while ($stmt->fetch()) {
+                $availableThumbnails = ThumbnailManager::getAvailableThumbnails(
+                    Helper::relativeToImageDirectory(Helper::concatPath($path, $fileName)));
+                array_push($photos, new Photo($photoID, $path, $fileName, $width, $height, explode(",", $keywords), strtotime($creationDate), $availableThumbnails));
+            }
+            $stmt->close();
+        }else{//nothing changed
+            $noChange = true;
+        }
 
         $mysqli->close();
-        return array("currentPath" => $path ,"directories" => $directories , "photos" => $photos);
+
+
+        $indexingNeeded = false;
+        /*If its enabled, checks if new file was added tot the folder and its not in the db yet*/
+        if(Properties::$enableOnTheFlyIndexing == true){
+
+            $scanPath = $path;
+            //is image folder already added?
+            if(!Helper::isSubPath(Helper::getAbsoluteImageFolderPath(),Properties::$imageFolder)){
+                $scanPath = Helper::concatPath(Helper::getAbsoluteImageFolderPath(),$scanPath);
+            }
+
+            if(!is_dir($scanPath)){
+                throw new \Exception('No such directory: '.$scanPath);
+            }
+
+            $fileCount = 0;
+            $handle = opendir($scanPath);
+            while (false !== ($value = readdir($handle))) {
+                $fileCount++;
+            }
+            closedir($handle);
+            $indexingNeeded = $currentDirectory->getFileCount() != $fileCount;
+
+        }
+
+        return array("currentPath" => $path ,
+                    "lastModificationDate" => $currentDirectory->getLastModification(),
+                    "indexingNeeded" => $indexingNeeded,
+                    "noChange" => $noChange,
+                    "directories" => $directories ,
+                    "photos" => $photos);
     }
 
 
@@ -223,7 +277,7 @@ class DB_ContentManager {
         $stmt->execute();
         $stmt->bind_result($dirID, $dirPath, $baseName, $dirLastMod);
         while($stmt->fetch()){
-            array_push($directories, new Directory($dirID, $dirPath, $baseName, $dirLastMod, null));
+            array_push($directories, new Directory($dirID, $dirPath, $baseName, $dirLastMod,0, null));
         }
         //get sample photos for directories
         foreach($directories as $dir){

@@ -13,9 +13,14 @@ class Directory extends Content {
     protected $directoryName;
 
     /**
-     * @var int
+     * @var string
      */
     protected $lastModification;
+
+    /**
+     * @var int
+     */
+    protected $fileCount;
 
     /**
      * @var Photo[]
@@ -28,14 +33,16 @@ class Directory extends Content {
      * @param $path
      * @param $directoryName
      * @param $lastModification
+     * @param $fileCount
      * @param $samplePhotos
      */
-    function __construct($id, $path, $directoryName, $lastModification, $samplePhotos)
+    function __construct($id, $path, $directoryName, $lastModification, $fileCount, $samplePhotos)
     {
         $this->id = $id;
         $this->path = $path;
         $this->directoryName = $directoryName;
         $this->lastModification = $lastModification;
+        $this->fileCount = $fileCount;
         $this->samplePhotos = $samplePhotos;
     }
 
@@ -85,6 +92,22 @@ class Directory extends Content {
     public function setSamplePhotos($samplePhotos)
     {
         $this->samplePhotos = $samplePhotos;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFileCount()
+    {
+        return $this->fileCount;
+    }
+
+    /**
+     * @param int $fileCount
+     */
+    public function setFileCount($fileCount)
+    {
+        $this->fileCount = $fileCount;
     }
 
 

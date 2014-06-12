@@ -8,7 +8,38 @@ define(["jquery"], function ($) {
 
         this.lastXhr = null;
         var that = this;
+
+        var indexFolder = function(path, galleryRenderer){
+            return $.ajax({
+                    type: "POST",
+                    url: "model/AJAXfacade.php",
+                    data: {method: "indexDirectoryAndGetContent", dir: path },
+                    dataType: "json"
+                }).done(function(result) {
+                    if(result.error != null){
+                        PiGallery.showErrorMessage(result.error);
+                    }else if(result.data != null) { //if the directory content changed comparing to the cached one
+                        that.storeContent(result.data);
+                        galleryRenderer.showContent(result.data);
+                    }
+                    that.lastXhr = null;
+                    $("#loading-sign").css("opacity",0);
+
+                }).fail(function(errMsg) {
+                    PiGallery.showErrorMessage("Error during indexing folder");
+                    that.lastXhr = null;
+                    $("#loading-sign").css("opacity",0);
+                });
+        };
+
         this.getContent = function(path, galleryRenderer){
+            var cachedContent = getLocalStoredContent(path),
+                lastModificationDate = null;
+
+            //check if last modification date is available
+            if(cachedContent.lastModificationDate){
+                lastModificationDate = cachedContent.lastModificationDate;
+            }
 
             if (that.lastXhr  && that.lastXhr.readyState != 4){
                 that.lastXhr.abort();
@@ -19,17 +50,22 @@ define(["jquery"], function ($) {
                 $.ajax({
                 type: "POST",
                 url: "model/AJAXfacade.php",
-                data: {method: "getContent", dir: path},
+                data: {method: "getContent", dir: path, lastModificationDate: lastModificationDate},
                 dataType: "json"
             }).done(function(result) {
                     if(result.error != null){
                         PiGallery.showErrorMessage(result.error);
-                    }else if(result.data != null){
+                    }else if(result.data != null && result.data.noChange == false) { //if the directory content changed comparing to the cached one
                         that.storeContent(result.data);
                         galleryRenderer.showContent(result.data);
+
                     }
-                    that.lastXhr = null;
-                    $("#loading-sign").css("opacity",0);
+                    if(result.data != null && result.data.indexingNeeded && result.data.indexingNeeded == true){
+                        that.lastXhr = indexFolder(path, galleryRenderer);
+                    }else{
+                        that.lastXhr = null;
+                        $("#loading-sign").css("opacity",0);
+                    }
 
             }).fail(function(errMsg) {
                     PiGallery.showErrorMessage("Error during downloading directory content");
@@ -37,13 +73,13 @@ define(["jquery"], function ($) {
                     $("#loading-sign").css("opacity",0);
             });
             $("#loading-sign").css("opacity",1);
-            return getLocalStoredContent(path);
+            return cachedContent;
         };
 
         var getLocalStoredContent = function(path){
             var storedContent =  JSON.parse(window.sessionStorage.getItem("PiGallery:Content:"+path));
             if(storedContent == null){
-                return {currentPath: path, directories: [], photos: []};
+                return {currentPath: path, lastModificationDate: null, directories: [], photos: []};
             }
             return storedContent;
 

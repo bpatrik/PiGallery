@@ -143,13 +143,23 @@ class Helper {
             }
         }
 
-        $array = array($first_key => $convertedPath ,"directories" => $convertedDirectories , "photos" => $convertedPhotos);
+        $array_out = array($first_key => $convertedPath ,"directories" => $convertedDirectories , "photos" => $convertedPhotos);
+
+        /*Extra params*/
+        if(isset($array['lastModificationDate'])){
+            $array_out['lastModificationDate'] = $array['lastModificationDate'];
+        }
+        if(isset($array['indexingNeeded'])){
+            $array_out['indexingNeeded'] = $array['indexingNeeded'];
+        }
+        if(isset($array['noChange'])){
+            $array_out['noChange'] = $array['noChange'];
+        }
+
+
 
         //convert to jsonable
-
-
-
-        return  Helper::phpObjectArrayToJSONable($array);
+        return  Helper::phpObjectArrayToJSONable($array_out);
     }
 
 

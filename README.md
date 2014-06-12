@@ -7,12 +7,13 @@ The aim of the project to create a photo gallery that is optimised for low* reso
 Features:
 --------
 
+* The site has 2 modes: Database(Mysql) mode and a database less mode.
 * authentication
 * recursive directory scan
 * on the fly thumbnail generation with cache
+* on the fly direcotry indexing (for database mode)
 * nice lightbox for image perview (using blueimp* gallery)
 * supports image keywords (like lightroom keywords)
-* The site has 2 modes: Database(Mysql) mode and a database less mode.
 * search in file names, directory names, keywords(database mode only)
 * designed for low* resource serves (weak CPU, low bandwidth)
 

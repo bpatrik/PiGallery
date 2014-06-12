@@ -29,7 +29,7 @@ class Properties{
           If your folder is somewhere else, create a link to the thumbnail folder in your site root directory*/
     public static $thumbnailFolder = "./thumbnails";
     /*The thumbnail sizes that the site generates automatically. (Thumbnail generation is a long process, give only 1 or 2 sizes only)*/
-    public static $thumbnailSizes = array(300, 500);
+    public static $thumbnailSizes = array(100,300, 500);
     /*The JPEG quality of the thumbnail*/
     public static $thumbnailJPEGQuality = 75;
     /*Set true for resampling or false for resizing only. (true: nice thumbnails, false: better performance)*/
@@ -44,7 +44,7 @@ class Properties{
 
 
     /*Enable the database usage*/
-    public static $databaseEnabled = false;
+    public static $databaseEnabled = true;
 
     /*-------------Database settings----------*/
     /*if $databaseEnabled == true*/
@@ -52,6 +52,10 @@ class Properties{
     public static $databseUserName = "root";
     public static $databsePassword = "root";
     public static $databseName = "pigallery";
+
+    /*If its true, the site will check at every directory open if indexing is needed or not.
+     if need, the site will index the given folder automatically*/
+    public static $enableOnTheFlyIndexing = true;
 
     /*No-Database settings*/
     /*if $databaseEnabled == false*/

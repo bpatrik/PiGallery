@@ -72,7 +72,8 @@ class DB {
                                         PRIMARY KEY(ID),
                                         path NVARCHAR(256),
                                         directoryName NVARCHAR(64),
-                                        lastModification DATETIME
+                                        lastModification DATETIME,
+                                        fileCount INT
                                     )";
 
 
@@ -163,7 +164,7 @@ class DB {
         $baseName = Helper::toDirectoryPath($baseName);
         $directory = null;
 
-        $stmt = $mysqli->prepare("SELECT id,lastModification FROM directories WHERE path = ? AND directoryName = ?");
+        $stmt = $mysqli->prepare("SELECT id, lastModification, fileCount FROM directories WHERE path = ? AND directoryName = ?");
         if($stmt === false) {
             $error = $mysqli->error;
             $mysqli->close();
@@ -172,10 +173,11 @@ class DB {
 
         $stmt->bind_param('ss', $dirName, $baseName);
         $stmt->execute();
-        $stmt->bind_result($dirID,  $dirLastMod);
+        $stmt->bind_result($dirID,  $dirLastMod, $fileCount);
         if($stmt->fetch()){
-            $directory = new Directory($dirID, $dirName, $baseName, $dirLastMod, null);
+            $directory = new Directory($dirID, $dirName, $baseName, $dirLastMod, $fileCount, null);
         }
+
 
         $stmt->close();
 
@@ -207,7 +209,7 @@ class DB {
         $stmt->bind_param('ss', $dirName, $baseName);
         $stmt->execute();
 
-        $directory = new Directory($stmt->insert_id, $dirName, $baseName, null, null);
+        $directory = new Directory($stmt->insert_id, $dirName, $baseName,0, null, null);
         $stmt ->close();
         return $directory;
     }
@@ -265,8 +267,10 @@ class DB {
 
         $stmt->close();
         $handle = opendir($path);
+        $directoryFileCount = 0;
         date_default_timezone_set('UTC'); //set it if not set
         while (false !== ($value = readdir($handle))) {
+            $directoryFileCount++;
             if ($value != "." && $value != "..") {
                 $contentPath = Helper::concatPath($path, $value);
                 //read directory
@@ -336,8 +340,32 @@ class DB {
                 $stmt->execute();
             }
             $stmt->close();
+
+
+            //update folder last update time
+            $query = "UPDATE directories SET lastModification = NOW() WHERE ID = ?";
+            $stmt = $mysqli->prepare($query);
+            $currentDirPath = $currentDirectory->getId();
+
+            $stmt ->bind_param('i', $currentDirPath);
+            $stmt->execute();
+            $stmt->close();
+
             $mysqli->query("COMMIT");
         }
+
+        //update folder file fount
+        if ($currentDirectory->getFileCount() != $directoryFileCount) {
+            $query = "UPDATE directories SET fileCount = ? WHERE ID = ?";
+            $stmt = $mysqli->prepare($query);
+            $currentDirPath = $currentDirectory->getId();
+
+            $stmt ->bind_param('ii', $directoryFileCount, $currentDirPath);
+            $stmt->execute();
+            $stmt->close();
+        }
+
+
         $mysqli->close();
         return array("foundDirectories" => $foundDirectories);
     }
