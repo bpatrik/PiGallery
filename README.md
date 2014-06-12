@@ -1,8 +1,8 @@
-PiGallery
+PiGallery 0.9
 =========
 
-This is a lightweight online photo gallery design for Raspberry Pi, but van be used with any other device.
-The aim of the project to create a photo gallery that is optimised for low* resource servers, but have a rich client side.
+This is a lightweight online photo gallery design for Raspberry Pi, but can be used with any other device.
+The aim of the project to create a photo gallery that is optimised for low resource servers, but have a rich client side.
 
 Features:
 --------
