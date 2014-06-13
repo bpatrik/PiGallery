@@ -162,10 +162,10 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                     <span class="icon-bar"></span>
                 </button>
                 <a class="navbar-brand" href="index.php"><?php echo $LANG['site_name']; ?></a>
+                <img id="loading-sign" src="img/loading.gif"/>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><img id="loading-sign" src="img/loading.gif"/></li>
                     <li id="galleryButton" class="active"><a href="#"><?php echo $LANG['gallery']; ?></a></li>
                     <?php if(\piGallery\Properties::$databaseEnabled) { ?>
                     <li id="adminButton"><a href="#">Admin</a></li>
