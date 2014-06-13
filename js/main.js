@@ -19,7 +19,7 @@ require.config({
         jquery:  'jquery-2.1.1.min',
         jquery_ui: 'jquery-ui-1.10.4_min',
         underscore: 'underscorejs-1.6.0.min',
-        bootstrap: 'bootstrap',
+        bootstrap: 'bootstrap.min',
         jquery_cookie: 'jquery.cookie',
         blueImpGallery: 'blueimp-gallery-indicator'
     },

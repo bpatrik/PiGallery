@@ -21,11 +21,12 @@ Installation:
 --------
 
 *  Install php, and a webserver(apache, nginx) on your device and a (optional) database server (mysql, mariadb)
-*  download the latest files from github, put it in your www directory (on in a subdirectory)
+*  download the latest [release (v0.90)](release/pigallery_0.90.zip) from github, extract  it in your www directory (or in a subdirectory)
 *  open config.php and edit the configurations according to the comments.
 *  if your using database mode, be sure the the database, you set in the config.php is exist
 *  login with user: admin, pass: admin (or whatever you set in config.php)
-*  in database mode, click on admin panel and click index photos
+*  in database mode, click on admin panel and click index photos,
+   or enable on the fly indexing in the config.php (but in this case the manual indexing still recommended at the admin panel)
 
 Notes:
 --------
