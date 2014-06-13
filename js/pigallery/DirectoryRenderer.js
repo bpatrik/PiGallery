@@ -10,29 +10,45 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
             IMAGE_MARGIN = 5;
 
         var that = this;
-        var rowHeight = ($directoryGalleryDiv.parent().width() - (IMAGE_MARGIN * 2 * TARGET_DIR_COL_COUNT)) / ((TARGET_DIR_COL_COUNT) ); //TODO: make phone friendly
+        var imageSize = ($directoryGalleryDiv.parent().width() - (IMAGE_MARGIN * 2 * TARGET_DIR_COL_COUNT)) / ((TARGET_DIR_COL_COUNT) ); //TODO: make phone friendly
 
 
 
         /*-----------Helper functions----------------*/
         var getScaledHeight = function (width, height, scaledWidth) {
             return height * (scaledWidth / width);
-        }
+        };
         var getScaledWidth = function (width, height, scaledHeight) {
             return width * (scaledHeight / height);
-        }
+        };
 
         var calcPhotoDimension = function (photo) {
             var width, height;
             if (photo.width < photo.height) {
-                height = getScaledHeight(photo.width, photo.height, rowHeight);
-                width = rowHeight;
+                height = getScaledHeight(photo.width, photo.height, imageSize);
+                width = imageSize;
             } else {
-                height = rowHeight;
-                width = getScaledWidth(photo.width, photo.height, rowHeight);
+                height = imageSize;
+                width = getScaledWidth(photo.width, photo.height, imageSize);
             }
             return {height: height, width: width};
-        }
+        };
+
+        var calcDirectoryImageSize = function(){
+            var screenHeight = $directoryGalleryDiv.parent().parent().parent().height(),
+                screenWidth =  $directoryGalleryDiv.parent().width(),
+                smallerSide = screenHeight < screenWidth ? screenHeight : screenWidth;
+
+            if(smallerSide < 768){ //in case of phones
+                return smallerSide - IMAGE_MARGIN * 2;
+            }
+            if(smallerSide == screenHeight){ //landscape mode
+                return (screenWidth - (IMAGE_MARGIN * 2 * TARGET_DIR_COL_COUNT)) / ((TARGET_DIR_COL_COUNT) );
+            }else{ //portrait mode
+                return (screenHeight - (IMAGE_MARGIN * 2 * TARGET_DIR_COL_COUNT)) / ((TARGET_DIR_COL_COUNT) );
+            }
+
+        };
         /*-----------Event Handlers--------------*/
 
         var directoryClickHandler = function (event) {
@@ -45,6 +61,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
 
 
         this.showDirectories = function (directories) {
+            imageSize = calcDirectoryImageSize();
 
             //sort directories
             directories.sort(function(a, b){
@@ -84,7 +101,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
 
                 var directory = directories[i];
 
-                //Rendering smaple photo
+                //Rendering sample photo
                 var $samplePhoto = null;
 
                 if (directory.samplePhotos.length > 0) {
@@ -100,7 +117,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
                     $('<a>', {href: "index.php?dir=" + (directory.path == "/" ? "" : directory.path) + "/"  + directory.directoryName, title: directory.directoryName, "data-path": (directory.path == "/" ? "" : directory.path) + "/" + directory.directoryName}).append(
                         $samplePhoto
                     ).click(directoryClickHandler)
-                ).addClass("gallery-directory-image").height(rowHeight).width(rowHeight).data("dirCounter", "0").data("directoryId", i).data("lastUpdate", Date.now());
+                ).addClass("gallery-directory-image").height(imageSize).width(imageSize).data("dirCounter", "0").data("directoryId", i).data("lastUpdate", Date.now());
 
                 //Appending to DOM
                 $directoryGalleryDiv.append(
@@ -110,7 +127,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
                             $('<span>').html(directory.directoryName).addClass('pull-left')
                         ).addClass("gallery-directory-description")
                     ).addClass("gallery-directory-wrapper")
-                        .height(rowHeight).width(rowHeight)
+                        .height(imageSize).width(imageSize)
                 );
             }
         }

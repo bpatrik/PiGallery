@@ -58,7 +58,7 @@ PiGallery.gallerySiteInitDone = false;
 PiGallery.loginSiteInitDone = false;
 
 PiGallery.initSite = function(){
-    require(['jquery'], function   ($) {
+    require(['jquery','bootstrap'], function   ($) {
 
         $('#galleryButton').click(function () {
             PiGallery.showGallery();
