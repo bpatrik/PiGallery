@@ -291,18 +291,21 @@ PiGallery.logOut = function(){
 
 
 PiGallery.showErrorMessage = function(str){
-    $('#alerts').append('<div class="alert  alert-danger">' + str  + '</div>');
+    $('#alertsDiv').append('<div class="alert  alert-danger">' + str  + '</div>');
 
 };
 PiGallery.showInfoMessage = function(str){
-    $('#infos').append('<div class="alert  alert-info">' + str  + '</div>');
+    $('#alertsDiv').append('<div class="alert  alert-info">' + str  + '</div>');
+
+};
+PiGallery.showWarningMessage = function(str){
+    $('#alertsDiv').append('<div class="alert  alert-warning">' + str  + '</div>');
 
 };
 
 
 PiGallery.hideMessages = function(){
-    $('#alerts').empty();
-    $('#infos').empty();
+    $('#alertsDiv').empty();
 };
 
 

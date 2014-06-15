@@ -67,3 +67,8 @@ body {
     background-color: rgba(34,34,34,1);
     opacity: 1;
 }
+/*Alerts override*/
+.alert {
+    margin-bottom: 10px;
+    padding: 10px;
+}

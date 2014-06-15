@@ -219,7 +219,8 @@ class DB {
     public static function indexDirectory($path = "/")
     {
 
-        set_time_limit(300); //set time limit for 5 mins
+        set_time_limit(300); //set time limit for 5 mins (only work if safe_mode == false)
+
         $currentPath = $path;
         $path = Helper::toDirectoryPath($path);
 

@@ -54,6 +54,7 @@ require_once __DIR__."/lang/".Properties::$language.".php";
 
         use \piGallery\model\Helper;
         use \piGallery\db\DB;
+        use \piGallery\db\DB_ContentManager;
         use \piGallery\model\NoDBUserManager;
 
         /*Check if Table exist*/
@@ -196,11 +197,9 @@ require_once __DIR__."/lang/".Properties::$language.".php";
     </div>
 
 
-    <!-- Error dialogs-->
-    <div id="alerts"></div>
+    <!-- Error, Warning and Info dialogs-->
+    <div id="alertsDiv"></div>
 
-    <!-- Info dialogs-->
-    <div id="infos"></div>
 
 
     <!-- The Bootstrap Image Gallery lightbox, should be a child element of the document body -->

@@ -42,6 +42,7 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                         dataType: "json"
                     }).done(function (result) {
                         if (result.error == null) {
+                            $AdminPageDiv.find('#indexingProgress').html("Indexes cleared");
                         } else {
                             alert(result.error);
                         }
@@ -52,43 +53,9 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                 }
             });
 
-            var directoriesToIndex = [];
-            var lastDirectory = "";
-            var indexDirectory = function (directory) {
-                $AdminPageDiv.find('#indexingProgress').html("Indexing: \"" + directory + "\" (" + directoriesToIndex.length + " left)")
 
-                $.ajax({
-                    type: "POST",
-                    url: "model/AJAXfacade.php",
-                    data: {method: "indexDirectory", dir: directory},
-                    dataType: "json"
-                }).done(function (result) {
-                    if (result.error == null) {
-                        directoriesToIndex = directoriesToIndex.concat(result.data.foundDirectories);
-                        if (directoriesToIndex.length > 0) {
-                            lastDirectory = directoriesToIndex.pop();
-                            indexDirectory(lastDirectory)
-                        } else {
-                            $AdminPageDiv.find('#indexingProgress').html("Indexing done.");
-                            $AdminPageDiv.find('#indexPhotosButton').removeAttr("disabled");
-                            $AdminPageDiv.find('#indexPhotosButton').html(PiGallery.LANG.admin_indexPhotos);
-                        }
-                    } else {
-                        alert(result.error);
-                    }
-                }).fail(function (errMsg) {
-                    console.log("Error during indexing directories");
-                    PiGallery.showErrorMessage("Error during indexing directory: '" +lastDirectory + "' (Possibly php timeout)");
-                    $AdminPageDiv.find('#indexPhotosButton').removeAttr("disabled");
-                    $AdminPageDiv.find('#indexPhotosButton').html(PiGallery.LANG.admin_indexPhotos);
-                });
-            };
 
-            $AdminPageDiv.find('#indexPhotosButton').click(function () {
-                $AdminPageDiv.find('#indexPhotosButton').attr("disabled", "disabled");
-                $AdminPageDiv.find('#indexPhotosButton').html(PiGallery.LANG.admin_indexing);
-                indexDirectory("/");
-            });
+            $AdminPageDiv.find('#indexPhotosButton').click(indexPhotosButtonClickHandler);
 
             var userDeleteHandler = function (event, element) {
                 var userId = element.data("userid");
@@ -192,7 +159,62 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
 
             updateUserList();
 
-        }
+        };
+
+
+        var directoriesToIndex = [];
+        var lastDirectory = "";
+        var retryCount = 0;
+        var indexDirectory = function (directory) {
+            console.log(directoriesToIndex);
+            var indexNextDirectory = function() {
+                if (directoriesToIndex.length > 0) {
+                    lastDirectory = directoriesToIndex.pop();
+                    retryCount = 0;
+                    indexDirectory(lastDirectory);
+                } else {
+                    $AdminPageDiv.find('#indexingProgress').html("Indexing done.");
+                    $AdminPageDiv.find('#indexPhotosButton').removeAttr("disabled");
+                    $AdminPageDiv.find('#indexPhotosButton').html(PiGallery.LANG.admin_indexPhotos);
+                }
+            };
+
+            $AdminPageDiv.find('#indexingProgress').html("Indexing: \"" + directory + "\" (" + directoriesToIndex.length + " left)")
+
+            $.ajax({
+                type: "POST",
+                url: "model/AJAXfacade.php",
+                data: {method: "indexDirectory", dir: directory},
+                dataType: "json"
+            }).done(function (result) {
+                if (result.error == null) {
+                    directoriesToIndex = directoriesToIndex.concat(result.data.foundDirectories);
+                    indexNextDirectory();
+                } else {
+                    alert(result.error);
+                }
+            }).fail(function (errMsg) {
+                console.log("Error during indexing directories");
+                if(retryCount < 3){
+                    PiGallery.showWarningMessage("Error during indexing directory: '" +lastDirectory + "' (Possibly php timeout). Retrying...");
+                    retryCount++;
+                    indexDirectory(lastDirectory);
+                }else{
+                    PiGallery.showErrorMessage("Error during indexing directory: '" +lastDirectory + "' (Possibly php timeout). Skipping...");
+                    indexNextDirectory();
+                }
+            });
+        };
+
+        var indexPhotosButtonClickHandler = function(){
+            $AdminPageDiv.find('#indexPhotosButton').attr("disabled", "disabled");
+            $AdminPageDiv.find('#indexPhotosButton').html(PiGallery.LANG.admin_indexing);
+            retryCount = 0;
+            directoriesToIndex = [];
+            indexDirectory("/");
+        };
+
+
 
     }
 

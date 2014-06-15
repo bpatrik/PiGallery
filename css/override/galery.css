@@ -141,3 +141,7 @@
     display: inline;
     width: 25px;
 }
+
+#alertsDiv {
+    margin: 0 15px;
+}
