@@ -138,5 +138,6 @@
     margin-right: 10px;
     margin-top: 14px;
     opacity: 0;
+    display: inline;
     width: 25px;
 }

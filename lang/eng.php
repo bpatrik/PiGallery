@@ -27,5 +27,6 @@ $LANG['admin_add'] = "Add";
 $LANG['admin_photos'] = "Photos";
 $LANG['admin_clearIndex'] = "Clear Index";
 $LANG['admin_indexPhotos'] = "Index Photos";
+$LANG['admin_indexing'] = "Indexing..";
 $LANG['admin_database'] = "Database";
 $LANG['admin_resetDatabase'] = "Reset Database";

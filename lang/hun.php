@@ -27,5 +27,6 @@ $LANG['admin_add'] = "Hozzáadás";
 $LANG['admin_photos'] = "Képek";
 $LANG['admin_clearIndex'] = "Indexek törlése";
 $LANG['admin_indexPhotos'] = "Képek indexelése";
+$LANG['admin_indexing'] = "Indexelés...";
 $LANG['admin_database'] = "Adatbázis";
 $LANG['admin_resetDatabase'] = "Adatbázis visszaállítása";

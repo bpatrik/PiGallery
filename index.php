@@ -162,7 +162,10 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                     <span class="icon-bar"></span>
                 </button>
                 <a class="navbar-brand" href="index.php"><?php echo $LANG['site_name']; ?></a>
-                <img id="loading-sign" src="img/loading.gif"/>
+
+            </div>
+            <div class="navbar-header">
+                <img class="pull-left pull-right" id="loading-sign" src="img/loading.gif"/>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">

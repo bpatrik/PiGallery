@@ -70,6 +70,8 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                             indexDirectory(lastDirectory)
                         } else {
                             $AdminPageDiv.find('#indexingProgress').html("Indexing done.");
+                            $AdminPageDiv.find('#indexPhotosButton').removeAttr("disabled");
+                            $AdminPageDiv.find('#indexPhotosButton').html(PiGallery.LANG.admin_indexPhotos);
                         }
                     } else {
                         alert(result.error);
@@ -77,10 +79,14 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                 }).fail(function (errMsg) {
                     console.log("Error during indexing directories");
                     PiGallery.showErrorMessage("Error during indexing directory: '" +lastDirectory + "' (Possibly php timeout)");
+                    $AdminPageDiv.find('#indexPhotosButton').removeAttr("disabled");
+                    $AdminPageDiv.find('#indexPhotosButton').html(PiGallery.LANG.admin_indexPhotos);
                 });
             };
 
             $AdminPageDiv.find('#indexPhotosButton').click(function () {
+                $AdminPageDiv.find('#indexPhotosButton').attr("disabled", "disabled");
+                $AdminPageDiv.find('#indexPhotosButton').html(PiGallery.LANG.admin_indexing);
                 indexDirectory("/");
             });
 
