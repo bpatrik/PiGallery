@@ -15,6 +15,7 @@ $LANG['logout'] = "Log out";
 $LANG['search'] = "Search";
 $LANG['share'] = "Share";
 $LANG['searchingfor'] = "Searching for:";
+$LANG['tooMuchResults'] = "The search returned too much results, some of them the may not appear. Please refine your search!";
 
 $LANG['admin_users'] = "Users";
 $LANG['admin_userName'] = "Username";

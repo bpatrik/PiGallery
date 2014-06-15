@@ -1,4 +1,4 @@
-define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   _) {
+define(["jquery",  "underscore", "PiGallery/ThumbnailManager", "detectmobilebrowser_jquery" ], function ($,   _) {
     "use strict";
     return function DirectoryRenderer($directoryGalleryDiv, thumbnailManager, galleryRenderer) {
 
@@ -39,14 +39,38 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
                 screenWidth =  $directoryGalleryDiv.parent().width(),
                 smallerSide = screenHeight < screenWidth ? screenHeight : screenWidth;
 
-            if(smallerSide < 768){ //in case of phones
-                return smallerSide - IMAGE_MARGIN * 2;
+            var maxSize = smallerSide - IMAGE_MARGIN * 2;
+            var colCount = 1;
+            if($.browser.mobile){
+                if(screenWidth < 768){ //in case of phones
+                    colCount = 1;
+                }else if(screenWidth < 992){
+                    colCount = 2;
+                }else if(screenWidth < 1200){
+                    colCount = 3;
+                }else{
+                    colCount = 4;
+                }
+            }else {
+                if(screenWidth < 768){ //in case of phones
+                    colCount = 2;
+                }else if(screenWidth < 992){
+                    colCount = 4;
+                }else if(screenWidth < 1200){
+                    colCount = 5;
+                }else{
+                    colCount = 7;
+                }
             }
-            if(smallerSide == screenHeight){ //landscape mode
-                return (screenWidth - (IMAGE_MARGIN * 2 * TARGET_DIR_COL_COUNT)) / ((TARGET_DIR_COL_COUNT) );
-            }else{ //portrait mode
-                return (screenHeight - (IMAGE_MARGIN * 2 * TARGET_DIR_COL_COUNT)) / ((TARGET_DIR_COL_COUNT) );
+
+            var size = (screenWidth - (IMAGE_MARGIN * 2 * colCount)) / ((colCount) );
+
+            if(size > maxSize){
+                size = maxSize;
             }
+
+            return size;
+
 
         };
         /*-----------Event Handlers--------------*/

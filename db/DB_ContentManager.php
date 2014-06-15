@@ -218,14 +218,15 @@ class DB_ContentManager {
                                     from photos p, directories d
                                     WHERE
                                     UPPER(p.keywords) LIKE UPPER(?) AND
-                                    d.ID = p.directory_id");
+                                    d.ID = p.directory_id
+                                    LIMIT 0,?");
         if($stmt === false) {
             $error = $mysqli->error;
             $mysqli->close();
             throw new \Exception("Error: ". $error);
         }
 
-        $stmt->bind_param('s', $SQLsearchText);
+        $stmt->bind_param('si', $SQLsearchText,Properties::$maxSearchResultItems);
         $stmt->execute();
         $stmt->bind_result($photoID, $DirPath, $directoryName, $fileName, $width, $height, $creationDate, $keywords);
         while($stmt->fetch()){
@@ -243,14 +244,15 @@ class DB_ContentManager {
                                     from photos p, directories d
                                     WHERE
                                     UPPER(p.fileName) LIKE UPPER(?) AND
-                                    d.ID = p.directory_id");
+                                    d.ID = p.directory_id
+                                    LIMIT 0,?");
         if($stmt === false) {
             $error = $mysqli->error;
             $mysqli->close();
             throw new \Exception("Error: ". $error);
         }
 
-        $stmt->bind_param('s', $SQLsearchText);
+        $stmt->bind_param('si', $SQLsearchText, Properties::$maxSearchResultItems);
         $stmt->execute();
         $stmt->bind_result($photoID, $DirPath, $directoryName, $fileName, $width, $height, $creationDate, $keywords);
         while($stmt->fetch()){
@@ -262,20 +264,21 @@ class DB_ContentManager {
 
         $stmt->close();
 
-        //load photos
+        //load directories
         $stmt = $mysqli->prepare("SELECT
                                     directories.ID, directories.path, directories.directoryName,  directories.lastModification
                                     FROM
                                     directories
                                     WHERE
-                                    UPPER(directories.directoryName) LIKE UPPER(?) ");
+                                    UPPER(directories.directoryName) LIKE UPPER(?)
+                                    LIMIT 0,?");
         if($stmt === false) {
             $error = $mysqli->error;
             $mysqli->close();
             throw new \Exception("Error: ". $error);
         }
 
-        $stmt->bind_param('s', $SQLsearchText);
+        $stmt->bind_param('si', $SQLsearchText,Properties::$maxSearchResultItems);
         $stmt->execute();
         $stmt->bind_result($dirID, $dirPath, $baseName, $dirLastMod);
         while($stmt->fetch()){
@@ -289,7 +292,23 @@ class DB_ContentManager {
         $stmt->close();
         $mysqli->close();
 
-        return array("searchString" => $searchString ,"directories" => $directories , "photos" => $photos);
+        /*Limit photos*/
+        $tooMuchResults = false;
+        $photosCount = count($photos);
+        $directoriesCount = count($directories);
+        if($photosCount >= Properties::$maxSearchResultItems || $directoriesCount >= Properties::$maxSearchResultItems){
+            $tooMuchResults = true;
+        }
+        //Removing too much results
+        if($photosCount > Properties::$maxSearchResultItems){
+            $remove = $photosCount - Properties::$maxSearchResultItems;
+            array_splice($photos, -$remove, $remove);
+        }
+
+        return array("searchString" => $searchString,
+                        "tooMuchResults" => $tooMuchResults,
+                        "directories" => $directories,
+                        "photos" => $photos);
 
     }
 

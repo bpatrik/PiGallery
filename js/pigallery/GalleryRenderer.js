@@ -46,6 +46,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
 
 
         this.showSearchResult = function (searchContent) {
+            PiGallery.hideMessages();
 
             $directoryGalleryDiv.empty();
             $photoGalleryDiv.empty();
@@ -54,6 +55,12 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
             this.showSearchedText(searchContent.searchString);
             directoryRenderer.showDirectories(searchContent.directories);
             photoRenderer.showImages(searchContent.photos);
+
+            if(searchContent.tooMuchResults == true){
+                console.log(PiGallery);
+                console.log(PiGallery.showInfoMessage);
+                PiGallery.showInfoMessage(PiGallery.LANG.tooMuchResults);
+            }
         };
 
 
@@ -64,6 +71,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
          * @param directoryContent
          */
         this.showContent = function (directoryContent) {
+            PiGallery.hideMessages();
 
             var newPhotos = directoryContent.photos,
                 newDirectories = directoryContent.directories;

@@ -162,10 +162,8 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                     <span class="icon-bar"></span>
                 </button>
                 <a class="navbar-brand" href="index.php"><?php echo $LANG['site_name']; ?></a>
-
-            </div>
-            <div class="navbar-header">
                 <img class="pull-left pull-right" id="loading-sign" src="img/loading.gif"/>
+
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -198,11 +196,11 @@ require_once __DIR__."/lang/".Properties::$language.".php";
     </div>
 
 
-
-
-    <!-- Error dialog-->
+    <!-- Error dialogs-->
     <div id="alerts"></div>
 
+    <!-- Info dialogs-->
+    <div id="infos"></div>
 
 
     <!-- The Bootstrap Image Gallery lightbox, should be a child element of the document body -->

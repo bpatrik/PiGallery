@@ -63,8 +63,7 @@ define(["jquery", "jquery_ui"], function($) {
                         }
                     }).fail( function (error) {
                         console.log("Error: cant get auto complete data from server");
-                    })
-                    ;
+                    });
                 },
                 minLength: 2,
                 response: function (event, ui) {

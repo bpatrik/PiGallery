@@ -45,6 +45,9 @@ require.config({
         },
         'jquery_ui':{
             deps: ['jquery']
+        },
+        'detectmobilebrowser_jquery':{
+            deps: ['jquery']
         }
 
     }
@@ -290,6 +293,16 @@ PiGallery.logOut = function(){
 PiGallery.showErrorMessage = function(str){
     $('#alerts').append('<div class="alert  alert-danger">' + str  + '</div>');
 
+};
+PiGallery.showInfoMessage = function(str){
+    $('#infos').append('<div class="alert  alert-info">' + str  + '</div>');
+
+};
+
+
+PiGallery.hideMessages = function(){
+    $('#alerts').empty();
+    $('#infos').empty();
 };
 
 

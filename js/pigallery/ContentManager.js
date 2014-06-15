@@ -96,23 +96,33 @@ define(["jquery"], function ($) {
 
 
         this.getSearchResult = function(searchString, galleryRenderer){
-            console.log("invoking");
 
-                $.ajax({
-                    type: "POST",
-                    url: "model/AJAXfacade.php",
-                    data: {method: "search", searchString: searchString},
-                    dataType: "json"
-                }).done(function(result) {
-                    if(result.error == null){
-                        galleryRenderer.showSearchResult(result.data);
-                    }else{
-                        console.log(result.error);
-                    }
+            if (that.lastXhr  && that.lastXhr.readyState != 4){
+                that.lastXhr.abort();
+                that.lastXhr = null;
+            }
 
-                }).fail(function(errMsg) {
-                    console.log("Error during downloading search result content");
-                });
+            that.lastXhr =
+            $.ajax({
+                type: "POST",
+                url: "model/AJAXfacade.php",
+                data: {method: "search", searchString: searchString},
+                dataType: "json"
+            }).done(function(result) {
+                if(result.error == null){
+                    galleryRenderer.showSearchResult(result.data);
+                }else{
+                    PiGallery.showErrorMessage(result.error);
+                }
+                that.lastXhr = null;
+                $("#loading-sign").css("opacity",0);
+
+            }).fail(function(errMsg) {
+                console.log("Error during downloading search result content");
+                $("#loading-sign").css("opacity",0);
+                that.lastXhr = null;
+            });
+            $("#loading-sign").css("opacity",1);
         };
 
    };

@@ -155,6 +155,9 @@ class Helper {
         if(isset($array['noChange'])){
             $array_out['noChange'] = $array['noChange'];
         }
+        if(isset($array['tooMuchResults'])){
+            $array_out['tooMuchResults'] = $array['tooMuchResults'];
+        }
 
 
 

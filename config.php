@@ -57,6 +57,9 @@ class Properties{
      if need, the site will index the given folder automatically*/
     public static $enableOnTheFlyIndexing = true;
 
+    /*The max number of results, that a search can give. */
+    public static $maxSearchResultItems = 500;
+
     /*No-Database settings*/
     /*if $databaseEnabled == false*/
     /*Following roles are available:
