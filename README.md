@@ -32,7 +32,7 @@ Notes:
 --------
 
 * site is using mysqli for accessing database. It should be enabled in php.ini
-* for best performance don't store much photos in a directory (best is under 200* 300)
+* for best performance don't store much photos in a directory (best is under 200-300)
 * at large directories php timeout may occur, in this case increase the timeout in php.ini
 * for faster thumbnail generating user less thumbnail sizes (eg.: only one, with a low value, eg.: 150)
   and disable image resampling in config.php
