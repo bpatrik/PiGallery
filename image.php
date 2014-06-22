@@ -46,7 +46,7 @@ if(Properties::$enableImageCaching){
         header("Last-Modified: $lastmod");
         header("ETag: $etag");
     }
-    header('Cache-Control: max-age=259200');
+    header('Cache-Control: max-age=31104000');
 }
 
 header('content-type: image/jpeg');

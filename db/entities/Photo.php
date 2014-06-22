@@ -69,21 +69,6 @@ class Photo extends Content {
         return $this->fileName;
     }
 
-    /**
-     * @param int $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
-    /**
-     * @return int
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
 
     /**
      * @param \string[] $keywords
@@ -101,21 +86,6 @@ class Photo extends Content {
         return $this->keywords;
     }
 
-    /**
-     * @param string $path
-     */
-    public function setPath($path)
-    {
-        $this->path = $path;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPath()
-    {
-        return $this->path;
-    }
 
     /**
      * @param int $height
@@ -164,6 +134,24 @@ class Photo extends Content {
     {
         $this->creationDate = $creationDate;
     }
+
+    /**
+     * @return ThumbnailInfo[]
+     */
+    public function getAvailableThumbnails()
+    {
+        return $this->availableThumbnails;
+    }
+
+    /**
+     * @param ThumbnailInfo[] $availableThumbnails
+     */
+    public function setAvailableThumbnails($availableThumbnails)
+    {
+        $this->availableThumbnails = $availableThumbnails;
+    }
+
+
 
 
 

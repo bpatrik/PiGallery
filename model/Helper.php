@@ -54,6 +54,8 @@ class Helper {
     }
 
     public static function isSubPath($path, $subpath){
+        if(empty($subpath))
+            return false;
         $path = Helper::toDirectoryPath($path);
         $subpath = Helper::toDirectoryPath($subpath);
 

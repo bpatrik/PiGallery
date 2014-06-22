@@ -56,10 +56,10 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager", "detectmobilebrow
                     colCount = 2;
                 }else if(screenWidth < 992){
                     colCount = 4;
-                }else if(screenWidth < 1200){
+                }else if(screenWidth < 1400){
                     colCount = 5;
                 }else{
-                    colCount = 7;
+                    colCount = 6;
                 }
             }
 
@@ -133,7 +133,9 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager", "detectmobilebrow
                     $samplePhoto = thumbnailManager.createThumbnail(directory.samplePhotos[0], dimension.width, dimension.height);
                     $samplePhoto.mousemove(mouseMoveHandler);
                 } else {
-                    $samplePhoto = $('<img>', {src: 'img/gallery-icon_' + ((directory.directoryName.length % 4) + 1) + '.jpg'}).width('100%');
+                    //randomizing no-image gallery icon
+                    var galleyIconID = (((directory.directoryName.charCodeAt(0) + directory.directoryName.charCodeAt(directory.directoryName.length - 1) + directory.directoryName.length) % 4) + 1);
+                    $samplePhoto = $('<img>', {src: 'img/gallery-icon_' + galleyIconID + '.jpg'}).width('100%');
                 }
 
                 //Rendering image Div
