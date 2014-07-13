@@ -188,6 +188,9 @@ class Helper {
                 }
                 $JSON_array[$key] = $tmp_array;
             }else{
+                if(is_object($value) && method_exists($value,'getJsonData')){
+                    $value = $value->getJsonData();
+                }
                 $JSON_array[$key] = $value;
             }
 

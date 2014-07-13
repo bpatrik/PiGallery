@@ -50,6 +50,7 @@ class DB {
 
         $dropUsersTableSQL = "DROP TABLE users";
         $dropSessionIDTableSQL = "DROP TABLE sessionids";
+        $dropSharingTableSQL = "DROP TABLE sharing";
 
         $createPhotoTableSQL = "CREATE TABLE photos
                                 (
@@ -103,6 +104,22 @@ class DB {
                                     )";
 
 
+        $createSharingTableSQL = "CREATE TABLE sharing
+                                    (
+                                        ID INT NOT NULL AUTO_INCREMENT,
+                                        PRIMARY KEY(ID),
+                                        user_id INT,
+                                        share_id NVARCHAR(128),
+                                        path NVARCHAR(128),
+                                        recursive TINYINT,
+                                        timestamp TIMESTAMP,
+                                        validTime DATETIME,
+                                        FOREIGN KEY (user_id)
+                                            REFERENCES users(ID)
+                                            ON DELETE CASCADE
+                                    )";
+
+
 
         $mysqli = DB::getDatabaseConnection();
 
@@ -111,7 +128,8 @@ class DB {
         $mysqli->query($dropDirectoryTableSql);
 
         $mysqli->query($dropSessionIDTableSQL);
-        $mysqli->query($dropUsersTableSQL);
+        $mysqli->query($dropSessionIDTableSQL);
+        $mysqli->query($dropSharingTableSQL);
 
         //Creating table
         if(!$mysqli->query($createDirectoryTableSQL)){
@@ -130,6 +148,11 @@ class DB {
         }
 
         if(!$mysqli->query($createSessionIDTableSQL)){
+            $mysqli->close();
+            throw new Exception("Error: ". $mysqli->error);
+        }
+
+        if(!$mysqli->query($createSharingTableSQL)){
             $mysqli->close();
             throw new Exception("Error: ". $mysqli->error);
         }
@@ -291,16 +314,23 @@ class DB {
                     if ($type != IMAGETYPE_JPEG && $type != IMAGETYPE_PNG && $type != IMAGETYPE_GIF)
                         continue;
 
-                    //loading lightroom keywords
+                    //loading lightroom keywords and creation date
                     $keywords = array();
+                    $creationDate = null;
                     if (isset($info['APP13'])) {
                         $iptc = iptcparse($info['APP13']);
 
                         if (isset($iptc['2#025'])) {
                             $keywords = $iptc['2#025'];
                         }
+                        if (isset($iptc["2#055"]) && isset($iptc["2#060"])) {
+                            $creationDate = \DateTime::createFromFormat('YmdHis', $iptc["2#055"][0] . $iptc["2#060"][0])
+                                             ->format("Y-m-d H:i:s");
+                        }
                     }
-                    $creationDate = date("Y-m-d H:i:s", filectime($contentPath));
+                    if ($creationDate == null) {
+                        $creationDate = date("Y-m-d H:i:s", filectime($contentPath));
+                    }
                     $keywordsStr = implode(",", $keywords);
 
                     //saving image for later commit for efficiency

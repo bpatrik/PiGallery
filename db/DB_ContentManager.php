@@ -31,8 +31,8 @@ class DB_ContentManager {
 
 
     /**
-     * @param $directory
-     * @param $mysqli
+     * @param Directory $directory
+     * @param Mysqli $mysqli
      * @return Photo[]
      * @throws \Exception
      */

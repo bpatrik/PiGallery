@@ -8,6 +8,7 @@ use piGallery\Properties;
 require_once __DIR__."/../config.php";
 require_once __DIR__."/../db/entities/ThumbnailInfo.php";
 
+
 class ThumbnailManager {
 
 
@@ -16,67 +17,70 @@ class ThumbnailManager {
         return md5($pathToImage.$size);
     }
 
-    private static function createThumbnail($pathToImage, $size){
 
-       // Logger::v("ThumbnailManager::createThumbnail","creating thumbnail: " . $pathToImage);
+
+    private static function createThumbnail($pathToImage, $size){
+        ini_set('memory_limit', '96M');
+
+        // Logger::v("ThumbnailManager::createThumbnail","creating thumbnail: " . $pathToImage);
         $pixelCount = $size * $size;
 
-        $outFileName = ThumbnailManager::getThumbnailFileName($pathToImage,$size);
+        $outFileName = ThumbnailManager::getThumbnailFileName($pathToImage, $size);
 
         // load image and get image size
-        list($width, $height, $type) = @getimagesize($pathToImage);
+        list($width, $height, $type) = getimagesize($pathToImage);
 
-        if($width < 1) return false;
+        if ($width < 1) return false;
 
         $scale = sqrt($pixelCount / ($width * $height));
-        if($scale > 1) //do not scale up
+        if ($scale > 1) //do not scale up
             $scale = 1;
 
         $src_img = null;
         // find image type and create temp image and variable
         if ($type == IMAGETYPE_JPEG) {
-            $src_img = @imagecreatefromjpeg($pathToImage);
+            $src_img = imagecreatefromjpeg($pathToImage);
         } else if ($type == IMAGETYPE_GIF) {
-            $src_img = @imagecreatefromgif($pathToImage);
+            $src_img = imagecreatefromgif($pathToImage);
         } else if ($type == IMAGETYPE_PNG) {
-            $src_img = @imagecreatefrompng($pathToImage );
+            $src_img = imagecreatefrompng($pathToImage);
         }
-        if(!$src_img) return false;
-
+        if (!$src_img) return false;
 
 
         // calculate thumbnail size
-        $new_width  = floor( $width  * $scale );
-        $new_height = floor( $height * $scale );
+        $new_width = floor($width * $scale);
+        $new_height = floor($height * $scale);
         // create a new temporary image
-        $tmp_img = imagecreatetruecolor( $new_width, $new_height );
+        $tmp_img = imagecreatetruecolor($new_width, $new_height);
 
-        if($type == IMAGETYPE_GIF || $type == IMAGETYPE_PNG){
+        if ($type == IMAGETYPE_GIF || $type == IMAGETYPE_PNG) {
             // create temp image
             $tmp_img = imagecreatetruecolor($new_width, $new_height);
             $white = imagecolorallocate($tmp_img, 255, 255, 255);
             imagefill($tmp_img, 0, 0, $white);
 
-         /*   // make the new temp image all transparent
-            imagecolortransparent($tmp_img, $white);
-            imagealphablending($tmp_img, false);
-            imagesavealpha($tmp_img, true);*/
+            /*   // make the new temp image all transparent
+               imagecolortransparent($tmp_img, $white);
+               imagealphablending($tmp_img, false);
+               imagesavealpha($tmp_img, true);*/
         }
 
         // copy and resize old image into new image
 
-        if(Properties::$EnableThumbnailResample){
-            imagecopyresampled($tmp_img, $src_img, 0, 0, 0, 0, $new_width, $new_height, $width, $height ); //better quality than simple resize
-        }else{
-            imagecopyresized( $tmp_img, $src_img, 0, 0, 0, 0, $new_width, $new_height, $width, $height );
+        if (Properties::$EnableThumbnailResample) {
+            imagecopyresampled($tmp_img, $src_img, 0, 0, 0, 0, $new_width, $new_height, $width, $height); //better quality than simple resize
+        } else {
+            imagecopyresized($tmp_img, $src_img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
         }
 
 
         // save thumbnail into a file
-        imagejpeg( $tmp_img, Helper::concatPath(Helper::getAbsoluteThumbnailFolderPath(),$outFileName.".jpg"), Properties::$thumbnailJPEGQuality  );
+        imagejpeg($tmp_img, Helper::concatPath(Helper::getAbsoluteThumbnailFolderPath(), $outFileName . ".jpg"), Properties::$thumbnailJPEGQuality);
 
         //freeup
         imagedestroy($tmp_img);
+
     }
 
     /**
@@ -103,6 +107,20 @@ class ThumbnailManager {
         }
 
         return $availableThumbnails;
+    }
+
+    public static function generateThumbnailIfNeeded($pathToImage, $size){
+
+        $pathToImage = Helper::concatPath(Helper::getAbsoluteImageFolderPath(), $pathToImage);
+
+
+        if (!ThumbnailManager::isThumbnailExist($pathToImage, $size)){
+           return  ThumbnailManager::createThumbnail($pathToImage,$size);
+        }
+
+        return true;
+
+
     }
 
     public static function requestThumbnail($pathToImage, $size){
