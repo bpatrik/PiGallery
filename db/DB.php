@@ -324,8 +324,14 @@ class DB {
                             $keywords = $iptc['2#025'];
                         }
                         if (isset($iptc["2#055"]) && isset($iptc["2#060"])) {
-                            $creationDate = \DateTime::createFromFormat('YmdHis', $iptc["2#055"][0] . $iptc["2#060"][0])
-                                             ->format("Y-m-d H:i:s");
+                            $date = \DateTime::createFromFormat('YmdHis', $iptc["2#055"][0] . $iptc["2#060"][0]);
+                            if($date == false){
+                                $date = \DateTime::createFromFormat('YmdHisO', $iptc["2#055"][0] . $iptc["2#060"][0]);
+                            }
+                            if($date != false){
+                                $creationDate =  $date->format("Y-m-d H:i:s");
+                            }
+
                         }
                     }
                     if ($creationDate == null) {
