@@ -135,13 +135,15 @@ PiGallery.initLogin = function(){
         });
 
         //try local logining in
-        if (PiGallery.user == null) {
-
-            $.get(
-                    PiGallery + "/" + PiGallery.documentRoot + "/localtest.html"
-            ).done(function () {
-                    window.location = PiGallery + "/" + PiGallery.documentRoot;
-                });
+        if (!PiGallery.user || PiGallery.user == null) {
+            var url = "//"+PiGallery.localServerUrl + "/" + PiGallery.documentRoot ;
+            $.ajax({
+                url: url+ "/localtest.php?callback=?",
+                dataType: "jsonp",
+                jsonpCallback: 'jsonCallback'
+            }).done(function () {
+                window.location = url;
+            });
         }
 
         PiGallery.loginSiteInitDone = true;
