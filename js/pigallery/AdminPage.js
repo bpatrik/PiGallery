@@ -80,9 +80,11 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
 
             var rolefromInt = function (role) {
                 switch (role) {
-                    case 0:
-                        return "User";
                     case 1:
+                        return "Guest";
+                    case 2:
+                        return "User";
+                    case 3:
                         return "Admin";
                     default:
                         return "User";

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__."/config.php";
+require_once __DIR__."/model/AuthenticationManager.php";
 use \piGallery\Properties;
 require_once __DIR__."/lang/".Properties::$language.".php";
 ?>
@@ -29,7 +30,6 @@ require_once __DIR__."/lang/".Properties::$language.".php";
         use \piGallery\model\Helper;
         use \piGallery\db\DB;
         use \piGallery\db\DB_ContentManager;
-        use \piGallery\model\NoDBUserManager;
 
         /*Check if Table exist*/
         if(Properties::$databaseEnabled) {
@@ -47,25 +47,10 @@ require_once __DIR__."/lang/".Properties::$language.".php";
         $dir = Helper::toDirectoryPath($dir);
         $content = null;
 
-        $user = null;
-        $jsonUser = json_encode(null);
-        if(isset($_COOKIE["pigallery-sessionid"]) && !empty($_COOKIE["pigallery-sessionid"])){
-
-            if(Properties::$databaseEnabled) {
-
-                $user = \piGallery\db\DB_UserManager::loginWithSessionID($_COOKIE["pigallery-sessionid"]);
-                if ($user != null) {
-                    $user->setPassword(null);
-                }
-            }else{
-                $user = NoDBUserManager::loginWithSessionID($_COOKIE["pigallery-sessionid"]);
-                if ($user != null) {
-                    $user->setPassword(null);
-                }
-            }
-        }
+        $user = \piGallery\model\AuthenticationManager::authenticate(\piGallery\db\entities\Role::Guest);
         /*is logged in*/
         if($user != null){
+            $user->setPassword(null);
             try{
                 if(Properties::$databaseEnabled){
 
@@ -82,8 +67,6 @@ require_once __DIR__."/lang/".Properties::$language.".php";
             }catch (Exception $ex){
                 $dir = "/";
             }
-
-         $jsonUser = json_encode($user->getJsonData());
         }
 
 
@@ -98,7 +81,8 @@ require_once __DIR__."/lang/".Properties::$language.".php";
         PiGallery.preLoadedDirectoryContent= <?php echo ($content == null ?  "null" : Helper::contentArrayToJSON($content)); ?>;
         PiGallery.searchSupported = <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>;
         PiGallery.documentRoot = "<?php echo Properties::$documentRoot; ?>";
-        PiGallery.user =  <?php echo $jsonUser; ?>;
+        PiGallery.localServerUrl = "<?php echo Properties::$localServerUrl; ?>";
+        PiGallery.user =  <?php echo json_encode(is_null($user) ? null : $user->getJsonData()); ?>;
         PiGallery.LANG = <?php echo json_encode($LANG); ?>;
 
     </script>
@@ -144,7 +128,7 @@ require_once __DIR__."/lang/".Properties::$language.".php";
             <label class="checkbox">
                 <input id="rememberMeBox" type="checkbox" value="remember-me"> <?php echo $LANG['rememberme']; ?>
             </label>
-            <button id="loginButton" class="btn btn-lg btn-primary btn-block" type="submit"><?php echo $LANG['signin']; ?></button>
+            <button id="loginButton" class="btn btn-lg btn-primary btn-block loginButton" type="submit"><?php echo $LANG['signin']; ?></button>
         </form>
 
     </div> <!-- /container -->
@@ -169,9 +153,9 @@ require_once __DIR__."/lang/".Properties::$language.".php";
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li id="galleryButton" class="active"><a href="#"><?php echo $LANG['gallery']; ?></a></li>
-                    <?php if(\piGallery\Properties::$databaseEnabled) { ?>
-                    <li id="adminButton"><a href="#">Admin</a></li>
-                    <?php } ?>
+
+                    <li id="adminButton" <?php if(!\piGallery\Properties::$databaseEnabled || $user == null || $user->getRole() < \piGallery\db\entities\Role::Admin) { ?> style="display: none; "  <?php } ?>><a href="#">Admin</a></li>
+
                         <!--  <li><a href="#">Admin</a></li>
                     <li><a href="#">Monitor</a></li> -->
                 </ul>
@@ -181,8 +165,12 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                          <li><a href="#"><span class="glyphicon glyphicon-share-alt"> <?php echo $LANG['share']; ?></span></a></li>
                     <?php } ?>
                     -->
-                    <li><a href="#" id="userNameButton">User</a></li>
+                    <li><a href="#" id="userNameButton"><?php echo is_null($user) ? "" : $user->getUserName(); ?></a></li>
+                    <?php if($user != null && $user->getRole() >= \piGallery\db\entities\Role::User){ ?>
                     <li><a href="#" id="logOutButton"><?php echo $LANG['logout']; ?></a></li>
+                    <?php }else{ ?>
+                        <li><a href="#" id="signinButton" data-toggle="modal" data-target="#loginModal"><?php echo $LANG['signin']; ?></a></li>
+                    <?php } ?>
                 </ul>
                 <?php if(\piGallery\Properties::$databaseEnabled) { ?>
                 <form id="autocompleteForm" class="navbar-form navbar-right" role="search">
@@ -285,8 +273,8 @@ require_once __DIR__."/lang/".Properties::$language.".php";
                             <div class="form-group">
                                 <label class="sr-only" for="exampleInputPassword2"><?php echo $LANG['admin_role']; ?></label>
                                 <select id="adminRegisterRole" name="role" class="form-control">
-                                    <option value="0"><?php echo $LANG['admin_role_user']; ?></option>
-                                    <option value="1"><?php echo $LANG['admin_role_admin']; ?></option>
+                                    <option value="2"><?php echo $LANG['admin_role_user']; ?></option>
+                                    <option value="3"><?php echo $LANG['admin_role_admin']; ?></option>
                                 </select>
                             </div>
 
@@ -324,6 +312,28 @@ require_once __DIR__."/lang/".Properties::$language.".php";
             </div>
         </div>
     </div> <!-- /container -->
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="loginModalLabel"><?php echo $LANG['site_name']; ?></h4>
+            </div>
+            <div class="modal-body">
+                    <form class="form-signin" role="form" id="modalSigninForm">
+                        <input id="modalUserNameBox" type="text" class="form-control" placeholder="<?php echo $LANG['username']; ?>" required autofocus>
+                        <input id="modalPasswordBox" type="password" class="form-control" placeholder="<?php echo $LANG['password']; ?>" required>
+                        <label class="checkbox">
+                            <input id="modalRememberMeBox" type="checkbox" value="remember-me"> <?php echo $LANG['rememberme']; ?>
+                        </label>
+                    <button id="modalLoginButton" class="btn btn-lg btn-primary btn-block loginButton" type="submit"><?php echo $LANG['signin']; ?></button>
+                    </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="js/lib/require.min.js" data-main="js/main.js"></script>

@@ -9,6 +9,7 @@ $LANG['password'] = "Password";
 $LANG['rememberme'] = "Remember me";
 $LANG['signin'] = "Sign in";
 $LANG['signinInProgress'] = "Signing in...";
+$LANG['Guest'] = "Guest";
 $LANG['gallery'] = "Gallery";
 $LANG['images'] = "Images";
 $LANG['logout'] = "Log out";

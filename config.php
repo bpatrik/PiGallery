@@ -40,7 +40,7 @@ class Properties{
     public static $enableImageCaching = true;
 
     /*Set it true, if the directory names don't appear properly*/
-    public static $enableUTF8Encode = false;
+    public static $enableUTF8Encode = true;
 
 
     /*Enable the database usage*/
@@ -59,6 +59,10 @@ class Properties{
 
     /*The max number of results, that a search can give. */
     public static $maxSearchResultItems = 500;
+
+    /* Enabling Guest Login*/
+
+    public static $localServerUrl = "192.168.0.50";
 
     /*No-Database settings*/
     /*if $databaseEnabled == false*/

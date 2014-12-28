@@ -9,6 +9,7 @@ $LANG['password'] = "Jelszó";
 $LANG['rememberme'] = "Jegyezz meg!";
 $LANG['signin'] = "Bejelentkezés!";
 $LANG['signinInProgress'] = "Bejelentkezés...";
+$LANG['Guest'] = "Vendég";
 $LANG['gallery'] = "Képek";
 $LANG['images'] = "Képek";
 $LANG['logout'] = "Kijelentkezés";

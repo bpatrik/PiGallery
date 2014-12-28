@@ -66,14 +66,9 @@ PiGallery.initSite = function(){
         $('#galleryButton').click(function () {
             PiGallery.showGallery();
         });
-        if (PiGallery.user.role >= 1) {//is it an admin?
-            $('#adminButton').show();
-            $('#adminButton').click(function () {
-                PiGallery.showAdminSite();
-            });
-        } else {
-            $('#adminButton').hide();
-        }
+        $('#adminButton').click(function () {
+            PiGallery.showAdminSite();
+        });
     });
 
 
@@ -82,27 +77,28 @@ PiGallery.initSite = function(){
 
 PiGallery.initLogin = function(){
     require(['jquery', 'jquery_cookie'],  function   ($) {
+
         $('#gallerySite').hide();
         $('#signInSite').show();
 
-        var showSignProgress = function(show){
-            if(show == true){
+        var showSignProgress = function (show) {
+            var $loginButton = $('#loginButton');
+            if (show == true) {
 
                 $('#userNameBox').attr("disabled", "disabled");
                 $('#passwordBox').attr("disabled", "disabled");
-                $('#loginButton').attr("disabled", "disabled");
-                $('#loginButton').html(PiGallery.LANG.signinInProgress);
+                $loginButton.attr("disabled", "disabled");
+                $loginButton.html(PiGallery.LANG.signinInProgress);
 
-            }else{
+            } else {
 
                 $('#userNameBox').removeAttr("disabled");
                 $('#passwordBox').removeAttr("disabled");
-                $('#loginButton').removeAttr("disabled");
-                $('#loginButton').html(PiGallery.LANG.signin);
+                $loginButton.removeAttr("disabled");
+                $loginButton.html(PiGallery.LANG.signin);
             }
         };
-
-        $('#signinForm').submit(function(event) {
+        $('#signinForm').submit(function (event) {
 
             showSignProgress(true);
 
@@ -114,35 +110,109 @@ PiGallery.initLogin = function(){
                     password: $('#passwordBox').val(),
                     rememberMe: $('#rememberMeBox').prop('checked')},
                 dataType: "json"
-            }).done(function(result) {
-                if(result.error == null){
-                    if($('#rememberMeBox').attr('checked')){
-                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires : 30 });
-                    }else{
-                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires : 1 });
+            }).done(function (result) {
+                if (result.error == null) {
+                    if ($('#rememberMeBox').attr('checked')) {
+                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires: 30 });
+                    } else {
+                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires: 1 });
                     }
-                    $('#userNameBox').val(""),
-                    $('#passwordBox').val(""),
+                    $('#userNameBox').val("");
+                    $('#passwordBox').val("");
                     PiGallery.user = result.data;
                     $("#userNameButton").html(PiGallery.user.userName);
                     PiGallery.showGallery();
                     showSignProgress(false);
-                }else{
+                } else {
                     alert(result.error);
                     showSignProgress(false);
                 }
-            }).fail(function(errMsg) {
+            }).fail(function (errMsg) {
                 console.log("Error during downloading singing in");
                 showSignProgress(false);
             });
             return false;
         });
 
+        //try local logining in
+        if (PiGallery.user == null) {
+
+            $.get(
+                    PiGallery + "/" + PiGallery.documentRoot + "/localtest.html"
+            ).done(function () {
+                    window.location = PiGallery + "/" + PiGallery.documentRoot;
+                });
+        }
+
         PiGallery.loginSiteInitDone = true;
 
     });
 };
 
+
+PiGallery.initModalLogin = function(){
+    require(['jquery', 'jquery_cookie'],  function   ($) {
+
+        var showSignProgress = function(show){
+            var $loginButton = $('#modalLoginButton');
+            if(show == true){
+
+                $('#modalUserNameBox').attr("disabled", "disabled");
+                $('#modalPasswordBox').attr("disabled", "disabled");
+                $loginButton.attr("disabled", "disabled");
+                $loginButton.html(PiGallery.LANG.signinInProgress);
+
+            }else{
+
+                $('#modalUserNameBox').removeAttr("disabled");
+                $('#modalPasswordBox').removeAttr("disabled");
+                $loginButton.removeAttr("disabled");
+                $loginButton.html(PiGallery.LANG.signin);
+            }
+        };
+        $('#modalSigninForm').submit(function (event) {
+
+            showSignProgress(true);
+
+            $.ajax({
+                type: "POST",
+                url: "model/AJAXfacade.php",
+                data: {method: "login",
+                    userName: $('#modalUserNameBox').val(),
+                    password: $('#modalPasswordBox').val(),
+                    rememberMe: $('#modalRememberMeBox').prop('checked')},
+                dataType: "json"
+            }).done(function (result) {
+                if (result.error == null) {
+                    if ($('#rememberMeBox').attr('checked')) {
+                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires: 30 });
+                    } else {
+                        $.cookie("pigallery-sessionid", result.data.sessionID, { expires: 1 });
+                    }
+                    $('#modalUserNameBox').val("");
+                    $('#modalPasswordBox').val("");
+                    PiGallery.user = result.data;
+                    $("#userNameButton").html(PiGallery.user.userName);
+                    PiGallery.showGallery();
+                    $("#loginModal").modal("hide");
+                    showSignProgress(false);
+                } else {
+                    alert(result.error);
+                    showSignProgress(false);
+                }
+            }).fail(function (errMsg) {
+                console.log("Error during downloading singing in");
+                showSignProgress(false);
+            });
+            return false;
+        });
+
+
+
+        PiGallery.loginSiteInitDone = true;
+
+    });
+};
 
 PiGallery.initGallery = function(){
     require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete", 'jquery_cookie' ],
@@ -222,7 +292,7 @@ PiGallery.initGallery = function(){
                 new AutoComplete($("#auto-complete-box"));
             }
 
-
+            PiGallery.initModalLogin();
             PiGallery.gallerySiteInitDone = true;
         });
 };
@@ -258,6 +328,11 @@ PiGallery.showGallery = function(){
         PiGallery.initGallery();
     }
     require(['jquery'], function   ($) {
+        if(PiGallery.user.role >= 3){
+            $("#adminButton").show();
+        }else{
+            $("#adminButton").hide();
+        }
         $('#gallerySite').show();
         $('#signInSite').hide();
         $('#gallery-container').show();
