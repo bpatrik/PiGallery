@@ -61,7 +61,8 @@ class Properties{
     public static $maxSearchResultItems = 500;
 
     /* Enabling Guest Login*/
-
+    /* Set this url to the local netwrok Ip of the server. 
+       THe site will search the server at this url, if it founds, it will be redirected to this IP*/
     public static $localServerUrl = "192.168.0.50";
 
     /*No-Database settings*/
