@@ -9,7 +9,7 @@ Features:
 
 * The site has 2 modes: Database(Mysql) mode and a database less mode.
 * authentication
-* * Support for no-authentication/Guest mode at local netwrok
+  * Support for no-authentication/Guest mode at local netwrok
 * recursive directory scan
 * on the fly thumbnail generation with cache
 * on the fly direcotry indexing (for database mode)
