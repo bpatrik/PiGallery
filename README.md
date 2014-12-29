@@ -17,7 +17,7 @@ Features:
 * supports image keywords (like lightroom keywords)
 * search in file names, directory names, keywords(database mode only)
 * designed for low* resource serves (weak CPU, low bandwidth)
-* Transaltion support (English, Hungarian)
+* Translation support (English, Hungarian)
 
 Installation:
 --------
