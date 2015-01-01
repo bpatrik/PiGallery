@@ -1003,9 +1003,18 @@
                 element = this.elementPrototype.cloneNode(false),
                 url = obj,
                 title,
+                called,
                 onloadCallback = function(event){
-                    thumbnailImg.style.display = "none";
-                    $(img).off("load",onloadCallback);
+                    if (!called) {
+                        event = {
+                            type: event.type,
+                            target: element
+                        };
+                        called = true;
+                        thumbnailImg.style.display = "none";
+                        $(img).off("load", onloadCallback);
+                        callback(event);
+                    }
                 };
             if(width > slideWidth){
                 height = height / (width / slideWidth);

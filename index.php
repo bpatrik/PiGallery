@@ -90,7 +90,8 @@ header("Access-Control-Allow-Headers: X-Requested-With");
         PiGallery.preLoadedDirectoryContent= <?php echo ($content == null ?  "null" : Helper::contentArrayToJSON($content)); ?>;
         PiGallery.searchSupported = <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>;
         PiGallery.documentRoot = "<?php echo Properties::$documentRoot; ?>";
-        PiGallery.localServerUrl = "<?php echo Properties::$localServerUrl; ?>";
+        PiGallery.guestAtLocalNetwrokEnbaled = <?php  echo Properties::$GuestLoginAtLocalNetworkEnabled ? "true" : "false"; ?>;
+        PiGallery.localServerUrl = "<?php if(Properties::$GuestLoginAtLocalNetworkEnabled) echo $_SERVER['SERVER_ADDR']; ?>";
         PiGallery.user =  <?php echo json_encode(is_null($user) ? null : $user->getJsonData()); ?>;
         PiGallery.LANG = <?php echo json_encode($LANG); ?>;
 
@@ -175,11 +176,8 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                     <?php } ?>
                     -->
                     <li><a href="#" id="userNameButton"><?php echo is_null($user) ? "" : $user->getUserName(); ?></a></li>
-                    <?php if($user != null && $user->getRole() >= \piGallery\db\entities\Role::User){ ?>
-                    <li><a href="#" id="logOutButton"><?php echo $LANG['logout']; ?></a></li>
-                    <?php }else{ ?>
-                        <li><a href="#" id="signinButton" data-toggle="modal" data-target="#loginModal"><?php echo $LANG['signin']; ?></a></li>
-                    <?php } ?>
+                    <li><a href="#" id="logOutButton" ><?php echo $LANG['logout']; ?></a></li>
+                    <li><a href="#" id="signinButton" data-toggle="modal" data-target="#loginModal"><?php echo $LANG['signin']; ?></a></li>
                 </ul>
                 <?php if(\piGallery\Properties::$databaseEnabled) { ?>
                 <form id="autocompleteForm" class="navbar-form navbar-right" role="search">

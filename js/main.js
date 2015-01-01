@@ -135,7 +135,7 @@ PiGallery.initLogin = function(){
         });
 
         //try local logining in
-        if (!PiGallery.user || PiGallery.user == null) {
+        if ((!PiGallery.user || PiGallery.user == null) && PiGallery.guestAtLocalNetwrokEnbaled === true) {
             var url = "//"+PiGallery.localServerUrl + "/" + PiGallery.documentRoot ;
             $.ajax({
                 url: url+ "/localtest.php?callback=?",
@@ -272,7 +272,7 @@ PiGallery.initGallery = function(){
                 var target = event.target || event.srcElement,
                     link = target.src ? target.parentNode : target,
                     options = $.extend({}, $('#blueimp-gallery').data(),
-                        {index: link, event: event, preloadRange: 1}),
+                        {index: link, event: event, preloadRange: 1, startSlideshow: true}),
                     links = $('#photo-gallery [data-galxlery]');
 
                 $('.full-screen').show();
@@ -334,6 +334,13 @@ PiGallery.showGallery = function(){
             $("#adminButton").show();
         }else{
             $("#adminButton").hide();
+        }
+        if(PiGallery.user.role == 1){
+            $("#logOutButton").hide();
+            $("#signinButton").show();
+        }else{
+            $("#logOutButton").show();
+            $("#signinButton").hide();
         }
         $('#gallerySite').show();
         $('#signInSite').hide();

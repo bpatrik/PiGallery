@@ -24,7 +24,7 @@ class AuthenticationManager {
         global $LANG;
 
         $user = null;
-        if($roleNeeded <= Role::Guest && Helper::isClientInSameSubnet() === TRUE){
+        if($roleNeeded <= Role::Guest && Helper::isClientInSameSubnet() === TRUE && Properties::$GuestLoginAtLocalNetworkEnabled === TRUE){
             $user = new User($LANG['Guest'],null,Role::Guest);
         }
 

@@ -60,9 +60,9 @@ class Properties{
     /*The max number of results, that a search can give. */
     public static $maxSearchResultItems = 500;
 
-    /* Enabling Guest Login*/
-
-    public static $localServerUrl = "192.168.0.50";
+    /* Enabling Guest Login
+        Only use it if the server is not put directly to the internet*/
+    public static $GuestLoginAtLocalNetworkEnabled = false;
 
     /*No-Database settings*/
     /*if $databaseEnabled == false*/
