@@ -1,4 +1,4 @@
-PiGallery 0.9
+PiGallery 0.91
 =========
 
 This is a lightweight online photo gallery design for Raspberry Pi, but can be used with any other device.
@@ -9,6 +9,7 @@ Features:
 
 * The site has 2 modes: Database(Mysql) mode and a database less mode.
 * authentication
+  * Support for no-authentication/Guest mode at local netwrok
 * recursive directory scan
 * on the fly thumbnail generation with cache
 * on the fly direcotry indexing (for database mode)
@@ -16,6 +17,7 @@ Features:
 * supports image keywords (like lightroom keywords)
 * search in file names, directory names, keywords(database mode only)
 * designed for low* resource serves (weak CPU, low bandwidth)
+* Translation support (English, Hungarian)
 
 Installation:
 --------
