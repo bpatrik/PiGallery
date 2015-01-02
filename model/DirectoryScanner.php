@@ -41,7 +41,7 @@ class DirectoryScanner {
                 $contentPath = Helper::concatPath($path,$value);
                 //read directory
                 if(is_dir($contentPath) == true){
-                    array_push($directories, new Directory(0, Helper::relativeToImageDirectory($path),$value, 0, DirectoryScanner::getSamplePhotos($contentPath,5)));
+                    array_push($directories, new Directory(0, Helper::relativeToImageDirectory($path),$value, 0, 1, DirectoryScanner::getSamplePhotos($contentPath,5)));
                 //read photo
                 }else{
 

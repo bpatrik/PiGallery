@@ -1,6 +1,6 @@
 var PiGallery = PiGallery || {};
 
-define(["jquery", "jquery_ui"], function($) {
+define(["jquery", "jquery_ui", 'PiGallery/Enums'], function($) {
     "use strict";
     return function addAutoComplete(selector) {
 
@@ -39,11 +39,14 @@ define(["jquery", "jquery_ui"], function($) {
                 var element = $("<li></li>").data("ui-autocomplete-item", item).append($(text));
                 return $(element).appendTo(ul);
             };
-        }
+        };
 
         this.init = function() {
                 var acInstance = $(selector).autocomplete({
                 source: function (request, response) {
+                    if(PiGallery.user && PiGallery.user.role <= PiGallery.enums.Roles.RemoteGuest){ //remote guest not allowed to search
+                        return;
+                    }
                     $.ajax({
                         url: "model/AJAXfacade.php",
                         dataType: "json",
@@ -59,9 +62,13 @@ define(["jquery", "jquery_ui"], function($) {
                                 return item;
                             }));
                         }else{
+                            if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                                PiGallery.logOut();
+                                return;
+                            }
                             console.log(result.error);
                         }
-                    }).fail( function (error) {
+                    }).fail( function () {
                         console.log("Error: cant get auto complete data from server");
                     });
                 },

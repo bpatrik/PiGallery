@@ -76,7 +76,7 @@ PiGallery.initSite = function(){
 
 
 PiGallery.initLogin = function(){
-    require(['jquery', 'jquery_cookie'],  function   ($) {
+    require(['jquery', 'jquery_cookie', 'PiGallery/Enums'],  function   ($) {
 
         $('#gallerySite').hide();
         $('#signInSite').show();
@@ -124,6 +124,10 @@ PiGallery.initLogin = function(){
                     PiGallery.showGallery();
                     showSignProgress(false);
                 } else {
+                    if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                        PiGallery.logOut();
+                        return;
+                    }
                     alert(result.error);
                     showSignProgress(false);
                 }
@@ -153,7 +157,7 @@ PiGallery.initLogin = function(){
 
 
 PiGallery.initModalLogin = function(){
-    require(['jquery', 'jquery_cookie'],  function   ($) {
+    require(['jquery', 'jquery_cookie', 'PiGallery/Enums'],  function   ($) {
 
         var showSignProgress = function(show){
             var $loginButton = $('#modalLoginButton');
@@ -199,6 +203,10 @@ PiGallery.initModalLogin = function(){
                     $("#loginModal").modal("hide");
                     showSignProgress(false);
                 } else {
+                    if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                        PiGallery.logOut();
+                        return;
+                    }
                     alert(result.error);
                     showSignProgress(false);
                 }
@@ -217,7 +225,7 @@ PiGallery.initModalLogin = function(){
 };
 
 PiGallery.initGallery = function(){
-    require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete", 'jquery_cookie' ],
+    require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete", 'jquery_cookie', 'PiGallery/Enums' ],
         function   ($,blueimpGallery,ContentManager, GalleryRenderer, AutoComplete) {
 
 
@@ -294,7 +302,44 @@ PiGallery.initGallery = function(){
                 new AutoComplete($("#auto-complete-box"));
             }
 
+            /*Init modal login for guests*/
             PiGallery.initModalLogin();
+            
+            /*Init sharing*/
+            var $shareButton = $("#shareButton"),
+                $shareModal = $("#shareModal");
+            if($shareModal.length != 0 && $shareButton.length != 0){
+                
+                $shareButton.click(function(){
+
+                    $("#loading-sign").css("opacity",1);
+                    $.ajax({
+                        type: "POST",
+                        url: "model/AJAXfacade.php",
+                        data: {method: "share",
+                               folder: galleryRenderer.directoryContent.currentPath },
+                        dataType: "json"
+                    }).done(function(result) {
+                        if (result.error == null) {
+                            console.log(result.data);
+                            $("#loading-sign").css("opacity", 0);
+                            $shareModal.modal('show');
+                            $("#shareLink").val(result.data.link);
+                        }else{
+                            if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                                PiGallery.logOut();
+                                return;
+                            }
+                            PiGallery.showErrorMessage(result.error);
+                        }
+                    }).fail(function() {
+                        console.log("Error during sharing");
+                        $("#loading-sign").css("opacity",0);
+                    });
+                });
+                
+            }
+            
             PiGallery.gallerySiteInitDone = true;
         });
 };
@@ -329,19 +374,28 @@ PiGallery.showGallery = function(){
     if(PiGallery.gallerySiteInitDone == false){
         PiGallery.initGallery();
     }
-    require(['jquery'], function   ($) {
-        if(PiGallery.user.role >= 3){
-            $("#adminButton").show();
+    require(['jquery', 'PiGallery/Enums'], function   ($) {
+        var $adminButton = $("#adminButton");
+        if(PiGallery.user.role >= PiGallery.enums.Roles.Admin){
+            $adminButton.show();
         }else{
-            $("#adminButton").hide();
+            $adminButton.hide();
         }
-        if(PiGallery.user.role == 1){
+        $adminButton.removeClass("active");
+        
+        if(PiGallery.user.role <= PiGallery.enums.Roles.LocalGuest){
             $("#logOutButton").hide();
             $("#signinButton").show();
         }else{
             $("#logOutButton").show();
             $("#signinButton").hide();
         }
+        if(PiGallery.user.role <= PiGallery.enums.Roles.User){
+            $("#shareButton").hide();
+        }else{
+            $("#shareButton").show();
+        }
+        
         $('#gallerySite').show();
         $('#signInSite').hide();
         $('#gallery-container').show();
@@ -349,7 +403,6 @@ PiGallery.showGallery = function(){
         $('#autocompleteForm').show();
 
         $('#galleryButton').addClass("active");
-        $('#adminButton').removeClass("active");
 
     });
 };

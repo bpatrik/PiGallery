@@ -9,12 +9,14 @@ $LANG['password'] = "Password";
 $LANG['rememberme'] = "Remember me";
 $LANG['signin'] = "Sign in";
 $LANG['signinInProgress'] = "Signing in...";
-$LANG['Guest'] = "Guest";
+$LANG['guest'] = "Guest";
 $LANG['gallery'] = "Gallery";
 $LANG['images'] = "Images";
 $LANG['logout'] = "Log out";
 $LANG['search'] = "Search";
 $LANG['share'] = "Share";
+$LANG['recursive'] = "share subfolder too";
+$LANG['copy'] = "Copy";
 $LANG['searchingfor'] = "Searching for:";
 $LANG['tooMuchResults'] = "The search returned too much results, some of them the may not appear. Please refine your search!";
 

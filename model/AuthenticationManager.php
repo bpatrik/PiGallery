@@ -20,30 +20,39 @@ class AuthenticationManager {
      * @param int $roleNeeded
      * @return \piGallery\db\entities\User
      */
-    public static function authenticate($roleNeeded = Role::Guest){
+    public static function authenticate($roleNeeded = Role::RemoteGuest){
         global $LANG;
 
-        $user = null;
-        if($roleNeeded <= Role::Guest && Helper::isClientInSameSubnet() === TRUE && Properties::$GuestLoginAtLocalNetworkEnabled === TRUE){
-            $user = new User($LANG['Guest'],null,Role::Guest);
+        $guestUser = null;
+        //Login as guest user at localnetwork
+        if($roleNeeded <= Role::LocalGuest && Helper::isClientInSameSubnet() === TRUE && Properties::$GuestLoginAtLocalNetworkEnabled === TRUE){
+            $guestUser = new User($LANG['guest'],null,Role::LocalGuest);
         }
 
+        //login as guest with link (share link)
+        if(Properties::$databaseEnabled && $guestUser == null && $roleNeeded <= Role::RemoteGuest) { //if a local network guest: no extra login needed
+            if (isset($_REQUEST["s"]) && !empty($_REQUEST["s"])) {
+                $guestUser =  DB_UserManager::loginWithShareLink($_REQUEST["s"]);
+            }
+        }
+        
+        //Try to login normally
         /*Checking session id*/
-        $tmp_user = null;
+        $user = null;
         if(isset($_COOKIE["pigallery-sessionid"]) && !empty($_COOKIE["pigallery-sessionid"])){
 
             $sessionID = $_COOKIE["pigallery-sessionid"];
 
             if(Properties::$databaseEnabled){ //Using database enabled?
 
-                $tmp_user = DB_UserManager::loginWithSessionID($sessionID);
+                $user = DB_UserManager::loginWithSessionID($sessionID);
                 if($user != null && $user->getRole() >= $roleNeeded){
                     return $user;
                 }
 
             }else{//No-database mode
 
-                $tmp_user = NoDBUserManager::loginWithSessionID($sessionID);
+                $user = NoDBUserManager::loginWithSessionID($sessionID);
                 if($user != null && $user->getRole() >= $roleNeeded){
                     return $user;
                 }
@@ -52,7 +61,7 @@ class AuthenticationManager {
 
         }
 
-        return is_null($tmp_user) ? $user :  $tmp_user;
+        return is_null($user) ? $guestUser :  $user;
 
     }
 

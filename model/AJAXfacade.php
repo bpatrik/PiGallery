@@ -10,15 +10,17 @@ require_once __DIR__."/Helper.php";
 require_once __DIR__."/../config.php";
 require_once __DIR__."/DirectoryScanner.php";
 require_once __DIR__."/../config.php";
+require_once __DIR__."/../db/entities/AjaxError.php";
 require_once __DIR__."/NoDBUserManager.php";
 
 use piGallery\db\DB;
 use piGallery\db\DB_ContentManager;
 use piGallery\db\DB_UserManager;
+use piGallery\db\entities\AjaxError;
+use piGallery\db\entities\Directory;
 use piGallery\db\entities\User;
 use piGallery\Properties;
 use piGallery\db\entities\Role;
-use piGallery\model\AuthenticationManager;
 
 /* empty string set as null*/
 foreach ($_REQUEST as $key => $value){
@@ -38,14 +40,20 @@ function authenticate($role = Role::User) {
     require_once __DIR__."/../db/entities/Role.php";
 
     /*Authentication need for images*/
-    return AuthenticationManager::authenticate($role);
+    $user = AuthenticationManager::authenticate($role);
+    if(is_null($user)){
+        die(json_encode(array("error" => (new AjaxError(AjaxError::AUTHENTICATION_FAIL, "Authentication failed"))->getJsonData(), "data" => "")));
+    }
+    return $user;
 }
 
 
 switch (Helper::require_REQUEST('method')) {
 
     case 'getContent':
-        authenticate();
+        $user = authenticate(Role::RemoteGuest);
+        $error = null;
+        $data = null;
 
         $dir = Helper::require_REQUEST('dir');
         if (Properties::$enableUTF8Encode) {
@@ -56,8 +64,6 @@ switch (Helper::require_REQUEST('method')) {
         if($lastModificationDate == "null")
             $lastModificationDate = null;
 
-        $error = null;
-        $data = null;
         try {
             if (Properties::$databaseEnabled) {
                 $data = DB_ContentManager::getDirectoryContent($dir, $lastModificationDate);
@@ -65,14 +71,18 @@ switch (Helper::require_REQUEST('method')) {
                 $data = DirectoryScanner::getDirectoryContent($dir);
             }
         }catch(\Exception $ex){
-            $error = utf8_encode($ex->getMessage());
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
-
-        die(json_encode(array("error" => $error, "data" => Helper::contentArrayToJSONable($data))));
+        
+        if($user->getPathRestriction() != null && $user->getPathRestriction()->isRecursive() === FALSE){
+            $data['directories'] = array();
+        }
+        
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => Helper::contentArrayToJSONable($data))));
         break;
 
     case 'indexDirectoryAndGetContent':
-        authenticate();
+        authenticate(Role::RemoteGuest);
         $error = null;
         $data = null;
         if(Properties::$enableOnTheFlyIndexing){
@@ -88,24 +98,24 @@ switch (Helper::require_REQUEST('method')) {
                     DB::indexDirectory($dir);
                     $data = DB_ContentManager::getDirectoryContent($dir, null);
                 }else{
-                    $error = "Error: not supported";
+                    $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
                 }
             }catch(\Exception $ex){
-                $error = utf8_encode($ex->getMessage());
+                $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
             }
 
 
         }else{
-            $error = "On the fly indexing is not enabled";
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, "On the fly indexing is not enabled");
         }
 
 
-        die(json_encode(array("error" => $error, "data" => Helper::contentArrayToJSONable($data))));
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => Helper::contentArrayToJSONable($data))));
         break;
 
     case 'autoComplete':
 
-        authenticate();
+        authenticate(Role::LocalGuest);
         $count= intval(Helper::get_REQUEST('count',5));
         $searchText= Helper::require_REQUEST('searchText');
 
@@ -115,44 +125,60 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                 $data = DB_ContentManager::getAutoComplete($searchText,$count);
             }else{
-                die("Error: not supported");
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
             }
         }catch(\Exception $ex){
-                $error = utf8_encode($ex->getMessage());
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
 
-        foreach($data as &$item){
-          //  $item['text'] = (Helper::toURLPath($item['text']));
-            if (Properties::$enableUTF8Encode) {
-             //   $item['text'] = (utf8_encode($item['text']));
-            }
-        }
-        die(json_encode(array("error" => $error, "data" => $data)));
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => $data)));
         break;
 
     case 'search':
-        authenticate();
+        authenticate(Role::LocalGuest);
 
         $error = null;
         $data = null;
 
         $searchString = Helper::require_REQUEST('searchString');
-        if (Properties::$enableUTF8Encode) {
-      //      $searchString = utf8_decode($searchString);
-        }
 
         try {
             if(Properties::$databaseEnabled){
                 $data = DB_ContentManager::getSearchResult($searchString);
             }else{
-                die("Error: not supported");
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
             }
         }catch(\Exception $ex){
-            $error = utf8_encode($ex->getMessage());
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
 
-        die(json_encode(array("error" => $error, "data" => Helper::contentArrayToJSONable($data))));
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => Helper::contentArrayToJSONable($data))));
         break;
+    
+    case 'share':
+        $user = authenticate(Role::User);
+        $error = null;
+        $data = null;
+
+        $folder = Helper::require_REQUEST('folder');
+        $isRecursive = filter_var( Helper::get_REQUEST('isRecursive',false),FILTER_VALIDATE_BOOLEAN);
+        $validInterval = intval(Helper::get_REQUEST('validInterval',24 * 30)); //default 30 days
+        
+        
+        try {
+            if(Properties::$databaseEnabled){
+                $data = array("link" => Properties::$siteUrl.'?s='.DB_ContentManager::shareFolder($user, $folder, $validInterval, $isRecursive));
+            }else{
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
+            }
+        }catch(\Exception $ex){
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
+        }
+
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => $data)));
+
+        break;
+    
     case 'login':
         $userName =  Helper::require_REQUEST('userName');
         $password = Helper::require_REQUEST('password');
@@ -165,28 +191,32 @@ switch (Helper::require_REQUEST('method')) {
                 $user = DB_UserManager::login($userName, $password,$rememberMe);
                 if ($user != null) {
                     $user->setPassword(null);
+                    if($user->getPathRestriction() != null)
+                      $user->getPathRestriction()->setPath(Helper::toURLPath($user->getPathRestriction()->getPath()));
                     $data = $user->getJsonData();
                 } else {
-                    $error = "Wrong user name or password";
+                    $error = new AjaxError(AjaxError::AUTHENTICATION_FAIL, "Wrong user name or password");
                 }
             } else {
                 $user = NoDBUserManager::login($userName, $password);
                 if ($user != null) {
                     $user->setPassword(null);
+                    if($user->getPathRestriction() != null)
+                        $user->getPathRestriction()->setPath(Helper::toURLPath($user->getPathRestriction()->getPath()));
                     $data = $user->getJsonData();
                 } else {
-                    $error = "Wrong user name or password";
+                    $error = new AjaxError(AjaxError::AUTHENTICATION_FAIL, "Wrong user name or password");
                 }
             }
         }catch(\Exception $ex){
-            $error = utf8_encode($ex->getMessage());
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
 
-        die(json_encode(array("error" => $error, "data" => $data)));
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => $data)));
 
         break;
     case 'logout':
-        $user = authenticate();
+        $user = authenticate(Role::User);
         $sessionID =  Helper::require_REQUEST('sessionID');
         $error = null;
         $data = null;
@@ -195,14 +225,14 @@ switch (Helper::require_REQUEST('method')) {
                 $data = DB_UserManager::logout($user->getId(), $sessionID);
             }
         }catch(\Exception $ex){
-            $error = utf8_encode($ex->getMessage());
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
 
-        die(json_encode(array("error" => $error, "data" =>$data)));
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" =>$data)));
         break;
 
 
-/*-------------ADMIN methodes--------------*/
+/*-------------ADMIN methods--------------*/
 
     case 'recreateDatabase':
         authenticate(Role::Admin);
@@ -214,13 +244,13 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                 $data = DB::recreateDatabase();
             }else{
-                $error =  "Error: not supported";
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
             }
         }catch(\Exception $ex){
-            $error = utf8_encode($ex->getMessage());
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
 
-        die(json_encode(array("error" => $error, "data" =>$data)));
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" =>$data)));
         break;
 
     case 'clearGalleryDatabase':
@@ -232,13 +262,13 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                 $data = DB::clearDatabase();
             }else{
-                $error =  "Error: not supported";
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
             }
         }catch(\Exception $ex){
-            $error = utf8_encode($ex->getMessage());
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
 
-        die(json_encode(array("error" => $error, "data" =>$data)));
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" =>$data)));
         break;
     case 'indexDirectory':
         authenticate(Role::Admin);
@@ -254,10 +284,10 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                $data = DB::indexDirectory($dir);
             }else{
-               $error = "Error: not supported";
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
             }
         }catch(\Exception $ex){
-            $error = utf8_encode($ex->getMessage());
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
 
         if($data != null){
@@ -268,7 +298,7 @@ switch (Helper::require_REQUEST('method')) {
             }
         }
 
-        die(json_encode(array("error" => $error, "data" =>$data)));
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" =>$data)));
         break;
 
 
@@ -281,12 +311,12 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                 $data = DB_UserManager::getUsersList();
             }else{
-                $error = "Error: not supported";
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
             }
         }catch(\Exception $ex){
-            $error = utf8_encode($ex->getMessage());
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
-        die(json_encode(array("error" => $error, "data" => Helper::phpObjectArrayToJSONable($data))));
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => Helper::phpObjectArrayToJSONable($data))));
         break;
 
     case 'registerUser':
@@ -301,12 +331,12 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                 $data = DB_UserManager::register(new User($userName, $password, $role));
             }else{
-                $error = "Error: not supported";
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
             }
         }catch(\Exception $ex){
-            $error = utf8_encode($ex->getMessage());
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
-        die(json_encode(array("error" => $error, "data" => $data)));
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => $data)));
         break;
     case 'deleteUser':
         $user = authenticate(Role::Admin);
@@ -315,19 +345,19 @@ switch (Helper::require_REQUEST('method')) {
         $data = null;
         $id = Helper::require_REQUEST('id');
         if ($user->getId() == $id){
-            $error = "You cant delete yourself!";
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, "You cant delete yourself!");
         }else{
             try {
                 if(Properties::$databaseEnabled){
                     $data = DB_UserManager::deleteUser($id);
                 }else{
-                    $error = "Error: not supported";
+                    $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
                 }
             }catch(\Exception $ex){
-                $error = utf8_encode($ex->getMessage());
+                $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
             }
         }
-        die(json_encode(array("error" => $error, "data" => $data)));
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => $data)));
 
         break;
 }

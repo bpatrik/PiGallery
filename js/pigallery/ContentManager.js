@@ -1,4 +1,4 @@
-define(["jquery"], function ($) {
+define(["jquery", 'PiGallery/Enums'], function ($) {
     "use strict";
 
 
@@ -17,6 +17,11 @@ define(["jquery"], function ($) {
                     dataType: "json"
                 }).done(function(result) {
                     if(result.error != null){
+                        if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                            PiGallery.logOut();
+                            that.lastXhr = null;
+                            return;
+                        }
                         PiGallery.showErrorMessage(result.error);
                     }else if(result.data != null) { //if the directory content changed comparing to the cached one
                         that.storeContent(result.data);
@@ -25,7 +30,7 @@ define(["jquery"], function ($) {
                     that.lastXhr = null;
                     $("#loading-sign").css("opacity",0);
 
-                }).fail(function(errMsg) {
+                }).fail(function() {
                     PiGallery.showErrorMessage("Error during indexing folder");
                     that.lastXhr = null;
                     $("#loading-sign").css("opacity",0);
@@ -46,14 +51,24 @@ define(["jquery"], function ($) {
                 that.lastXhr = null;
             }
 
+            var ajaxArray = {method: "getContent", dir: path, lastModificationDate: lastModificationDate};
+            if(PiGallery.shareLink){
+                ajaxArray.s=PiGallery.shareLink;
+            }
+            
             that.lastXhr =
                 $.ajax({
                 type: "POST",
                 url: "model/AJAXfacade.php",
-                data: {method: "getContent", dir: path, lastModificationDate: lastModificationDate},
+                data: ajaxArray,
                 dataType: "json"
             }).done(function(result) {
                     if(result.error != null){
+                        if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                            PiGallery.logOut();
+                            that.lastXhr = null;
+                            return;
+                        }
                         PiGallery.showErrorMessage(result.error);
                     }else if(result.data != null && result.data.noChange == false) { //if the directory content changed comparing to the cached one
                         that.storeContent(result.data);
@@ -67,7 +82,7 @@ define(["jquery"], function ($) {
                         $("#loading-sign").css("opacity",0);
                     }
 
-            }).fail(function(errMsg) {
+            }).fail(function() {
                     PiGallery.showErrorMessage("Error during downloading directory content");
                     that.lastXhr = null;
                     $("#loading-sign").css("opacity",0);
@@ -96,28 +111,39 @@ define(["jquery"], function ($) {
 
 
         this.getSearchResult = function(searchString, galleryRenderer){
-
+            if(PiGallery.user && PiGallery.user.role <= PiGallery.enums.Roles.RemoteGuest){ //remote guest not allowed to search
+                return;
+            }
             if (that.lastXhr  && that.lastXhr.readyState != 4){
                 that.lastXhr.abort();
                 that.lastXhr = null;
+            }
+            var ajaxArray = {method: "search", searchString: searchString};
+            if(PiGallery.shareLink){
+                ajaxArray.s=PiGallery.shareLink;                
             }
 
             that.lastXhr =
             $.ajax({
                 type: "POST",
                 url: "model/AJAXfacade.php",
-                data: {method: "search", searchString: searchString},
+                data: ajaxArray,
                 dataType: "json"
             }).done(function(result) {
                 if(result.error == null){
                     galleryRenderer.showSearchResult(result.data);
                 }else{
+                    if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                        PiGallery.logOut();
+                        that.lastXhr = null;
+                        return;
+                    }
                     PiGallery.showErrorMessage(result.error);
                 }
                 that.lastXhr = null;
                 $("#loading-sign").css("opacity",0);
 
-            }).fail(function(errMsg) {
+            }).fail(function() {
                 console.log("Error during downloading search result content");
                 $("#loading-sign").css("opacity",0);
                 that.lastXhr = null;

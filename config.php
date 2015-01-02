@@ -12,6 +12,13 @@ class Properties{
      * If your language not exist, translate from eng :) */
     public static $language = "eng";
 
+    /*The site url. This path leads to the index.php.
+    Example:
+        1) https://www.mysite.com/gallery/
+        2) http://localhost/
+    */
+    public static $siteUrl = "http://localhost:8080/PiGallery/";
+    
     /*The base directory relative to the document root (the www folder)
     Eg.: If the site folder is /var/www/PiGallery than set is 'PiGallery'*/
 	public static $documentRoot  = "PiGallery";
@@ -49,9 +56,9 @@ class Properties{
     /*-------------Database settings----------*/
     /*if $databaseEnabled == true*/
     public static $databaseAddress = "localhost";
-    public static $databseUserName = "root";
-    public static $databsePassword = "root";
-    public static $databseName = "pigallery";
+    public static $databaseUserName = "root";
+    public static $databasePassword = "root";
+    public static $databaseName = "pigallery";
 
     /*If its true, the site will check at every directory open if indexing is needed or not.
      if need, the site will index the given folder automatically*/

@@ -1,6 +1,6 @@
 var PiGallery = PiGallery || {};
 
-define(['jquery', 'bootstrap-confirmation'], function($) {
+define(['jquery', 'bootstrap-confirmation', 'PiGallery/Enums'], function($) {
 
     return function AdminPage($AdminPageDiv) {
         this.init = function(){
@@ -20,6 +20,10 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                         if (result.error == null) {
                             PiGallery.logOut();
                         } else {
+                            if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                                PiGallery.logOut();
+                                return;
+                            }
                             alert(result.error);
                         }
                     }).fail(function (errMsg) {
@@ -44,6 +48,10 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                         if (result.error == null) {
                             $AdminPageDiv.find('#indexingProgress').html("Indexes cleared");
                         } else {
+                            if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                                PiGallery.logOut();
+                                return;
+                            }
                             alert(result.error);
                         }
                     }).fail(function (errMsg) {
@@ -69,6 +77,10 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                     if (result.error == null) {
                         updateUserList();
                     } else {
+                        if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                            PiGallery.logOut();
+                            return;
+                        }
                         alert(result.error);
                     }
                 }).fail(function (errMsg) {
@@ -78,16 +90,18 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                 return false;
             };
 
-            var rolefromInt = function (role) {
+            var roleFromInt = function (role) {
                 switch (role) {
-                    case 1:
+                    case PiGallery.enums.Roles.RemoteGuest:
                         return "Guest";
-                    case 2:
+                    case PiGallery.enums.Roles.LocalGuest:
+                        return "Guest";
+                    case PiGallery.enums.Roles.User:
                         return "User";
-                    case 3:
+                    case PiGallery.enums.Roles.Admin:
                         return "Admin";
                     default:
-                        return "User";
+                        return "N/A";
                 }
             };
             var updateUserList = function () {
@@ -121,15 +135,19 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                                 $('<tr>').append(
                                     $('<td>').html(i),
                                     $('<td>').html(result.data.users[i].userName),
-                                    $('<td>').html(rolefromInt(result.data.users[i].role)),
+                                    $('<td>').html(roleFromInt(result.data.users[i].role)),
                                     $('<td>').append($deleteButton)
                                 )
                             );
                         }
                     } else {
+                        if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                            PiGallery.logOut();
+                            return;
+                        }
                         alert(result.error);
                     }
-                }).fail(function (errMsg) {
+                }).fail(function () {
                     console.log("Error during loading userlist");
                 });
             };
@@ -148,11 +166,15 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                     if (result.error == null) {
                         updateUserList();
                     } else {
+                        if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                            PiGallery.logOut();
+                            return;
+                        }
                         alert(result.error);
                     }
                     $AdminPageDiv.find('#adminAddUserButton').removeAttr("disabled");
 
-                }).fail(function (errMsg) {
+                }).fail(function () {
                     $('#adminAddUserButton').removeAttr("disabled");
                     console.log("Error during registering");
                 });
@@ -193,9 +215,13 @@ define(['jquery', 'bootstrap-confirmation'], function($) {
                     directoriesToIndex = directoriesToIndex.concat(result.data.foundDirectories);
                     indexNextDirectory();
                 } else {
+                    if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
+                        PiGallery.logOut();
+                        return;
+                    }
                     alert(result.error);
                 }
-            }).fail(function (errMsg) {
+            }).fail(function () {
                 console.log("Error during indexing directories");
                 if(retryCount < 3){
                     PiGallery.showWarningMessage("Error during indexing directory: '" +lastDirectory + "' (Possibly php timeout). Retrying...");

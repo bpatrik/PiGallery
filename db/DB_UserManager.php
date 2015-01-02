@@ -9,16 +9,13 @@ require_once __DIR__ ."/DB.php";
 require_once __DIR__ ."/../model/ThumbnailManager.php";
 
 
-use piGallery\db\entities\Directory;
-use piGallery\db\entities\Photo;
+use piGallery\db\entities\PathRestriction;
 use piGallery\db\entities\Role;
-use piGallery\db\DB;
 use piGallery\db\entities\User;
 use piGallery\model\Helper;
-use piGallery\model\ThumbnailManager;
 use piGallery\Properties;
-use \mysqli;
 use \Exception;
+require_once __DIR__."/../lang/".Properties::$language.".php";
 
 /**
  * Class DB
@@ -37,10 +34,10 @@ class DB_UserManager {
     }
 
 
-
     /**
-     * @param $user User
-     * @throws \Exception
+     * @param $user
+     * @return string
+     * @throws Exception
      */
     public static function register($user){
         $mysqli = DB::getDatabaseConnection();
@@ -66,6 +63,12 @@ class DB_UserManager {
         return "ok";
     }
 
+    /**
+     * @param $userId
+     * @param $sessionID
+     * @return string
+     * @throws Exception
+     */
     public static function logout($userId, $sessionID){
         $mysqli = DB::getDatabaseConnection();
         $stmt = $mysqli->prepare("DELETE FROM sessionids WHERE session_id = ? AND user_id = ?");
@@ -85,6 +88,10 @@ class DB_UserManager {
         return "ok";
     }
 
+    /**
+     * @param $mysqli
+     * @throws Exception
+     */
     private static function clearSessionIDTable($mysqli){
         $stmt = $mysqli->prepare("DELETE FROM sessionids WHERE sessionids.validTime < NOW()");
         if($stmt === false) {
@@ -96,6 +103,13 @@ class DB_UserManager {
         $stmt->close();
     }
 
+    /**
+     * @param $userName
+     * @param $password
+     * @param $rememberMe
+     * @return null|User
+     * @throws Exception
+     */
     public static function login($userName, $password, $rememberMe){
         $mysqli = DB::getDatabaseConnection();
 
@@ -244,5 +258,46 @@ class DB_UserManager {
         $mysqli->close();
 
         return "ok";
+    }
+
+    /**
+     * @param $shareLink
+     * @return null|User
+     * @throws Exception
+     */
+    public static function loginWithShareLink($shareLink)
+    {
+        //TODO: remove not user sharing links
+        global $LANG;
+        $mysqli = DB::getDatabaseConnection();
+
+        $user = null;
+        $stmt = $mysqli->prepare("SELECT
+                                    s.path,
+                                    s.recursive,
+                                    s.validTime
+                                    FROM
+                                    sharing s
+                                    WHERE
+                                    s.share_id = ? AND
+                                    s.validTime > NOW()");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+        $stmt->bind_param('s', $shareLink);
+        $stmt->execute();
+        $stmt->bind_result($path, $recursive, $validTime);
+
+
+        if($stmt->fetch()) {
+            $user = new User($LANG['guest'], null, Role::RemoteGuest, new PathRestriction($path, $recursive == true, $validTime));
+        }
+        $stmt->close();
+
+        $mysqli->close();
+
+        return $user;
     }
 } 

@@ -53,16 +53,22 @@ class Helper {
         return $absolute;
     }
 
-    public static function isSubPath($path, $subpath){
-        if(empty($subpath))
+    /**
+     * Determines weather the subPath string is part of the path string
+     * @param string $path
+     * @param string $subPath
+     * @return bool
+     */
+    public static function isSubPath($path, $subPath){
+        if(empty($subPath))
             return false;
         $path = Helper::toDirectoryPath($path);
-        $subpath = Helper::toDirectoryPath($subpath);
+        $subPath = Helper::toDirectoryPath($subPath);
 
-        $position1 = strpos($path, $subpath);
-        $position2 = strpos($path, ".".DIRECTORY_SEPARATOR.$subpath);
-        $position3 = strpos(".".DIRECTORY_SEPARATOR.$path,  $subpath);
-        if($position1 === 0 || $position2 === 0 || $position3 === 0)
+        if(strpos($path, $subPath) === 0 || 
+            strpos($path, ".".DIRECTORY_SEPARATOR.$subPath) === 0 || 
+            strpos(".".DIRECTORY_SEPARATOR.$path,  $subPath) === 0)
+            
             return true;
 
         return false;

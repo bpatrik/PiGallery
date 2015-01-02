@@ -20,7 +20,8 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
         this.reset = function () {
             $directoryGalleryDiv.empty();
             $photoGalleryDiv.empty();
-        }
+        };
+        
         /*-------Functions-------------*/
         var saveHistory = function(url){
             if(history.pushState && history.replaceState) {
@@ -125,7 +126,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
             this.showPath(directoryContent.currentPath);
             directoryRenderer.showDirectories(newDirectories);
             photoRenderer.showImages(newPhotos);
-        }
+        };
 
         this.showSearchedText = function (text) {
             $directoryPathOl.empty();
@@ -138,9 +139,10 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
         this.showPath = function(path){
             $directoryPathOl.empty();
 
-            var dirs = path.split("/");
+            var dirs = path.split("/"),
+                i;
             //removing empty strings
-            for(var i = 0; i < dirs.length; i++){
+            for(i = 0; i < dirs.length; i++){
                 if(!dirs[i]  || 0 === dirs[i].length){
                     dirs.splice(i,1);
                     i--;
@@ -155,29 +157,46 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
                 that.changeContent(path,url);
                 return false;
 
-            }
+            };
+            
+            var clickable = function(path){
+                if(PiGallery.user && PiGallery.user.pathRestriction){ 
+                    
+                    if(PiGallery.user.pathRestriction.recursive == false){ 
+                        if(path !== PiGallery.user.pathRestriction.path){
+                            return false;                            
+                        }                        
+                        
+                    }else{
+                        if(path.indexOf(PiGallery.user.pathRestriction.path) == -1){
+                            return false;
+                        }
+                        
+                    }
+                }
+                return true;
+            };
 
             /*Show alias for root directory*/
             var $li = null;
-            if(0 == dirs.length ){ //is it the root directory?
+            if(0 == dirs.length || !clickable("/") ){ //is it the root directory? or not available
                 $li = $("<li>").html(PiGallery.LANG.images);
             }else{
-                $li = $("<li>").append(
-                    $("<a>",{href: "index.php?dir=/", "data-path": "/"})
-                        .html(PiGallery.LANG.images)
-                        .click(dirClickHandler));
+                $li = $("<li>").append($("<a>",{href: "index.php?dir=/"+ (PiGallery.shareLink == null ? "" : ("&s="+PiGallery.shareLink)), "data-path": "/"})
+                                .html(PiGallery.LANG.images)
+                                .click(dirClickHandler));
 
             }
 
             $directoryPathOl.append($li);
 
-            for(var i = 0; i < dirs.length; i++){
+            for(i = 0; i < dirs.length; i++){
                 actualPath += dirs[i] ;
-                if(i == dirs.length - 1 ){//is it the current directory?
+                if(i == dirs.length - 1 || !clickable(actualPath) ){//is it the current directory?
                     $li = $("<li>").html(dirs[i]);
                 }else{ //add link to parent directories
                     $li = $("<li>").append(
-                        $("<a>",{href: "index.php?dir="+actualPath, "data-path": actualPath})
+                        $("<a>",{href: "index.php?dir="+actualPath + (PiGallery.shareLink == null ? "" : ("&s="+PiGallery.shareLink)), "data-path": actualPath})
                             .html(dirs[i])
                             .click(dirClickHandler)
                     );

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__."/config.php";
 require_once __DIR__."/model/AuthenticationManager.php";
+use piGallery\db\entities\Role;
 use \piGallery\Properties;
 require_once __DIR__."/lang/".Properties::$language.".php";
 
@@ -21,7 +22,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="shortcut icon" href="../../assets/ico/favicon.ico">
+    <link rel="shortcut icon" href="img/icon.png">
 
     <title><?php echo $LANG['site_name']; ?></title>
 
@@ -56,9 +57,24 @@ header("Access-Control-Allow-Headers: X-Requested-With");
         $dir = Helper::toDirectoryPath($dir);
         $content = null;
 
-        $user = \piGallery\model\AuthenticationManager::authenticate(\piGallery\db\entities\Role::Guest);
+        $user = \piGallery\model\AuthenticationManager::authenticate(Role::RemoteGuest);
+      
         /*is logged in*/
         if($user != null){
+            
+            if($user->getRole() <= Role::RemoteGuest){ //check if it has right for watching the dir
+                
+                if($user->getPathRestriction()->isRecursive() == false){
+                    $dir = $user->getPathRestriction()->getPath();                    
+                }else{
+                    if(Helper::isSubPath($dir, $user->getPathRestriction()->getPath()) === FALSE){
+                        $dir = $user->getPathRestriction()->getPath();
+                    }
+                }
+                
+                $user->getPathRestriction()->setPath(Helper::toURLPath($user->getPathRestriction()->getPath()));
+            }
+            
             $user->setPassword(null);
             try{
                 if(Properties::$databaseEnabled){
@@ -72,13 +88,21 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                 }else{
                     $content = \piGallery\model\DirectoryScanner::getDirectoryContent($dir);
                 }
-
+                if($content != null && $user->getPathRestriction() != null && $user->getPathRestriction()->isRecursive() === FALSE){
+                    $content['directories'] = array();
+                }
             }catch (Exception $ex){
                 $dir = "/";
             }
         }
 
-
+        $searchSupported = true;
+        if(Properties::$databaseEnabled == false ){
+            $searchSupported = false;            
+        }
+        if($user != null && $user->getRole() <= Role::RemoteGuest){
+            $searchSupported = false;
+        }
 
     ?>
 
@@ -88,12 +112,13 @@ header("Access-Control-Allow-Headers: X-Requested-With");
         //Preloaded directory content
         PiGallery.currentPath = "<?php echo Helper::toURLPath($dir); ?>";
         PiGallery.preLoadedDirectoryContent= <?php echo ($content == null ?  "null" : Helper::contentArrayToJSON($content)); ?>;
-        PiGallery.searchSupported = <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>;
+        PiGallery.searchSupported = <?php echo $searchSupported== false ? "false" : "true"; ?>;
         PiGallery.documentRoot = "<?php echo Properties::$documentRoot; ?>";
         PiGallery.guestAtLocalNetwrokEnbaled = <?php  echo Properties::$GuestLoginAtLocalNetworkEnabled ? "true" : "false"; ?>;
         PiGallery.localServerUrl = "<?php if(Properties::$GuestLoginAtLocalNetworkEnabled) echo $_SERVER['SERVER_ADDR']; ?>";
         PiGallery.user =  <?php echo json_encode(is_null($user) ? null : $user->getJsonData()); ?>;
         PiGallery.LANG = <?php echo json_encode($LANG); ?>;
+        PiGallery.shareLink = <?php $s = Helper::get_REQUEST("s",null);  echo $s != null ? '"'.$s.'"' : "null"; ?>;
 
     </script>
 
@@ -129,7 +154,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
 <body>
 <div id="signInSite" style="display: none;">
     <div class="container">
-        <h1 class="signin-title"><?php echo $LANG['site_name']; ?></h1>
+        <h1 class="signin-title"><img src="img/icon.png" /><?php echo $LANG['site_name']; ?></h1>
 
         <form class="form-signin" role="form" id="signinForm">
             <h2 class="form-signin-heading"><?php echo $LANG['PleaseSignIn']; ?></h2>
@@ -164,22 +189,27 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                 <ul class="nav navbar-nav">
                     <li id="galleryButton" class="active"><a href="#"><?php echo $LANG['gallery']; ?></a></li>
 
-                    <li id="adminButton" <?php if(!\piGallery\Properties::$databaseEnabled || $user == null || $user->getRole() < \piGallery\db\entities\Role::Admin) { ?> style="display: none; "  <?php } ?>><a href="#">Admin</a></li>
+                    <li id="adminButton" 
+                            <?php if(!\piGallery\Properties::$databaseEnabled || 
+                                    $user == null || 
+                                    $user->getRole() < Role::Admin) { ?> style=" display: none;"  <?php } ?>
+                        >
+                        <a href="#">Admin</a>
+                    </li>
 
                         <!--  <li><a href="#">Admin</a></li>
                     <li><a href="#">Monitor</a></li> -->
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <!-- Not supported yet
                     <?php if(\piGallery\Properties::$databaseEnabled) { ?>
-                         <li><a href="#"><span class="glyphicon glyphicon-share-alt"> <?php echo $LANG['share']; ?></span></a></li>
+                         <li><button type="button" class="btn btn-default navbar-btn btn-link" id="shareButton"><span class="glyphicon glyphicon-share-alt"> <?php echo $LANG['share']; ?></span></button></li>
                     <?php } ?>
-                    -->
-                    <li><a href="#" id="userNameButton"><?php echo is_null($user) ? "" : $user->getUserName(); ?></a></li>
+                    
+                    <li><p class="navbar-text" id="userNameButton"><?php echo is_null($user) ? "" : $user->getUserName(); ?></p></li>
                     <li><a href="#" id="logOutButton" ><?php echo $LANG['logout']; ?></a></li>
                     <li><a href="#" id="signinButton" data-toggle="modal" data-target="#loginModal"><?php echo $LANG['signin']; ?></a></li>
                 </ul>
-                <?php if(\piGallery\Properties::$databaseEnabled) { ?>
+                <?php if($searchSupported) { ?>
                 <form id="autocompleteForm" class="navbar-form navbar-right" role="search">
                     <div class="form-group">
                         <input type="text" id="auto-complete-box"  class="form-control" placeholder="Search">
@@ -321,7 +351,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
     </div> <!-- /container -->
 </div>
 
-<!-- Modal -->
+<!-- login Modal for Guest users -->
 <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -342,6 +372,35 @@ header("Access-Control-Allow-Headers: X-Requested-With");
         </div>
     </div>
 </div>
+
+<?php if(\piGallery\Properties::$databaseEnabled) { ?>
+<!-- sharing Modal-->
+<div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="shareModalLabel"><?php echo $LANG['share']; ?></h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-10">
+                        <input id="shareLink" name="shareLink" placeholder="link" class="form-control input-md" type="text" >
+                    </div>
+                    <div class="col-md-2">
+                        <button id="singlebutton" name="singlebutton" class="btn btn-primary"><?php echo $LANG['copy']; ?></button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+           <!--     <label class="checkbox">
+                    <input id="modalRememberMeBox" type="checkbox" value="remember-me"> <?php echo $LANG['recursive']; ?>
+                </label> -->
+            </div>
+        </div>
+    </div>
+</div>
+<?php } ?>
 
 <script src="js/lib/require.min.js" data-main="js/main.js"></script>
 

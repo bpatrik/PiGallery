@@ -140,9 +140,12 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager", "detectmobilebrow
 
                 //Rendering image Div
                 var $imgDiv = $('<div>').append(
-                    $('<a>', {href: "index.php?dir=" + (directory.path == "/" ? "" : directory.path) + "/"  + directory.directoryName, title: directory.directoryName, "data-path": (directory.path == "/" ? "" : directory.path) + "/" + directory.directoryName}).append(
-                        $samplePhoto
-                    ).click(directoryClickHandler)
+                    $('<a>', {href: "index.php?dir=" + (directory.path == "/" ? "" : directory.path) + "/"  + directory.directoryName + (PiGallery.shareLink == null ? "" : ("&s="+PiGallery.shareLink)),
+                                title: directory.directoryName,
+                                "data-path": (directory.path == "/" ? "" : directory.path) + "/" + directory.directoryName})
+                        .append(
+                            $samplePhoto
+                                 ).click(directoryClickHandler)
                 ).addClass("gallery-directory-image").height(imageSize).width(imageSize).data("dirCounter", "0").data("directoryId", i).data("lastUpdate", Date.now());
 
                 //Appending to DOM

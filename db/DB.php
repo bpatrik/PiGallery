@@ -11,12 +11,9 @@ require_once __DIR__ ."/../model/ThumbnailManager.php";
 
 
 use piGallery\db\entities\Directory;
-use piGallery\db\entities\Photo;
 use piGallery\db\entities\User;
 use piGallery\db\entities\Role;
-use piGallery\db\DB_UserManager;
 use piGallery\model\Helper;
-use piGallery\model\ThumbnailManager;
 use piGallery\Properties;
 use \mysqli;
 use \Exception;
@@ -30,9 +27,9 @@ class DB {
     public static function getDatabaseConnection(){
 
         $mysqli = new mysqli(Properties::$databaseAddress,
-                             Properties::$databseUserName,
-                             Properties::$databsePassword,
-                             Properties::$databseName);
+                             Properties::$databaseUserName,
+                             Properties::$databasePassword,
+                             Properties::$databaseName);
 
         if ($mysqli->connect_errno) {
             throw new Exception("Failed to connect to MySQL: " . $mysqli->connect_error);
@@ -57,10 +54,10 @@ class DB {
                                     ID INT NOT NULL AUTO_INCREMENT,
                                     PRIMARY KEY(ID),
                                     directory_id INT,
-                                    fileName NVARCHAR(64),
+                                    fileName VARCHAR(64) CHARACTER SET UTF8,
                                     width INT,
                                     height INT,
-                                    keywords NVARCHAR(128),
+                                    keywords VARCHAR(128) CHARACTER SET UTF8,
                                     creationDate DATETIME,
                                     FOREIGN KEY (directory_id)
                                         REFERENCES directories(ID)
@@ -71,8 +68,8 @@ class DB {
                                     (
                                         ID INT NOT NULL AUTO_INCREMENT,
                                         PRIMARY KEY(ID),
-                                        path NVARCHAR(256),
-                                        directoryName NVARCHAR(64),
+                                        path VARCHAR(256) CHARACTER SET UTF8,
+                                        directoryName VARCHAR(64) CHARACTER SET UTF8,
                                         lastModification DATETIME,
                                         fileCount INT
                                     )";
@@ -82,9 +79,9 @@ class DB {
                                     (
                                         ID INT NOT NULL AUTO_INCREMENT,
                                         PRIMARY KEY(ID),
-                                        userName NVARCHAR(128),
-                                        password NVARCHAR(128),
-                                        passwordSalt NVARCHAR(128),
+                                        userName VARCHAR(128) CHARACTER SET UTF8,
+                                        password VARCHAR(128) CHARACTER SET UTF8,
+                                        passwordSalt VARCHAR(128) CHARACTER SET UTF8,
                                         role TINYINT,
                                         UNIQUE (userName)
                                     )";
@@ -95,7 +92,7 @@ class DB {
                                         ID INT NOT NULL AUTO_INCREMENT,
                                         PRIMARY KEY(ID),
                                         user_id INT,
-                                        session_id NVARCHAR(128),
+                                        session_id VARCHAR(128) CHARACTER SET UTF8,
                                         timestamp TIMESTAMP,
                                         validTime DATETIME,
                                         FOREIGN KEY (user_id)
@@ -109,8 +106,8 @@ class DB {
                                         ID INT NOT NULL AUTO_INCREMENT,
                                         PRIMARY KEY(ID),
                                         user_id INT,
-                                        share_id NVARCHAR(128),
-                                        path NVARCHAR(128),
+                                        share_id VARCHAR(128) CHARACTER SET UTF8,
+                                        path VARCHAR(128) CHARACTER SET UTF8,
                                         recursive TINYINT,
                                         timestamp TIMESTAMP,
                                         validTime DATETIME,
@@ -126,8 +123,7 @@ class DB {
         //Dropping table
         $mysqli->query($dropPhotoTableSql);
         $mysqli->query($dropDirectoryTableSql);
-
-        $mysqli->query($dropSessionIDTableSQL);
+        $mysqli->query($dropUsersTableSQL);
         $mysqli->query($dropSessionIDTableSQL);
         $mysqli->query($dropSharingTableSQL);
 

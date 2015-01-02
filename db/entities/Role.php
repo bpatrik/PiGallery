@@ -5,7 +5,8 @@ namespace piGallery\db\entities;
 
 class Role {
 
-    const Guest = 1;
-    const User = 2;
-    const Admin = 3;
+    const RemoteGuest = 10;
+    const LocalGuest = 11;
+    const User = 20;
+    const Admin = 30;
 }

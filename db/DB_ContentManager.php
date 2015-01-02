@@ -14,9 +14,6 @@ require_once __DIR__ ."/../model/ThumbnailManager.php";
 use piGallery\db\entities\Directory;
 use piGallery\db\entities\Photo;
 use piGallery\db\entities\User;
-use piGallery\db\entities\Role;
-use piGallery\db\DB_UserManager;
-use piGallery\db\DB;
 use piGallery\model\Helper;
 use piGallery\model\ThumbnailManager;
 use piGallery\Properties;
@@ -75,6 +72,9 @@ class DB_ContentManager {
      */
     public static function getDirectoryContent($path = DIRECTORY_SEPARATOR, $lastModificationDate = null){
         date_default_timezone_set('UTC'); //set it if not set
+        /**
+         * @var Directory[] $directories
+         */
         $directories = array();
         $photos = array();
         $currentDirectory = null;
@@ -201,12 +201,17 @@ class DB_ContentManager {
     }
 
 
-
-
-
+    /**
+     * @param $searchString
+     * @return array
+     * @throws Exception
+     */
     public static function getSearchResult($searchString){
         date_default_timezone_set('UTC'); //set it if not set
-        $SQLsearchText = '%' . $searchString . '%';
+        /**
+         * @var Directory[] $directories
+         */
+        $SQLSearchText = '%' . $searchString . '%';
 
         $photos = array();
         $directories = array();
@@ -226,7 +231,7 @@ class DB_ContentManager {
             throw new \Exception("Error: ". $error);
         }
 
-        $stmt->bind_param('si', $SQLsearchText,Properties::$maxSearchResultItems);
+        $stmt->bind_param('si', $SQLSearchText,Properties::$maxSearchResultItems);
         $stmt->execute();
         $stmt->bind_result($photoID, $DirPath, $directoryName, $fileName, $width, $height, $creationDate, $keywords);
         while($stmt->fetch()){
@@ -252,7 +257,7 @@ class DB_ContentManager {
             throw new \Exception("Error: ". $error);
         }
 
-        $stmt->bind_param('si', $SQLsearchText, Properties::$maxSearchResultItems);
+        $stmt->bind_param('si', $SQLSearchText, Properties::$maxSearchResultItems);
         $stmt->execute();
         $stmt->bind_result($photoID, $DirPath, $directoryName, $fileName, $width, $height, $creationDate, $keywords);
         while($stmt->fetch()){
@@ -278,7 +283,7 @@ class DB_ContentManager {
             throw new \Exception("Error: ". $error);
         }
 
-        $stmt->bind_param('si', $SQLsearchText,Properties::$maxSearchResultItems);
+        $stmt->bind_param('si', $SQLSearchText,Properties::$maxSearchResultItems);
         $stmt->execute();
         $stmt->bind_result($dirID, $dirPath, $baseName, $dirLastMod);
         while($stmt->fetch()){
@@ -312,8 +317,11 @@ class DB_ContentManager {
 
     }
 
-
-
+    /**
+     * @param string $keyword
+     * @param $array
+     * @return bool
+     */
     private static function isKeywordAlreadyAdded($keyword,$array){
         foreach($array as $item){
             if($item['text'] == $keyword){
@@ -323,6 +331,12 @@ class DB_ContentManager {
         return FALSE;
     }
 
+    /**
+     * @param string $searchText
+     * @param int $count
+     * @return array
+     * @throws Exception
+     */
     public static function getAutoComplete($searchText, $count ){
         $SQLsearchText = '%' . $searchText . '%';
 
@@ -429,5 +443,64 @@ class DB_ContentManager {
 
         return $foundItems;
 
+    }
+
+    private static function generateRandomUrlString($length){
+        
+        $charOnlySeed = str_split('abcdefghijklmnopqrstuvwxyz'
+                                 .'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        $seed = str_split('abcdefghijklmnopqrstuvwxyz'
+                            .'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                            .'0123456789-._~:/#[]@!$()*+,;='); // and any other characters
+        shuffle($charOnlySeed); // probably optional since array_is randomized; this may be redundant
+        shuffle($seed); // probably optional since array_is randomized; this may be redundant
+        $rand = '';
+        if($length >= 2){ //forcing to start and end with characters
+            $rand .= $charOnlySeed[array_rand($charOnlySeed)];
+            foreach (array_rand($seed, $length - 2) as $k) $rand .= $seed[$k];
+            $rand .= $charOnlySeed[array_rand($charOnlySeed)];
+            
+        }else {
+            foreach (array_rand($seed, $length) as $k) $rand .= $seed[$k];
+        }
+        return $rand;
+        
+    }
+
+    /**
+     * @param User $user
+     * @param string $folder
+     * @param int $validInterval
+     * @param bool $isRecursive
+     * @return string
+     * @throws Exception
+     */
+    public static function shareFolder($user, $folder, $validInterval, $isRecursive)
+    {
+
+        $folder = Helper::toDirectoryPath($folder);
+        $shareId = DB_ContentManager::generateRandomUrlString(5);
+        $isRecursive = intval($isRecursive);
+        $userId = $user->getId();
+
+        if(!is_dir(Helper::getAbsoluteImageFolderPath($folder))){
+            throw new \Exception("Error: '". Helper::getAbsoluteImageFolderPath($folder). "' is not a directory");
+        }
+        
+        $mysqli = DB::getDatabaseConnection();
+        
+        $stmt = $mysqli->prepare("INSERT INTO sharing (user_id, share_id, path, recursive, validTime) VALUES (?, ?, ?, ? , NOW() + INTERVAL ? HOUR)");
+        if($stmt === false) {
+            $error = $mysqli->error;
+            $mysqli->close();
+            throw new \Exception("Error: ". $error);
+        }
+
+        $stmt->bind_param('issis',$userId,$shareId, $folder, $isRecursive, $validInterval );
+        $stmt->execute();
+
+        $stmt->close();
+        
+        return $shareId;
     }
 } 

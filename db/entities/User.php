@@ -3,8 +3,8 @@
 namespace piGallery\db\entities;
 
 require_once __DIR__."/JSONParsable.php";
+require_once __DIR__."/PathRestriction.php";
 
-use piGallery\db\entities\SessionID;
 
 class User extends JSONParsable {
 
@@ -38,15 +38,22 @@ class User extends JSONParsable {
     protected $sessionID;
 
     /**
-     * @param $userName string
-     * @param $password string
-     * @param $role int
+     * @var PathRestriction
      */
-    function __construct($userName, $password, $role)
+    protected $pathRestriction;
+
+    /**
+     * @param string $userName
+     * @param string $password
+     * @param int $role
+     * @param PathRestriction $pathRestriction
+     */
+    function __construct($userName, $password, $role, $pathRestriction = null)
     {
         $this->userName = $userName;
         $this->password = $password;
         $this->role = $role;
+        $this->pathRestriction = $pathRestriction;
     }
 
 
@@ -146,7 +153,23 @@ class User extends JSONParsable {
         $this->id = $id;
     }
 
+    /**
+     * @return PathRestriction
+     */
+    public function getPathRestriction()
+    {
+        return $this->pathRestriction;
+    }
 
+    /**
+     * @param PathRestriction $pathRestriction
+     */
+    public function setPathRestriction($pathRestriction)
+    {
+        $this->pathRestriction = $pathRestriction;
+    }
+
+ 
 
 
 } 

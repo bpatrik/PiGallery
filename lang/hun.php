@@ -15,6 +15,8 @@ $LANG['images'] = "Képek";
 $LANG['logout'] = "Kijelentkezés";
 $LANG['search'] = "Keresés";
 $LANG['share'] = "Megosztás";
+$LANG['recursive'] = "almappák megosztása";
+$LANG['copy'] = "Másolás";
 $LANG['searchingfor'] = "Keresés:";
 $LANG['tooMuchResults'] = "A keresés túl sok eredménnyel tért vissza, néhányuk nem jelenik meg. Kérlek szűkítsd a keresést!";
 
