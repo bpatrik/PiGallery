@@ -68,7 +68,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
                     /*rendering keywords*/
                     var $keywordsDiv = $('<div>').addClass("galley-image-keywords");
 
-                    if(PiGallery.searchSupported){
+                    if(PiGallery.searchSupported && PiGallery.user.role > PiGallery.enums.Roles.RemoteGuest){
                         _.each(photo.keywords, function(keyword) {
 
                             if (keyword != "") {

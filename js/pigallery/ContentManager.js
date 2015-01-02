@@ -119,9 +119,6 @@ define(["jquery", 'PiGallery/Enums'], function ($) {
                 that.lastXhr = null;
             }
             var ajaxArray = {method: "search", searchString: searchString};
-            if(PiGallery.shareLink){
-                ajaxArray.s=PiGallery.shareLink;                
-            }
 
             that.lastXhr =
             $.ajax({

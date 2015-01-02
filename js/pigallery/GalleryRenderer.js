@@ -22,6 +22,13 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
             $photoGalleryDiv.empty();
         };
         
+        this.refresh = function() {
+            if(!this.directoryContent){
+                return;                
+            }
+            this.showContent(this.directoryContent,true);
+        };
+        
         /*-------Functions-------------*/
         var saveHistory = function(url){
             if(history.pushState && history.replaceState) {
@@ -71,7 +78,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
          * If the directory not changed, updates the content
          * @param directoryContent
          */
-        this.showContent = function (directoryContent) {
+        this.showContent = function (directoryContent, forceShow) {
             PiGallery.hideMessages();
 
             var newPhotos = directoryContent.photos,
@@ -79,7 +86,7 @@ define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/Direct
 
             //check directory change
             if (this.directoryContent) {
-                if (this.directoryContent.currentPath !== directoryContent.currentPath) {//directory changed, empty gallery
+                if (this.directoryContent.currentPath !== directoryContent.currentPath || forceShow) {//directory changed, empty gallery
                     $directoryGalleryDiv.empty();
                     $photoGalleryDiv.empty();
                     thumbnailManager.clearQueue();

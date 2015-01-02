@@ -96,13 +96,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
             }
         }
 
-        $searchSupported = true;
-        if(Properties::$databaseEnabled == false ){
-            $searchSupported = false;            
-        }
-        if($user != null && $user->getRole() <= Role::RemoteGuest){
-            $searchSupported = false;
-        }
+
 
     ?>
 
@@ -112,7 +106,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
         //Preloaded directory content
         PiGallery.currentPath = "<?php echo Helper::toURLPath($dir); ?>";
         PiGallery.preLoadedDirectoryContent= <?php echo ($content == null ?  "null" : Helper::contentArrayToJSON($content)); ?>;
-        PiGallery.searchSupported = <?php echo $searchSupported== false ? "false" : "true"; ?>;
+        PiGallery.searchSupported = <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>;
         PiGallery.documentRoot = "<?php echo Properties::$documentRoot; ?>";
         PiGallery.guestAtLocalNetwrokEnbaled = <?php  echo Properties::$GuestLoginAtLocalNetworkEnabled ? "true" : "false"; ?>;
         PiGallery.localServerUrl = "<?php if(Properties::$GuestLoginAtLocalNetworkEnabled) echo $_SERVER['SERVER_ADDR']; ?>";
@@ -209,8 +203,8 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                     <li><a href="#" id="logOutButton" ><?php echo $LANG['logout']; ?></a></li>
                     <li><a href="#" id="signinButton" data-toggle="modal" data-target="#loginModal"><?php echo $LANG['signin']; ?></a></li>
                 </ul>
-                <?php if($searchSupported) { ?>
-                <form id="autocompleteForm" class="navbar-form navbar-right" role="search">
+                <?php if(Properties::$databaseEnabled == true) { ?>
+                <form id="autocompleteForm" class="navbar-form navbar-right" role="search" >
                     <div class="form-group">
                         <input type="text" id="auto-complete-box"  class="form-control" placeholder="Search">
                     </div>
