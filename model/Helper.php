@@ -220,6 +220,7 @@ class Helper {
              $server_ip = $_SERVER['SERVER_ADDR'];
          // Extract broadcast and netmask from ifconfig
          $read = false;
+         $regs = array();
          if (($p = popen("ifconfig", "r"))) {
              $out = "";
              while (!feof($p))
@@ -243,5 +244,35 @@ class Helper {
         $ipadr = ip2long($client_ip);
         $nmask = $bcast & $smask;
         return (($ipadr & $smask) == ($nmask & $smask));
+    }
+
+
+    /**
+     * @param string $filename
+     * @return string
+     */
+    public static function imageToMime($filename) {
+
+        $mime_types = array(
+            // images
+            'png' => 'image/png',
+            'jpe' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'jpg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'bmp' => 'image/bmp',
+            'ico' => 'image/vnd.microsoft.icon',
+            'tiff' => 'image/tiff',
+            'tif' => 'image/tiff',
+            'svg' => 'image/svg+xml',
+            'svgz' => 'image/svg+xml',
+        );
+
+        $ext = pathinfo($filename, PATHINFO_EXTENSION);
+        if (array_key_exists($ext, $mime_types)) {
+            return $mime_types[$ext];
+        }
+
+        return 'image/jpeg';
     }
 } 

@@ -17,7 +17,6 @@ use piGallery\db\DB;
 use piGallery\db\DB_ContentManager;
 use piGallery\db\DB_UserManager;
 use piGallery\db\entities\AjaxError;
-use piGallery\db\entities\Directory;
 use piGallery\db\entities\User;
 use piGallery\Properties;
 use piGallery\db\entities\Role;

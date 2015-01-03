@@ -18,16 +18,17 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
 
 
         this.showImages = function(photos){
+            var i, j;
             //sort directories
             photos.sort(function(a, b){
                 return  a.creationDate - b.creationDate;
             });
 
-            for (var i=0 ; i < photos.length; i++) {
+            for (i = 0 ; i < photos.length; i++) {
                 //get the next 3 photos
                 var photoRow = [photos[i]];
 
-                for(var j = 0; j < TARGET_COL_COUNT - 1; j++){
+                for(j = 0; j < TARGET_COL_COUNT - 1; j++){
                     i++;
                     if(i  >= photos.length){
                         break;
@@ -62,7 +63,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
 
 
                 //add images to div
-                for(var j = 0; j < photoRow.length; j++){
+                for(j = 0; j < photoRow.length; j++){
                     var photo = photoRow[j];
 
                     /*rendering keywords*/
@@ -94,8 +95,11 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
                     //add image to div
                     $photoGalleryDiv.append(
                         $('<div>').append(
-                            $('<a>' ,{href:"image.php?path="+ photo.path + "/" + photo.fileName, title: photo.fileName, "data-galxlery":""}).append(
-                                thumbnailManager.createThumbnail(photo,imageWidth, imageHeight).data({"origWidth": photo.width, "origHeight": photo.height})
+                            $('<a>' ,{href:"image.php?path="+ photo.path + "/" + photo.fileName + (PiGallery.shareLink == null ? "" : ("&s="+PiGallery.shareLink)),
+                                        title: photo.fileName,
+                                        "data-galxlery":""}
+                                ).append(
+                                      thumbnailManager.createThumbnail(photo,imageWidth, imageHeight).data({"origWidth": photo.width, "origHeight": photo.height})
                             ),
                             $imageDescriptioDiv
                         )
@@ -120,7 +124,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
 
 
 
-        }
+        };
 
 
 
@@ -134,7 +138,7 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
             var height = ($photoGalleryDiv.width() - photoRow.length * (IMAGE_MARGIN * 2) - 1) / width; //cant be equal -> width-1
 
             return  height +(IMAGE_MARGIN * 2);
-        }
+        };
 
         /*-----------Event handlers-----------*/
         var keywordClickHandler = function (event) {

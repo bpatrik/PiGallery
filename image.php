@@ -5,29 +5,38 @@ namespace piGallery;
 /*Authenticating*/
 require_once __DIR__."/model/AuthenticationManager.php";
 require_once __DIR__."/db/entities/Role.php";
+require_once __DIR__."/db/entities/AjaxError.php";
 
+use piGallery\db\entities\AjaxError;
 use piGallery\db\entities\Role;
 use piGallery\model\AuthenticationManager;
 
 /*Authentication need for images*/
-AuthenticationManager::authenticate(Role::User);
+$user = AuthenticationManager::authenticate(Role::RemoteGuest);
+if(is_null($user)){
+    die(json_encode(array("error" => (new AjaxError(AjaxError::AUTHENTICATION_FAIL, "Authentication failed"))->getJsonData(), "data" => "")));
+}
 
 /*SITE*/
-
 require_once __DIR__."/model/Helper.php";
 require_once __DIR__."/config.php";
 require_once __DIR__."/model/Logger.php";
 
 
 use piGallery\model\Helper;
-use piGallery\model\Logger;
-use piGallery\Properties;
-
 $imagePath= Helper::require_REQUEST("path");
 if (Properties::$enableUTF8Encode) {
     $imagePath= utf8_decode($imagePath);
 }
-$imagePath= Helper::toDirectoryPath($imagePath);
+$imagePath = Helper::toDirectoryPath($imagePath);
+if($user->getPathRestriction() != null){
+    $dir = dirname($imagePath);
+    if($user->getPathRestriction()->isRecursive() == false){
+        die(json_encode(array("error" => (new AjaxError(AjaxError::GENERAL_ERROR, "Don't have rights for thr directory"))->getJsonData(), "data" => "")));
+    }else if(Helper::isSubPath($dir, $user->getPathRestriction()->getPath()) === FALSE){
+        die(json_encode(array("error" => (new AjaxError(AjaxError::GENERAL_ERROR, "Don't have rights for thr directory"))->getJsonData(), "data" => "")));
+    }
+}
 
 $imagePath =  Helper::concatPath(Helper::getAbsoluteImageFolderPath(), $imagePath);
 
@@ -49,6 +58,6 @@ if(Properties::$enableImageCaching){
     header('Cache-Control: max-age=31104000');
 }
 
-header('content-type: image/jpeg');
+header('content-type: '. Helper::imageToMime($imagePath));
 header("Content-Length: " . filesize($imagePath));
 echo file_get_contents($imagePath);

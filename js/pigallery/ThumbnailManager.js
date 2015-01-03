@@ -9,7 +9,7 @@ define(["jquery", "underscore"], function ($, _) {
         var loadingInProgress = false;
         var that = this;
 
-        var calcThumbanilSize = function(photo, width, height){
+        var calcThumbnailSize = function(photo, width, height){
             var i, imgSize = width * height;
             //find the best size and an alternative if the best not ready yet
 
@@ -44,45 +44,46 @@ define(["jquery", "underscore"], function ($, _) {
 
 
            return ThumbnailInfos;
-        }
+        };
 
         this.createThumbnail = function(photo,width,height){
 
             //find the best size
-            var ThumbnailInfos = calcThumbanilSize(photo,width,height);
-            var thumbnailPath = "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.best.size;
+            var ThumbnailInfos = calcThumbnailSize(photo,width,height);
+            var thumbnailPath = "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.best.size  + (PiGallery.shareLink == null ? "" : ("&s="+PiGallery.shareLink));
             if(ThumbnailInfos.best.available == true){
                 return $('<img>', { src: thumbnailPath, height: height, width: width});
             }else{
                 var $img = null;
                 //put an alternative thumbnail there if available
                 if(ThumbnailInfos.available != null){
-                    $img = $('<img>', { src: "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.available.size, height: height, width: width});
+                    $img = $('<img>', { src: "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.available.size  + (PiGallery.shareLink == null ? "" : ("&s="+PiGallery.shareLink)),
+                                        height: height, width: width});
                 }else{
                     $img = $('<img>', { src: "img/loading.gif", height: height, width: width});
                 }
 
-                queuUpThumbanil($img, thumbnailPath);
+                queuUpThumbnail($img, thumbnailPath);
                 return $img;
             }
-        }
+        };
 
         this.loadThumbnailToDiv = function($img,photo, width, height){
 
             //find the best size
-            var ThumbnailInfos = calcThumbanilSize(photo,width,height);
+            var ThumbnailInfos = calcThumbnailSize(photo,width,height);
 
-            var thumbnailPath = "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.best.size;
+            var thumbnailPath = "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.best.size + (PiGallery.shareLink == null ? "" : ("&s="+PiGallery.shareLink));
             $img.css({height: height, width: width});
             if(ThumbnailInfos.best.available == true){
                 $img.attr("src", thumbnailPath);
             }else{
                 if(ThumbnailInfos.available != null){
-                    $img.attr("src", "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.available.size);
+                    $img.attr("src", "thumbnail.php?image=" + photo.path + "/" + photo.fileName + "&size=" + ThumbnailInfos.available.size + (PiGallery.shareLink == null ? "" : ("&s="+PiGallery.shareLink)));
                 }else{
                     $img.attr("src", "img/loading.gif");
                 }
-                queuUpThumbanil($img, thumbnailPath);
+                queuUpThumbnail($img, thumbnailPath);
             }
         };
 /*
@@ -104,17 +105,17 @@ define(["jquery", "underscore"], function ($, _) {
             if(foundThumbnailInfo.available == true){
                 return thumbnailPath;
             }else{
-             //   queuUpThumbanil(imgID, thumbnailPath, readyCallback);
+             //   queuUpThumbnail(imgID, thumbnailPath, readyCallback);
                 return "img/loading.gif";
              //   return $img;
             }
         }
 */
 
-        var queuUpThumbanil = function($image, thumbnailPath){
+        var queuUpThumbnail = function($image, thumbnailPath){
             thumbnailQueue.push({$image : $image , path: thumbnailPath});
             loadThumbnails();
-        }
+        };
 
         var loadThumbnails = function(){
             if(loadingInProgress || thumbnailQueue.length == 0)
@@ -131,7 +132,8 @@ define(["jquery", "underscore"], function ($, _) {
                 });
                 loadingInProgress = false;
                 loadThumbnails();
-            }
+            };
+            
             thumbnail.onerror = function(){
                 console.log("error: " + thumbnailInfo.path);
                 thumbnailInfo.$image.attr("src", "img/noPreview.png");
@@ -139,7 +141,7 @@ define(["jquery", "underscore"], function ($, _) {
                 loadThumbnails();
             }
 
-        }
+        };
 
         this.clearQueue = function (){
             thumbnailQueue.length = 0;
