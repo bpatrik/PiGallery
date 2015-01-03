@@ -74,7 +74,7 @@ if(Properties::$enableImageCaching){
     header('Cache-Control: max-age=31104000');
 }
 
-header('content-type: '. Helper::imageToMime($image));
+header('content-type: image/jpeg');
 header("Content-Length: " . $thumbnail["filesSze"]);
 echo $thumbnail["image"];
 

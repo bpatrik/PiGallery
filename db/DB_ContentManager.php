@@ -479,7 +479,7 @@ class DB_ContentManager {
     {
 
         $folder = Helper::toDirectoryPath($folder);
-        $shareId = DB_ContentManager::generateRandomUrlString(5);
+        $shareId = DB_ContentManager::generateRandomUrlString(6);
         $isRecursive = intval($isRecursive);
         $userId = $user->getId();
 

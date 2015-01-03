@@ -175,10 +175,12 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.php"><?php echo $LANG['site_name']; ?></a>
+                <a class="navbar-brand" href="index.php<?php $s = Helper::get_REQUEST("s",null);  echo $s != null ? "?s=".$s : "";?>"><img src="img/icon_inv.png" alt="Brand" style="max-height: 26px"/><?php echo $LANG['site_name']; ?></a>
                 <img class="pull-left pull-right" id="loading-sign" src="img/loading.gif"/>
 
             </div>
+
+            <div id="linkCountDown"></div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li id="galleryButton" class="active"><a href="#"><?php echo $LANG['gallery']; ?></a></li>
@@ -188,7 +190,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                                     $user == null || 
                                     $user->getRole() < Role::Admin) { ?> style=" display: none;"  <?php } ?>
                         >
-                        <a href="#">Admin</a>
+                        <a href="#">Settings</a>
                     </li>
 
                         <!--  <li><a href="#">Admin</a></li>

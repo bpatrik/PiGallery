@@ -145,3 +145,20 @@
 #alertsDiv {
     margin: 0 15px;
 }
+
+.navbar-inverse .navbar-brand img, .navbar-inverse .navbar-brand img {
+    opacity: 0.6;
+}
+
+.navbar-inverse .navbar-brand:hover img, .navbar-inverse .navbar-brand:focus img {
+    opacity: 1.0;
+}
+.navbar #linkCountDown{
+    color: #BBB;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    text-align: center;
+    margin: auto;   
+    top: 15px;
+}

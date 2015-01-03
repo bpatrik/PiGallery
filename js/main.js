@@ -21,6 +21,7 @@ require.config({
         underscore: 'underscorejs-1.6.0.min',
         bootstrap: 'bootstrap.min',
         jquery_cookie: 'jquery.cookie',
+        jquery_countdown: 'jquery.countdown.min',
         blueImpGallery: 'blueimp-gallery-indicator'
     },
     shim:  {
@@ -98,7 +99,7 @@ PiGallery.initLogin = function(){
                 $loginButton.html(PiGallery.LANG.signin);
             }
         };
-        $('#signinForm').submit(function (event) {
+        $('#signinForm').submit(function () {
 
             showSignProgress(true);
 
@@ -131,7 +132,7 @@ PiGallery.initLogin = function(){
                     alert(result.error);
                     showSignProgress(false);
                 }
-            }).fail(function (errMsg) {
+            }).fail(function () {
                 console.log("Error during downloading singing in");
                 showSignProgress(false);
             });
@@ -176,7 +177,7 @@ PiGallery.initModalLogin = function(galleryRenderer){
                 $loginButton.html(PiGallery.LANG.signin);
             }
         };
-        $('#modalSigninForm').submit(function (event) {
+        $('#modalSigninForm').submit(function () {
 
             showSignProgress(true);
 
@@ -211,7 +212,7 @@ PiGallery.initModalLogin = function(galleryRenderer){
                     alert(result.error);
                     showSignProgress(false);
                 }
-            }).fail(function (errMsg) {
+            }).fail(function () {
                 console.log("Error during downloading singing in");
                 showSignProgress(false);
             });
@@ -375,7 +376,7 @@ PiGallery.showGallery = function(){
     if(PiGallery.gallerySiteInitDone == false){
         PiGallery.initGallery();
     }
-    require(['jquery', 'PiGallery/Enums'], function   ($) {
+    require(['jquery','jquery_countdown', 'PiGallery/Enums'], function   ($) {
         var $adminButton = $("#adminButton");
         
         
@@ -398,6 +399,15 @@ PiGallery.showGallery = function(){
             $("#autocompleteForm").hide();           
         }else if(PiGallery.searchSupported){
             $("#autocompleteForm").show();
+        }
+        
+        if(PiGallery.user.pathRestriction && PiGallery.user.pathRestriction.validTime){
+            $('#linkCountDown').show();
+            $('#linkCountDown').countdown(Date.parse(PiGallery.user.pathRestriction.validTime.replace(' ', 'T')), function(event) {
+                $(this).html(event.strftime('Link valid: %-D days %H:%M:%S'));
+            });
+        }else{
+            $('#linkCountDown').hide();
         }
         
         if(PiGallery.user.role <= PiGallery.enums.Roles.User){
