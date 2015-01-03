@@ -175,7 +175,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.php<?php $s = Helper::get_REQUEST("s",null);  echo $s != null ? "?s=".$s : "";?>"><img src="img/icon_inv.png" alt="Brand" style="max-height: 26px"/><?php echo $LANG['site_name']; ?></a>
+                <a class="navbar-brand" href="index.php<?php $s = Helper::get_REQUEST("s",null);  echo $s != null ? "?s=".$s : "";?>"><img src="img/icon_inv.png" style="max-height: 26px; display: inline;"/><?php echo $LANG['site_name']; ?></a>
                 <img class="pull-left pull-right" id="loading-sign" src="img/loading.gif"/>
 
             </div>

@@ -1,5 +1,5 @@
 require.config({
-    baseUrl:  ' js/lib', 
+    baseUrl:  ' js/lib',
     paths: {
         PiGallery: '../pigallery/',
         // the left side is the module ID,
@@ -16,11 +16,11 @@ require.config({
         bootstrap: ['//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min','bootstrap.min'],
         jquery_cookie: ['//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min', 'jquery.cookie'],
 */
-        jquery:  'jquery-2.1.1.min',
-        jquery_ui: 'jquery-ui-1.10.4_min',
-        underscore: 'underscorejs-1.6.0.min',
+        jquery:  'jquery-2.1.3.min',
+        jquery_ui: 'jquery-ui.min',
         bootstrap: 'bootstrap.min',
         jquery_cookie: 'jquery.cookie',
+        detectmobilebrowser_jquery: 'detectmobilebrowser_jquery',
         jquery_countdown: 'jquery.countdown.min',
         blueImpGallery: 'blueimp-gallery-indicator'
     },
@@ -38,9 +38,6 @@ require.config({
         'bootstrap-confirmation':{
             deps: ['jquery','bootstrap']
         },
-        'underscore': {
-            exports: '_'
-        },
         'jquery_cookie': {
             deps: ['jquery']
         },
@@ -52,6 +49,16 @@ require.config({
         }
 
     }
+   /* map: {
+        // '*' means all modules will get 'jquery-private'
+        // for their 'jquery' dependency.
+        '*': { 'blueimp-helper': 'lib/blueimp-helper',
+               'blueimp-gallery': 'lib/blueimp-gallery',
+                'bootstrap-confirmation': 'lib/bootstrap-confirmation',
+                jquery:  'lib/jquery-2.1.1.min'
+
+        }
+    }*/
 
 });
 

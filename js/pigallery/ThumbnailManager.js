@@ -1,5 +1,5 @@
 
-define(["jquery", "underscore"], function ($, _) {
+define(["jquery"], function ($) {
     "use strict";
 
     return function ThumbnailManager() {

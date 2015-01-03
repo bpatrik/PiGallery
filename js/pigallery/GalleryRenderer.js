@@ -1,4 +1,4 @@
-define(["jquery", "underscore", "PiGallery/ThumbnailManager",  "PiGallery/DirectoryRenderer", "PiGallery/PhotoRenderer" ], function ($, _, ThumbnailManager,  DirectoryRenderer, PhotoRenderer) {
+define(["jquery", "PiGallery/ThumbnailManager",  "PiGallery/DirectoryRenderer", "PiGallery/PhotoRenderer" ], function ($,  ThumbnailManager,  DirectoryRenderer, PhotoRenderer) {
     "use strict";
     return function GalleryRenderer(directoryPathOl, galleryDiv, ContentManager){
 

@@ -1,4 +1,4 @@
-define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   _) {
+define(["jquery",  "PiGallery/ThumbnailManager" ], function ($) {
     "use strict";
     return function PhotoRenderer($photoGalleryDiv, thumbnailManager, galleryRenderer) {
 
@@ -18,26 +18,27 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
 
 
         this.showImages = function(photos){
-            var i, j;
+            var i, j, k, klen, jlen,
+                photosLen = photos.length;
             //sort directories
             photos.sort(function(a, b){
                 return  a.creationDate - b.creationDate;
             });
 
-            for (i = 0 ; i < photos.length; i++) {
+            for (i = 0 ; i < photosLen; i++) {
                 //get the next 3 photos
                 var photoRow = [photos[i]];
 
                 for(j = 0; j < TARGET_COL_COUNT - 1; j++){
                     i++;
-                    if(i  >= photos.length){
+                    if(i  >= photosLen){
                         break;
                     }
                     photoRow.push(photos[i]);
                 }
 
                 while(calcPhotoRowHeight(photoRow) > maxRowHeight){ //row too high -> add more images
-                    if(i+1  >= photos.length){
+                    if(i+1  >= photosLen){
                         break;
                     }
                     i++;
@@ -63,25 +64,25 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
 
 
                 //add images to div
-                for(j = 0; j < photoRow.length; j++){
+                for(j = 0, jlen = photoRow.length; j < jlen; j++){
                     var photo = photoRow[j];
 
                     /*rendering keywords*/
                     var $keywordsDiv = $('<div>').addClass("galley-image-keywords");
 
                     if(PiGallery.searchSupported && PiGallery.user.role > PiGallery.enums.Roles.RemoteGuest){
-                        _.each(photo.keywords, function(keyword) {
-
+                        for (k = 0, klen = photo.keywords.length; k <= klen; k++) {
+                            var keyword = photo.keywords[k];
                             if (keyword != "") {
                                 $keywordsDiv.append(
                                     $('<a>', {href: "#", "data-keyword": keyword}).html("#" + keyword).click(keywordClickHandler), ", ");
                             }
-                        });
+                        }
                     }else{
-                        _.each(photo.keywords, function(keyword){
+                        for (k = 0, klen = photo.keywords.length; k <= klen; k++) {
                             $keywordsDiv.append(
-                                $('<span>').html("#" + keyword),", ");
-                        });
+                                $('<span>').html("#" + photo.keywords[k]),", ");
+                        }
                     }
 
                     /*rednering imgae description div*/
@@ -113,10 +114,10 @@ define(["jquery",  "underscore", "PiGallery/ThumbnailManager" ], function ($,   
                 }
 
                 //Fading in photos
-                var delayTime = 0;
-                $photoGalleryDiv.children("div:hidden").each(function(){
-                    $(this).delay( delayTime ).fadeIn();
-                    delayTime+=50;
+                var delaytime = 0;
+                $photoGalleryDiv.children("div:hidden").each(function(k, val){
+                    $(this).delay( delaytime).fadeIn();
+                    delaytime+=50;
                 });
 
 

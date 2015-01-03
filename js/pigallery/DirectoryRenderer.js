@@ -1,4 +1,4 @@
-define(["jquery",  "underscore", "PiGallery/ThumbnailManager", "detectmobilebrowser_jquery" ], function ($,   _) {
+define(["jquery", "PiGallery/ThumbnailManager", "detectmobilebrowser_jquery" ], function ($) {
     "use strict";
     return function DirectoryRenderer($directoryGalleryDiv, thumbnailManager, galleryRenderer) {
 
