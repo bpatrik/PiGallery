@@ -162,3 +162,18 @@
     margin: auto;   
     top: 15px;
 }
+
+#sliderText{
+    font-weight: bold;
+    display: inline;
+    
+}
+#shareSlider {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+
+#shareSlider .slider-selection {
+    background: #BABABA;
+}

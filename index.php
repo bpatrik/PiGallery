@@ -137,6 +137,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
     <link rel="stylesheet" href="css/blueimp-gallery.min.css">
     <!-- <link rel="stylesheet" href="http://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">-->
     <link rel="stylesheet" href="css/bootstrap-image-gallery.min.css">
+    <link rel="stylesheet" href="css/bootstrap-slider.min.css">
 
     <!-- Own css-->
 
@@ -383,15 +384,41 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                     <div class="col-md-10">
                         <input id="shareLink" name="shareLink" placeholder="link" class="form-control input-md" type="text" >
                     </div>
-                    <div class="col-md-2">
-                        <button id="singlebutton" name="singlebutton" class="btn btn-primary"><?php echo $LANG['copy']; ?></button>
+                    <div class="col-md-2 pull-right">
+                        <button id="copybutton" name="copybutton" class="btn btn-primary"><?php echo $LANG['copy']; ?></button>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-           <!--     <label class="checkbox">
-                    <input id="modalRememberMeBox" type="checkbox" value="remember-me"> <?php echo $LANG['recursive']; ?>
-                </label> -->
+                <hr/>
+                <div class="form-horizontal">
+                    <div class="form-group" style="padding: 0 15px 0 15px;">
+
+                        <div  style="display: inline;">
+                            <label class="control-label">Sharing:</label>
+                            <div class="form-control-static" id="sharingPath">email@example.com</div>
+                        </div>
+
+                        <label class="checkbox pull-right">
+                            <input id="modalRememberMeBox" type="checkbox" value="remember-me"> <?php echo $LANG['recursive']; ?>
+                        </label>
+
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        Valid for:
+                        <p id="sliderText"></p>
+                    </div>
+                    <div class="col-md-8">
+                        <input  id="shareSlider" data-slider-id='shareSlider' type="text" data-slider-min="1" data-slider-max="108" data-slider-step="1" data-slider-value="53"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2 col-md-push-10">
+                        <button id="updatebutton" name="updatebutton" class="btn btn-primary">Update</button>
+                    </div>
+                </div>
+                
             </div>
         </div>
     </div>

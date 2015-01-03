@@ -166,7 +166,8 @@ switch (Helper::require_REQUEST('method')) {
         
         try {
             if(Properties::$databaseEnabled){
-                $data = array("link" => Properties::$siteUrl.'?s='.DB_ContentManager::shareFolder($user, $dir, $validInterval, $isRecursive));
+                $data = array("link" => Properties::$siteUrl.'?s='.DB_ContentManager::shareFolder($user, $dir, $validInterval, $isRecursive),
+                              "path" => $dir);
             }else{
                 $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
             }

@@ -19,6 +19,7 @@ require.config({
         jquery:  'jquery-2.1.3.min',
         jquery_ui: 'jquery-ui.min',
         bootstrap: 'bootstrap.min',
+        bootstrapSlider: 'bootstrap-slider.min',
         jquery_cookie: 'jquery.cookie',
         detectmobilebrowser_jquery: 'detectmobilebrowser_jquery',
         jquery_countdown: 'jquery.countdown.min',
@@ -234,7 +235,7 @@ PiGallery.initModalLogin = function(galleryRenderer){
 };
 
 PiGallery.initGallery = function(){
-    require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete", 'jquery_cookie', 'PiGallery/Enums' ],
+    require(['jquery', 'blueImpGallery', 'PiGallery/ContentManager', 'PiGallery/GalleryRenderer', "PiGallery/AutoComplete",'bootstrapSlider' , 'jquery_cookie', 'PiGallery/Enums' ],
         function   ($,blueimpGallery,ContentManager, GalleryRenderer, AutoComplete) {
 
 
@@ -318,34 +319,66 @@ PiGallery.initGallery = function(){
             var $shareButton = $("#shareButton"),
                 $shareModal = $("#shareModal");
             if($shareModal.length != 0 && $shareButton.length != 0){
-                
-                $shareButton.click(function(){
-
-                    $("#loading-sign").css("opacity",1);
-                    $.ajax({
-                        type: "POST",
-                        url: "model/AJAXfacade.php",
-                        data: {method: "share",
-                               dir: galleryRenderer.directoryContent.currentPath },
-                        dataType: "json"
-                    }).done(function(result) {
-                        if (result.error == null) {
-                            console.log(result.data);
-                            $("#loading-sign").css("opacity", 0);
-                            $shareModal.modal('show');
-                            $("#shareLink").val(result.data.link);
-                        }else{
-                            if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
-                                PiGallery.logOut();
-                                return;
-                            }
-                            PiGallery.showErrorMessage(result.error);
-                        }
-                    }).fail(function() {
-                        console.log("Error during sharing");
-                        $("#loading-sign").css("opacity",0);
-                    });
+                var $shareSlider = $('#shareSlider');
+                //Initializing slider
+                var slider = $shareSlider.slider({
+                    tooltip:"hide"
+                    
                 });
+                var printSliderValue = function(value){
+                    if(value < 24){ //till 24 //hourly
+                        $("#sliderText").html(value + " hour(s)");
+                    }else if (value - 24 < 29 + 15) { // till 24 + 30 + 15= 68 //daily
+                        $("#sliderText").html((value - 23) + " day(s)");
+                    }else if (value - 68 < 21){ //half monthly
+                        $("#sliderText").html((value - 65)/2 + " month(s)");
+                    }else if (value - 91 < 17){ //half year
+                        $("#sliderText").html((value - 87)/2 + " year(s)");
+                    }else{
+                        $("#sliderText").html('never expires');
+                    }  
+                };
+                
+                $shareSlider.on("slide", function(slideEvt) {
+                    printSliderValue(slideEvt.value);
+                });
+                printSliderValue(slider.slider('getValue'));
+
+
+                $shareButton.click(function(){
+                    if(PiGallery.shareLink && PiGallery.shareLink.path == galleryRenderer.directoryContent.currentPath){//path didn't changed
+                        $shareModal.modal('show');
+                    }else {
+                        $("#loading-sign").css("opacity", 1);
+                        $.ajax({
+                            type: "POST",
+                            url: "model/AJAXfacade.php",
+                            data: {
+                                method: "share",
+                                dir: galleryRenderer.directoryContent.currentPath
+                            },
+                            dataType: "json"
+                        }).done(function (result) {
+                            if (result.error == null) {
+                                PiGallery.shareLink = result.data;
+                                $("#loading-sign").css("opacity", 0);
+                                $shareModal.modal('show');
+                                $("#shareLink").val(PiGallery.shareLink.link);
+                                $("#sharingPath").html(PiGallery.shareLink.path);
+                            } else {
+                                if (result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL) {
+                                    PiGallery.logOut();
+                                    return;
+                                }
+                                PiGallery.showErrorMessage(result.error);
+                            }
+                        }).fail(function () {
+                            console.log("Error during sharing");
+                            $("#loading-sign").css("opacity", 0);
+                        });
+                    }
+                });
+                
                 
             }
             
