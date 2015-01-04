@@ -14,11 +14,22 @@ $LANG['gallery'] = "Gallery";
 $LANG['images'] = "Images";
 $LANG['logout'] = "Log out";
 $LANG['search'] = "Search";
+$LANG['searchingfor'] = "Searching for:";
+$LANG['tooMuchResults'] = "The search returned too much results, some of them the may not appear. Please refine your search!";
+
+/*Sharing text*/
 $LANG['share'] = "Share";
 $LANG['recursive'] = "share subfolders";
 $LANG['copy'] = "Copy";
-$LANG['searchingfor'] = "Searching for:";
-$LANG['tooMuchResults'] = "The search returned too much results, some of them the may not appear. Please refine your search!";
+$LANG['sharing'] = "Sharing";
+$LANG['hours'] = "hour(s)";
+$LANG['days'] = "day(s)";
+$LANG['months'] = "month(s)";
+$LANG['year'] = "year(s)";
+$LANG['infinite'] = "never expires";
+$LANG['validFor'] = "Valid for";
+$LANG['update'] = "Update";
+$LANG['linkValid'] = "Link valid";
 
 $LANG['admin_users'] = "Users";
 $LANG['admin_userName'] = "Username";

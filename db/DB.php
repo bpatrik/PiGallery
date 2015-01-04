@@ -109,7 +109,7 @@ class DB {
                                         share_id VARCHAR(128) CHARACTER SET UTF8,
                                         path VARCHAR(128) CHARACTER SET UTF8,
                                         recursive TINYINT,
-                                        timestamp TIMESTAMP,
+                                        creationTime DATETIME,
                                         validTime DATETIME,
                                         FOREIGN KEY (user_id)
                                             REFERENCES users(ID)

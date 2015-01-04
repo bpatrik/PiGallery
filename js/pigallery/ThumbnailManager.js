@@ -7,7 +7,6 @@ define(["jquery"], function ($) {
 
         var thumbnailQueue = [];
         var loadingInProgress = false;
-        var that = this;
 
         var calcThumbnailSize = function(photo, width, height){
             var i, imgSize = width * height;

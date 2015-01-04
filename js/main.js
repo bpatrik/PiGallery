@@ -1,33 +1,28 @@
 require.config({
-    baseUrl:  ' js/lib',
+    baseUrl:  './js/',
     paths: {
-        PiGallery: '../pigallery/',
-        // the left side is the module ID,
-        // the right side is the path to
-        // the jQuery file, relative to baseUrl.
-        // Also, the path should NOT include
-        // the '.js' file extension. This example
-        // is using jQuery 1.9.0 located at
-        // js/lib/jquery-1.9.0.js, relative to
-        // the HTML page.
-     /*   jquery: ['//code.jquery.com/jquery-2.1.1.min','jquery-2.1.1.min'],
+        PiGallery: './pigallery',
+        
+     /* CDN fallbacks
+       jquery: ['//code.jquery.com/jquery-2.1.1.min','jquery-2.1.1.min'],
         jquery_ui: ['//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min','jquery-ui-1.10.4_min'],
         underscore: ['//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min','underscorejs-1.6.0.min'],
         bootstrap: ['//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min','bootstrap.min'],
         jquery_cookie: ['//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min', 'jquery.cookie'],
 */
-        jquery:  'jquery-2.1.3.min',
-        jquery_ui: 'jquery-ui.min',
-        bootstrap: 'bootstrap.min',
-        bootstrapSlider: 'bootstrap-slider.min',
-        jquery_cookie: 'jquery.cookie',
-        detectmobilebrowser_jquery: 'detectmobilebrowser_jquery',
-        jquery_countdown: 'jquery.countdown.min',
-        blueImpGallery: 'blueimp-gallery-indicator'
+        jquery:  'lib/jquery-2.1.3.min',
+        jquery_ui: 'lib/jquery-ui.min',
+        bootstrap: 'lib/bootstrap.min',
+        bootstrapSlider: 'lib/bootstrap-slider.min',
+        jquery_cookie: 'lib/jquery.cookie',
+        detectmobilebrowser_jquery: 'lib/detectmobilebrowser_jquery',
+        jquery_countdown: 'lib/jquery.countdown.min',
+        blueImpGallery: 'lib/blueimp-gallery-indicator',
+        zeroClipboard: 'lib/ZeroClipboard.min'
     },
     shim:  {
         'blueImpGallery' : {
-            deps: ['jquery', 'blueimp-gallery-fullscreen']
+            deps: ['jquery', 'lib/blueimp-gallery-fullscreen']
         },
         "bootstrap": {
             deps: ["jquery"]
@@ -49,21 +44,37 @@ require.config({
             deps: ['jquery']
         }
 
-    }
-   /* map: {
+    },
+    map: {
         // '*' means all modules will get 'jquery-private'
         // for their 'jquery' dependency.
         '*': { 'blueimp-helper': 'lib/blueimp-helper',
                'blueimp-gallery': 'lib/blueimp-gallery',
-                'bootstrap-confirmation': 'lib/bootstrap-confirmation',
-                jquery:  'lib/jquery-2.1.1.min'
+                'bootstrap-confirmation': 'lib/bootstrap-confirmation'
 
         }
-    }*/
+    }
 
 });
 
-
+/**
+ * The PiGallery variable. Generated on server side.
+ * @type {{
+ *      currentPath,
+ *      preLoadedDirectoryContent,
+ *      localServerUrl,
+ *      guestAtLocalNetworkEnabled,
+ *      documentRoot,
+ *      searchSupported,      
+ *      user:{
+ *        pathRestriction: {validTime,shareId}
+ *      },     
+ *      LANG:{
+ *          signinInProgress,      
+ *          signin
+ *         }
+ *    }}
+ */
 
 PiGallery.adminSiteInitDone = false;
 PiGallery.gallerySiteInitDone = false;
@@ -148,7 +159,7 @@ PiGallery.initLogin = function(){
         });
 
         //try local logining in
-        if ((!PiGallery.user || PiGallery.user == null) && PiGallery.guestAtLocalNetwrokEnbaled === true) {
+        if ((!PiGallery.user || PiGallery.user == null) && PiGallery.guestAtLocalNetworkEnabled === true) {
             var url = "//"+PiGallery.localServerUrl + "/" + PiGallery.documentRoot ;
             $.ajax({
                 url: url+ "/localtest.php?callback=?",
@@ -274,7 +285,7 @@ PiGallery.initGallery = function(){
                     }else{
                         alert(result.error);
                     }
-                }).fail(function(errMsg) {
+                }).fail(function() {
                     console.log("Error during downloading singing in");
                 });
                 return false;
@@ -315,71 +326,151 @@ PiGallery.initGallery = function(){
             /*Init modal login for guests*/
             PiGallery.initModalLogin(galleryRenderer);
             
-            /*Init sharing*/
+            /*Sharing setup*/
             var $shareButton = $("#shareButton"),
                 $shareModal = $("#shareModal");
             if($shareModal.length != 0 && $shareButton.length != 0){
-                var $shareSlider = $('#shareSlider');
-                //Initializing slider
-                var slider = $shareSlider.slider({
-                    tooltip:"hide"
+                require(['zeroClipboard', 'bootstrapSlider'], function (ZeroClipboard) {
                     
-                });
-                var printSliderValue = function(value){
-                    if(value < 24){ //till 24 //hourly
-                        $("#sliderText").html(value + " hour(s)");
-                    }else if (value - 24 < 29 + 15) { // till 24 + 30 + 15= 68 //daily
-                        $("#sliderText").html((value - 23) + " day(s)");
-                    }else if (value - 68 < 21){ //half monthly
-                        $("#sliderText").html((value - 65)/2 + " month(s)");
-                    }else if (value - 91 < 17){ //half year
-                        $("#sliderText").html((value - 87)/2 + " year(s)");
-                    }else{
-                        $("#sliderText").html('never expires');
-                    }  
-                };
-                
-                $shareSlider.on("slide", function(slideEvt) {
-                    printSliderValue(slideEvt.value);
-                });
-                printSliderValue(slider.slider('getValue'));
+                        /*Variable declarations*/
+                        var $shareSlider = $('#shareSlider'),
+                            slider = $shareSlider.slider({tooltip: "hide"}),//initializing slider
 
 
-                $shareButton.click(function(){
-                    if(PiGallery.shareLink && PiGallery.shareLink.path == galleryRenderer.directoryContent.currentPath){//path didn't changed
-                        $shareModal.modal('show');
-                    }else {
-                        $("#loading-sign").css("opacity", 1);
-                        $.ajax({
-                            type: "POST",
-                            url: "model/AJAXfacade.php",
-                            data: {
-                                method: "share",
-                                dir: galleryRenderer.directoryContent.currentPath
-                            },
-                            dataType: "json"
-                        }).done(function (result) {
-                            if (result.error == null) {
-                                PiGallery.shareLink = result.data;
-                                $("#loading-sign").css("opacity", 0);
-                                $shareModal.modal('show');
-                                $("#shareLink").val(PiGallery.shareLink.link);
-                                $("#sharingPath").html(PiGallery.shareLink.path);
-                            } else {
-                                if (result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL) {
-                                    PiGallery.logOut();
-                                    return;
+                        /*Helper function declarations*/
+                            printSliderValue = function (value) {
+                                if (value < 24) { //till 24 //hourly
+                                    $("#sliderText").html(value + " " + PiGallery.LANG.hours);
+                                } else if (value - 24 < 29 + 15) { // till 24 + 30 + 15= 68 //daily
+                                    $("#sliderText").html((value - 23) + " " + PiGallery.LANG.days);
+                                } else if (value - 68 < 21) { //half monthly
+                                    $("#sliderText").html((value - 65) / 2 + " " + PiGallery.LANG.months);
+                                } else if (value - 91 < 17) { //half year
+                                    $("#sliderText").html((value - 87) / 2 + " " + PiGallery.LANG.years);
+                                } else {
+                                    $("#sliderText").html(PiGallery.LANG.infinite);
                                 }
-                                PiGallery.showErrorMessage(result.error);
-                            }
-                        }).fail(function () {
-                            console.log("Error during sharing");
-                            $("#loading-sign").css("opacity", 0);
+                            },
+                            getHoursFromSliderValue = function (value) {
+                                if (value < 24) { //till 24 //hourly
+                                    return value;
+                                } else if (value - 24 < 29 + 15) { // till 24 + 30 + 15= 68 //daily
+                                    return (value - 23) * 24;
+                                } else if (value - 68 < 21) { //half monthly
+                                    return (value - 65) / 2 * 30 * 24;
+                                } else if (value - 91 < 17) { //half year
+                                    return (value - 87) / 2 * 365 * 24;
+                                } else {
+                                    return 365 * 24 * 200;
+                                }
+                            },
+                            getSliderValueFromHours = function (hours) {
+                                if (hours < 24) { //till 24 //hourly
+                                    return hours;
+                                } else if ((hours / 24 + 23) - 24 < 29 + 15) { // till 24 + 30 + 15= 68 //daily
+                                    return (hours / 24 + 23);
+                                } else if ((hours / (30 * 24) * 2 + 65) - 68 < 21) { //half monthly
+                                    return (hours / (30 * 24) * 2 + 65);
+                                } else if ((hours / (365 * 24) * 2 + 87) - 91 < 17) { //half year
+                                    return (hours / (365 * 24) * 2 + 87);
+                                } else {
+                                    return 108;
+                                }
+                            },
+                            getShareLink = function () {
+                                var path = galleryRenderer.directoryContent.currentPath,
+                                    isRecursive = $("#recursiveShareBox").is(":checked"),
+                                    validInterval = getHoursFromSliderValue(slider.slider('getValue'));
+                                if (PiGallery.shareLink &&
+                                    PiGallery.shareLink.path == path &&
+                                    PiGallery.shareLink.isRecursive == isRecursive &&
+                                    PiGallery.shareLink.validInterval == validInterval) {//path didn't changed
+                                    $shareModal.modal('show');
+                                } else {
+                                    var ajaxArray = {
+                                        method: "share",
+                                        dir: path,
+                                        isRecursive: isRecursive,
+                                        validInterval: validInterval
+                                    };
+                                    if (PiGallery.shareLink) {
+                                        ajaxArray.currentShareId = PiGallery.shareLink.shareId;
+
+                                    }
+
+
+                                    $("#loading-sign").css("opacity", 1);
+                                    $.ajax({
+                                        type: "POST",
+                                        url: "model/AJAXfacade.php",
+                                        data: ajaxArray,
+                                        dataType: "json"
+                                    }).done(function (result) {
+                                        if (result.error == null) {
+                                            PiGallery.shareLink = result.data;
+                                            var $shareLink = $("#shareLink");
+                                            //set values
+                                            $shareLink.val(PiGallery.shareLink.link);
+                                            $("#sharingPath").html(PiGallery.shareLink.path);
+                                            $("#recursiveShareBox").prop('checked', PiGallery.shareLink.isRecursive);
+                                            slider.slider('setValue', getSliderValueFromHours(PiGallery.shareLink.validInterval));
+                                            printSliderValue(slider.slider('getValue'));
+
+                                            //set controlls
+                                            $shareLink.removeAttr("disabled");
+                                            $("#copyButton").removeAttr("disabled");
+                                            $("#updatebutton").attr("disabled", "disabled");
+
+                                            $("#loading-sign").css("opacity", 0);
+                                            $shareModal.modal('show');
+                                        } else {
+                                            if (result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL) {
+                                                PiGallery.logOut();
+                                                return;
+                                            }
+                                            PiGallery.showErrorMessage(result.error);
+                                        }
+                                    }).fail(function () {
+                                        console.log("Error during sharing");
+                                        $("#loading-sign").css("opacity", 0);
+                                    });
+                                }
+                            };
+
+
+                        $shareSlider.on("slide", function (slideEvt) {
+                            printSliderValue(slideEvt.value);
+                            $("#shareLink").attr("disabled", "disabled");
+                            $("#copyButton").attr("disabled", "disabled");
+                            $("#updatebutton").removeAttr("disabled");
                         });
-                    }
-                });
-                
-                
+                        $("#recursiveShareBox").click(function () {
+                            $("#shareLink").attr("disabled", "disabled");
+                            $("#copyButton").attr("disabled", "disabled");
+                            $("#updatebutton").removeAttr("disabled");
+                        });
+                        printSliderValue(slider.slider('getValue'));
+
+
+                        $shareButton.click(function () {
+                            getShareLink();
+                        });
+                        $("#updatebutton").click(function () {
+                            getShareLink();
+                        });
+                    
+                        //initalizing copy button
+                        $("#shareLink").parent().removeClass("col-md-10").addClass("col-md-12");
+                        $("#copyButton").hide();
+                    
+                        var client = new ZeroClipboard($("#copyButton"));
+                        client.on( "ready", function(  ) {
+                            $("#copyButton").show();
+                            $("#shareLink").parent().removeClass("col-md-12").addClass("col-md-10");
+                        });
+                    
+
+                    });
             }
             
             PiGallery.gallerySiteInitDone = true;
@@ -442,9 +533,10 @@ PiGallery.showGallery = function(){
         }
         
         if(PiGallery.user.pathRestriction && PiGallery.user.pathRestriction.validTime){
-            $('#linkCountDown').show();
-            $('#linkCountDown').countdown(Date.parse(PiGallery.user.pathRestriction.validTime.replace(' ', 'T')), function(event) {
-                $(this).html(event.strftime('Link valid: %-D days %H:%M:%S'));
+            var $linkCountDown = $('#linkCountDown');
+            $linkCountDown.show();
+            $linkCountDown.countdown(Date.parse(PiGallery.user.pathRestriction.validTime.replace(' ', 'T')), function(event) {
+                $(this).html(event.strftime(PiGallery.LANG.linkValid+': %-D '+PiGallery.LANG.days+' %H:%M:%S'));
             });
         }else{
             $('#linkCountDown').hide();
@@ -486,7 +578,7 @@ PiGallery.logOut = function(){
 };
 
 
-
+//Error Messages
 PiGallery.showErrorMessage = function(str){
     $('#alertsDiv').append('<div class="alert  alert-danger">' + str  + '</div>');
 
@@ -499,16 +591,13 @@ PiGallery.showWarningMessage = function(str){
     $('#alertsDiv').append('<div class="alert  alert-warning">' + str  + '</div>');
 
 };
-
-
 PiGallery.hideMessages = function(){
     $('#alertsDiv').empty();
 };
 
-
+//This starts the site
 if(PiGallery.user != null){
     PiGallery.showGallery();
 }else{
     PiGallery.showLogin();
-
 }

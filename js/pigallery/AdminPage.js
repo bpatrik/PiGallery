@@ -1,7 +1,7 @@
 var PiGallery = PiGallery || {};
 
 define(['jquery', 'bootstrap-confirmation', 'PiGallery/Enums'], function($) {
-
+    "use strict";
     return function AdminPage($AdminPageDiv) {
         this.init = function(){
 
@@ -26,7 +26,7 @@ define(['jquery', 'bootstrap-confirmation', 'PiGallery/Enums'], function($) {
                             }
                             alert(result.error);
                         }
-                    }).fail(function (errMsg) {
+                    }).fail(function () {
                         console.log("Error during resetting db");
                     });
                     return false;
@@ -54,7 +54,7 @@ define(['jquery', 'bootstrap-confirmation', 'PiGallery/Enums'], function($) {
                             }
                             alert(result.error);
                         }
-                    }).fail(function (errMsg) {
+                    }).fail(function () {
                         console.log("Error during clearing tables");
                     });
                     return false;
@@ -83,7 +83,7 @@ define(['jquery', 'bootstrap-confirmation', 'PiGallery/Enums'], function($) {
                         }
                         alert(result.error);
                     }
-                }).fail(function (errMsg) {
+                }).fail(function () {
                     console.log("Error during delete user");
                 });
 
@@ -203,7 +203,7 @@ define(['jquery', 'bootstrap-confirmation', 'PiGallery/Enums'], function($) {
                 }
             };
 
-            $AdminPageDiv.find('#indexingProgress').html("Indexing: \"" + directory + "\" (" + directoriesToIndex.length + " left)")
+            $AdminPageDiv.find('#indexingProgress').html("Indexing: \"" + directory + "\" (" + directoriesToIndex.length + " left)");
 
             $.ajax({
                 type: "POST",

@@ -78,6 +78,16 @@ define(["jquery", "PiGallery/ThumbnailManager",  "PiGallery/DirectoryRenderer", 
          * If the directory not changed, updates the content
          * @param directoryContent
          */
+        this.showContent = function (directoryContent){
+            this.showContent(directoryContent,false);            
+        };
+        
+        /**
+         * Show the given content
+         * If the directory not changed, updates the content
+         * @param directoryContent
+         * @param forceShow
+         */
         this.showContent = function (directoryContent, forceShow) {
             PiGallery.hideMessages();
 

@@ -472,10 +472,11 @@ class DB_ContentManager {
      * @param string $folder
      * @param int $validInterval
      * @param bool $isRecursive
+     * @param null|string $currentShareId
      * @return string
      * @throws Exception
      */
-    public static function shareFolder($user, $folder, $validInterval, $isRecursive)
+    public static function shareFolder($user, $folder, $validInterval, $isRecursive, $currentShareId = null)
     {
 
         $folder = Helper::toDirectoryPath($folder);
@@ -488,15 +489,41 @@ class DB_ContentManager {
         }
         
         $mysqli = DB::getDatabaseConnection();
+
+
+        if($currentShareId != null){
+            $stmt = $mysqli->prepare("UPDATE  sharing SET
+                                              recursive = ?,
+                                              validTime = creationTime + INTERVAL ? HOUR
+                                              WHERE
+                                              user_id = ? AND
+                                              share_id = ? AND
+                                              path = ? AND
+                                              creationTime < NOW() + INTERVAL 1 DAY
+                                              LIMIT 1");
+            if($stmt === false) {
+                $error = $mysqli->error;
+                $mysqli->close();
+                throw new \Exception("Error at updating sharing: ". $error);
+            }
+
+            $stmt->bind_param('iiiss',$isRecursive, $validInterval, $userId,$currentShareId,$folder);
+            $stmt->execute();
+            $rowCount =  $stmt->affected_rows;
+            $stmt->close();
+            if($rowCount > 0) {
+                return $currentShareId;
+            }
+        }
         
-        $stmt = $mysqli->prepare("INSERT INTO sharing (user_id, share_id, path, recursive, validTime) VALUES (?, ?, ?, ? , NOW() + INTERVAL ? HOUR)");
+        $stmt = $mysqli->prepare("INSERT INTO sharing (user_id, share_id, path, recursive, validTime, creationTime) VALUES (?, ?, ?, ? , NOW() + INTERVAL ? HOUR, NOW())");
         if($stmt === false) {
             $error = $mysqli->error;
             $mysqli->close();
             throw new \Exception("Error: ". $error);
         }
 
-        $stmt->bind_param('issis',$userId,$shareId, $folder, $isRecursive, $validInterval );
+        $stmt->bind_param('issii',$userId,$shareId, $folder, $isRecursive, $validInterval );
         $stmt->execute();
 
         $stmt->close();

@@ -114,10 +114,10 @@ define(["jquery",  "PiGallery/ThumbnailManager" ], function ($) {
                 }
 
                 //Fading in photos
-                var delaytime = 0;
-                $photoGalleryDiv.children("div:hidden").each(function(k, val){
-                    $(this).delay( delaytime).fadeIn();
-                    delaytime+=50;
+                var delayTime = 0;
+                $photoGalleryDiv.children("div:hidden").each(function(){
+                    $(this).delay( delayTime).fadeIn();
+                    delayTime+=50;
                 });
 
 

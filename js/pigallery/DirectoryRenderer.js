@@ -9,7 +9,6 @@ define(["jquery", "PiGallery/ThumbnailManager", "detectmobilebrowser_jquery" ], 
         var TARGET_DIR_COL_COUNT = 5,
             IMAGE_MARGIN = 5;
 
-        var that = this;
         var imageSize = ($directoryGalleryDiv.parent().width() - (IMAGE_MARGIN * 2 * TARGET_DIR_COL_COUNT)) / ((TARGET_DIR_COL_COUNT) ); //TODO: make phone friendly
 
 
@@ -101,7 +100,7 @@ define(["jquery", "PiGallery/ThumbnailManager", "detectmobilebrowser_jquery" ], 
                 var $targetDiv = $(event.target).closest(".gallery-directory-image");
                 var lastUpdate = $targetDiv.data("lastUpdate");
 
-                if (Date.now() - lastUpdate < 500)
+                if (Date.now() - lastUpdate < 800)
                     return;
                 $targetDiv.data("lastUpdate",Date.now());
 

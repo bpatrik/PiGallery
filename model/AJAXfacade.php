@@ -160,14 +160,19 @@ switch (Helper::require_REQUEST('method')) {
         $data = null;
 
         $dir = Helper::require_REQUEST('dir');
+        $currentShareId = Helper::get_REQUEST('currentShareId',null);
         $isRecursive = filter_var( Helper::get_REQUEST('isRecursive',false),FILTER_VALIDATE_BOOLEAN);
         $validInterval = intval(Helper::get_REQUEST('validInterval',24 * 30)); //default 30 days
         
         
         try {
             if(Properties::$databaseEnabled){
-                $data = array("link" => Properties::$siteUrl.'?s='.DB_ContentManager::shareFolder($user, $dir, $validInterval, $isRecursive),
-                              "path" => $dir);
+                $shareId = DB_ContentManager::shareFolder($user, $dir, $validInterval, $isRecursive, $currentShareId);
+                $data = array("link" => Properties::$siteUrl.'?s='.$shareId,
+                              "shareId" => $shareId,
+                              "path" => $dir,
+                              "validInterval" => $validInterval,
+                              "isRecursive" => $isRecursive );
             }else{
                 $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
             }

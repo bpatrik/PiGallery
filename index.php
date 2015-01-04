@@ -108,7 +108,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
         PiGallery.preLoadedDirectoryContent= <?php echo ($content == null ?  "null" : Helper::contentArrayToJSON($content)); ?>;
         PiGallery.searchSupported = <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>;
         PiGallery.documentRoot = "<?php echo Properties::$documentRoot; ?>";
-        PiGallery.guestAtLocalNetwrokEnbaled = <?php  echo Properties::$GuestLoginAtLocalNetworkEnabled ? "true" : "false"; ?>;
+        PiGallery.guestAtLocalNetworkEnabled = <?php  echo Properties::$GuestLoginAtLocalNetworkEnabled ? "true" : "false"; ?>;
         PiGallery.localServerUrl = "<?php if(Properties::$GuestLoginAtLocalNetworkEnabled) echo $_SERVER['SERVER_ADDR']; ?>";
         PiGallery.user =  <?php echo json_encode(is_null($user) ? null : $user->getJsonData()); ?>;
         PiGallery.LANG = <?php echo json_encode($LANG); ?>;
@@ -193,9 +193,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                         >
                         <a href="#">Settings</a>
                     </li>
-
-                        <!--  <li><a href="#">Admin</a></li>
-                    <li><a href="#">Monitor</a></li> -->
+                    <!--<li><a href="#">Monitor</a></li> -->
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <?php if(\piGallery\Properties::$databaseEnabled) { ?>
@@ -385,7 +383,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                         <input id="shareLink" name="shareLink" placeholder="link" class="form-control input-md" type="text" >
                     </div>
                     <div class="col-md-2 pull-right">
-                        <button id="copybutton" name="copybutton" class="btn btn-primary"><?php echo $LANG['copy']; ?></button>
+                        <button id="copyButton" name="copyButton" data-clipboard-target="shareLink" class="btn btn-primary"><?php echo $LANG['copy']; ?></button>
                     </div>
                 </div>
                 <hr/>
@@ -393,12 +391,12 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                     <div class="form-group" style="padding: 0 15px 0 15px;">
 
                         <div  style="display: inline;">
-                            <label class="control-label">Sharing:</label>
-                            <div class="form-control-static" id="sharingPath">email@example.com</div>
+                            <label class="control-label"><?php echo $LANG['sharing']; ?>:</label>
+                            <div class="form-control-static" id="sharingPath">/</div>
                         </div>
 
                         <label class="checkbox pull-right">
-                            <input id="modalRememberMeBox" type="checkbox" value="remember-me"> <?php echo $LANG['recursive']; ?>
+                            <input id="recursiveShareBox" type="checkbox" value="remember-me"> <?php echo $LANG['recursive']; ?>
                         </label>
 
 
@@ -406,7 +404,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                 </div>
                 <div class="row">
                     <div class="col-md-4">
-                        Valid for:
+                        <?php echo $LANG['validFor']; ?>:
                         <p id="sliderText"></p>
                     </div>
                     <div class="col-md-8">
@@ -415,7 +413,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                 </div>
                 <div class="row">
                     <div class="col-md-2 col-md-push-10">
-                        <button id="updatebutton" name="updatebutton" class="btn btn-primary">Update</button>
+                        <button id="updatebutton" name="updatebutton" class="btn btn-primary"><?php echo $LANG['update']; ?></button>
                     </div>
                 </div>
                 
