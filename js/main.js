@@ -369,7 +369,7 @@ PiGallery.showAdminSite = function(){
 
 PiGallery.showGallery = function(){
 
-    require(['jquery','jquery_countdown', 'PiGallery/Enums',"PiGallery/SharingManager"], function   ($) {
+    require(['jquery', 'PiGallery/Enums',"PiGallery/SharingManager"], function   ($) {
 
         var _showGallery = function(){
             var $adminButton = $("#adminButton");
@@ -395,10 +395,12 @@ PiGallery.showGallery = function(){
             }
 
             if(PiGallery.user.pathRestriction && PiGallery.user.pathRestriction.validTime){
-                var $linkCountDown = $('#linkCountDown');
-                $linkCountDown.show();
-                $linkCountDown.countdown(Date.parse(PiGallery.user.pathRestriction.validTime.replace(' ', 'T')), function(event) {
-                    $(this).html(event.strftime(PiGallery.LANG.linkValid+': %-D '+PiGallery.LANG.days+' %H:%M:%S'));
+                require(['jquery_countdown'], function() {
+                    var $linkCountDown = $('#linkCountDown');
+                    $linkCountDown.show();
+                    $linkCountDown.countdown(Date.parse(PiGallery.user.pathRestriction.validTime.replace(' ', 'T')), function(event) {
+                        $(this).html(event.strftime(PiGallery.LANG.linkValid+': %-D '+PiGallery.LANG.days+' %H:%M:%S'));
+                    });
                 });
             }else{
                 $('#linkCountDown').hide();
