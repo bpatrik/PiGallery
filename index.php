@@ -304,8 +304,8 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                             <div class="form-group">
                                 <label class="sr-only" for="exampleInputPassword2"><?php echo $LANG['admin_role']; ?></label>
                                 <select id="adminRegisterRole" name="role" class="form-control">
-                                    <option value="2"><?php echo $LANG['admin_role_user']; ?></option>
-                                    <option value="3"><?php echo $LANG['admin_role_admin']; ?></option>
+                                    <option value="<?php echo Role::User; ?>"><?php echo $LANG['admin_role_user']; ?></option>
+                                    <option value="<?php echo Role::Admin; ?>"><?php echo $LANG['admin_role_admin']; ?></option>
                                 </select>
                             </div>
 

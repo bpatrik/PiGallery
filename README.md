@@ -24,7 +24,7 @@ Installation:
 --------
 
 *  Install php, and a webserver(apache, nginx) on your device and a (optional) database server (mysql, mariadb)
-*  download the latest [release (v0.99)](release/pigallery_0.99.zip) from github, extract  it in your www directory (or in a subdirectory)
+*  download the latest (it contains minfied files) [release (v0.99)](release/pigallery_0.99.zip) from github, extract  it in your www directory (or in a subdirectory)
 *  open config.php and edit the configurations according to the comments.
 *  if your using database mode, be sure the the database, you set in the config.php is exist
 *  login with user: admin, pass: admin (or whatever you set in config.php)
