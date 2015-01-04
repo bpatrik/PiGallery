@@ -3,14 +3,13 @@ require_once __DIR__."/config.php";
 require_once __DIR__."/model/AuthenticationManager.php";
 use piGallery\db\entities\Role;
 use \piGallery\Properties;
+
 require_once __DIR__."/lang/".Properties::$language.".php";
 
 
 
 header('Access-Control-Allow-Origin: *');
-
 header('Access-Control-Allow-Methods: GET, POST');
-
 header("Access-Control-Allow-Headers: X-Requested-With");
 
 ?>
@@ -106,7 +105,11 @@ header("Access-Control-Allow-Headers: X-Requested-With");
         //Preloaded directory content
         PiGallery.currentPath = "<?php echo Helper::toURLPath($dir); ?>";
         PiGallery.preLoadedDirectoryContent= <?php echo ($content == null ?  "null" : Helper::contentArrayToJSON($content)); ?>;
-        PiGallery.searchSupported = <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>;
+        PiGallery.Supported = {
+            DataBaseSettings : <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>,
+            Search : <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>,
+            Share : <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>
+        };
         PiGallery.documentRoot = "<?php echo Properties::$documentRoot; ?>";
         PiGallery.guestAtLocalNetworkEnabled = <?php  echo Properties::$GuestLoginAtLocalNetworkEnabled ? "true" : "false"; ?>;
         PiGallery.localServerUrl = "<?php if(Properties::$GuestLoginAtLocalNetworkEnabled) echo $_SERVER['SERVER_ADDR']; ?>";
@@ -116,15 +119,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
 
     </script>
 
-    <!--jquerry ui-->
-    <link rel="stylesheet" href="./css/ui-bootstrap/jquery-ui-1.10.3.custom.css">
-    <!-- Bootstrap core CSS -->
-    <link href="./css/bootstrap.min.css" rel="stylesheet">
-    <link href="./css/signin.css" rel="stylesheet">
 
-
-    <!-- Just for debugging purposes. Don't actually copy this line! -->
-    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -132,8 +127,14 @@ header("Access-Control-Allow-Headers: X-Requested-With");
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
-
-    <!-- bootstrap image gellery-->
+<?php /*
+    <!--jquerry ui-->
+    <link rel="stylesheet" href="./css/ui-bootstrap/jquery-ui-1.10.3.custom.css">
+    <!-- Bootstrap core CSS -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/signin.css" rel="stylesheet">
+    
+    <!-- bootstrap image gallery-->
     <link rel="stylesheet" href="css/blueimp-gallery.min.css">
     <!-- <link rel="stylesheet" href="http://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">-->
     <link rel="stylesheet" href="css/bootstrap-image-gallery.min.css">
@@ -142,8 +143,10 @@ header("Access-Control-Allow-Headers: X-Requested-With");
     <!-- Own css-->
 
     <link href="./css/override/boostrap-override.css" rel="stylesheet">
-    <link href="./css/override/galery.css" rel="stylesheet">
+    <link href="./css/override/gallery.css" rel="stylesheet">
+*/?>
 
+    <link href="./css/override/pigallery.css" rel="stylesheet">
 </head>
 
 <body>
@@ -195,11 +198,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                     </li>
                     <!--<li><a href="#">Monitor</a></li> -->
                 </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    <?php if(\piGallery\Properties::$databaseEnabled) { ?>
-                         <li><button type="button" class="btn btn-default navbar-btn btn-link" id="shareButton"><span class="glyphicon glyphicon-share-alt"> <?php echo $LANG['share']; ?></span></button></li>
-                    <?php } ?>
-                    
+                <ul id="menu" class="nav navbar-nav navbar-right">
                     <li><p class="navbar-text" id="userNameButton"><?php echo is_null($user) ? "" : $user->getUserName(); ?></p></li>
                     <li><a href="#" id="logOutButton" ><?php echo $LANG['logout']; ?></a></li>
                     <li><a href="#" id="signinButton" data-toggle="modal" data-target="#loginModal"><?php echo $LANG['signin']; ?></a></li>
@@ -379,10 +378,10 @@ header("Access-Control-Allow-Headers: X-Requested-With");
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-md-10">
+                    <div class="col-sm-10">
                         <input id="shareLink" name="shareLink" placeholder="link" class="form-control input-md" type="text" >
                     </div>
-                    <div class="col-md-2 pull-right">
+                    <div class="col-sm-2 pull-right">
                         <button id="copyButton" name="copyButton" data-clipboard-target="shareLink" class="btn btn-primary"><?php echo $LANG['copy']; ?></button>
                     </div>
                 </div>
@@ -403,16 +402,16 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-sm-4">
                         <?php echo $LANG['validFor']; ?>:
                         <p id="sliderText"></p>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-sm-8">
                         <input  id="shareSlider" data-slider-id='shareSlider' type="text" data-slider-min="1" data-slider-max="108" data-slider-step="1" data-slider-value="53"/>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-2 col-md-push-10">
+                    <div class="col-sm-2 col-sm-push-10">
                         <button id="updatebutton" name="updatebutton" class="btn btn-primary"><?php echo $LANG['update']; ?></button>
                     </div>
                 </div>

@@ -70,7 +70,7 @@ define(["jquery",  "PiGallery/ThumbnailManager" ], function ($) {
                     /*rendering keywords*/
                     var $keywordsDiv = $('<div>').addClass("galley-image-keywords");
 
-                    if(PiGallery.searchSupported && PiGallery.user.role > PiGallery.enums.Roles.RemoteGuest){
+                    if(PiGallery.Supported.Search && PiGallery.user.role > PiGallery.enums.Roles.RemoteGuest){
                         for (k = 0, klen = photo.keywords.length; k < klen; k++) {
                             var keyword = photo.keywords[k];
                             if (keyword != "") {
