@@ -71,17 +71,17 @@ define(["jquery",  "PiGallery/ThumbnailManager" ], function ($) {
                     var $keywordsDiv = $('<div>').addClass("galley-image-keywords");
 
                     if(PiGallery.searchSupported && PiGallery.user.role > PiGallery.enums.Roles.RemoteGuest){
-                        for (k = 0, klen = photo.keywords.length; k <= klen; k++) {
+                        for (k = 0, klen = photo.keywords.length; k < klen; k++) {
                             var keyword = photo.keywords[k];
                             if (keyword != "") {
                                 $keywordsDiv.append(
-                                    $('<a>', {href: "#", "data-keyword": keyword}).html("#" + keyword).click(keywordClickHandler), ", ");
+                                    $('<a>', {href: "#", "data-keyword": keyword}).html("#" + keyword).click(keywordClickHandler), k != klen-1 ? ", " : "");
                             }
                         }
                     }else{
-                        for (k = 0, klen = photo.keywords.length; k <= klen; k++) {
+                        for (k = 0, klen = photo.keywords.length; k < klen; k++) {
                             $keywordsDiv.append(
-                                $('<span>').html("#" + photo.keywords[k]),", ");
+                                $('<span>').html("#" + photo.keywords[k]), k != klen-1 ? ", " : "");
                         }
                     }
 
@@ -108,8 +108,8 @@ define(["jquery",  "PiGallery/ThumbnailManager" ], function ($) {
                             .height(imageHeight)
                             .width(imageWidth)
                             .css("display","none")
-                            .mouseover(imageMouseOverHandler)
-                            .mouseout(imageMouseOutHandler)
+                            .mouseenter(imageMouseOverHandler)
+                            .mouseleave(imageMouseOutHandler)
                     );
                 }
 

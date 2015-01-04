@@ -31,7 +31,7 @@ if (Properties::$enableUTF8Encode) {
 $imagePath = Helper::toDirectoryPath($imagePath);
 if($user->getPathRestriction() != null){
     $dir = dirname($imagePath);
-    if($user->getPathRestriction()->isRecursive() == false){
+    if($user->getPathRestriction()->isRecursive() == false && !Helper::isPathEqual($dir, $user->getPathRestriction()->getPath())){
         die(json_encode(array("error" => (new AjaxError(AjaxError::GENERAL_ERROR, "Don't have rights for thr directory"))->getJsonData(), "data" => "")));
     }else if(Helper::isSubPath($dir, $user->getPathRestriction()->getPath()) === FALSE){
         die(json_encode(array("error" => (new AjaxError(AjaxError::GENERAL_ERROR, "Don't have rights for thr directory"))->getJsonData(), "data" => "")));

@@ -396,7 +396,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                         </div>
 
                         <label class="checkbox pull-right">
-                            <input id="recursiveShareBox" type="checkbox" value="remember-me"> <?php echo $LANG['recursive']; ?>
+                            <input id="recursiveShareBox" type="checkbox" checked="true" value="remember-me"> <?php echo $LANG['recursive']; ?>
                         </label>
 
 

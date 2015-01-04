@@ -156,8 +156,8 @@
 .navbar #linkCountDown{
     color: #BBB;
     position: absolute;
-    width: 100%;
-    left: 0;
+    width: 50%;
+    left: 25%;
     text-align: center;
     margin: auto;   
     top: 15px;

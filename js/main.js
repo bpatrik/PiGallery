@@ -495,6 +495,7 @@ PiGallery.showAdminSite = function(){
         $('#gallery-container').hide();
         $('#admin-container').show();
         $('#autocompleteForm').hide();
+        $('#shareButton').hide();
 
         $('#galleryButton').removeClass("active");
         $('#adminButton').addClass("active");

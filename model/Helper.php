@@ -73,6 +73,13 @@ class Helper {
 
         return false;
     }
+    
+    public static function isPathEqual($path1, $path2){
+
+        $path1 = Helper::toDirectoryPath($path1);
+        $path2 = Helper::toDirectoryPath($path2);
+        return strpos($path1, $path2) === 0;
+    }
 
     public static function toDirectoryPath($path){
 
@@ -83,7 +90,7 @@ class Helper {
                          DIRECTORY_SEPARATOR,
                          DIRECTORY_SEPARATOR);
 
-        $path = str_replace($search, $replace,$path);
+        $path = str_replace($search, $replace,$path); 
         $path = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR,$path); //clean duplicated separators
         return $path;
     }
