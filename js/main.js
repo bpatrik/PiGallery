@@ -22,7 +22,7 @@ require.config({
     },
     shim:  {
         'blueImpGallery' : {
-            deps: ['jquery', 'lib/blueimp-gallery-fullscreen']
+            deps: ['jquery']
         },
         "bootstrap": {
             deps: ["jquery"]
@@ -49,7 +49,8 @@ require.config({
         // '*' means all modules will get 'jquery-private'
         // for their 'jquery' dependency.
         '*': { 'blueimp-helper': 'lib/blueimp-helper',
-               'blueimp-gallery': 'lib/blueimp-gallery',
+            'blueimp-gallery': 'lib/blueimp-gallery',
+            'blueimp-gallery-fullscreen': 'lib/blueimp-gallery-fullscreen',
                 'bootstrap-confirmation': 'lib/bootstrap-confirmation'
 
         }
@@ -101,7 +102,19 @@ PiGallery.initSite = function(){
 
 PiGallery.initLogin = function(){
     require(['jquery', 'jquery_cookie', 'PiGallery/Enums'],  function   ($) {
-
+        //try local logining in
+        if ((!PiGallery.user || PiGallery.user == null) && PiGallery.guestAtLocalNetworkEnabled === true) {
+            var url = "//"+PiGallery.localServerUrl + "/" + PiGallery.documentRoot ;
+            $.ajax({
+                url: url+ "/localtest.php?callback=?",
+                dataType: "jsonp",
+                jsonpCallback: 'jsonCallback'
+            }).done(function () {
+                window.location = url;
+            });
+        }
+        
+        
         $('#gallerySite').hide();
         $('#signInSite').show();
 
@@ -162,17 +175,7 @@ PiGallery.initLogin = function(){
             return false;
         });
 
-        //try local logining in
-        if ((!PiGallery.user || PiGallery.user == null) && PiGallery.guestAtLocalNetworkEnabled === true) {
-            var url = "//"+PiGallery.localServerUrl + "/" + PiGallery.documentRoot ;
-            $.ajax({
-                url: url+ "/localtest.php?callback=?",
-                dataType: "jsonp",
-                jsonpCallback: 'jsonCallback'
-            }).done(function () {
-                window.location = url;
-            });
-        }
+
 
         PiGallery.loginSiteInitDone = true;
 
@@ -228,10 +231,6 @@ PiGallery.initModalLogin = function(galleryRenderer){
                     showSignProgress(false);
                     galleryRenderer.refresh();
                 } else {
-                    if(result.error.code == PiGallery.enums.AjaxErrors.AUTHENTICATION_FAIL){
-                        PiGallery.logOut();
-                        return;
-                    }
                     alert(result.error);
                     showSignProgress(false);
                 }
@@ -314,6 +313,7 @@ PiGallery.initGallery = function(callback){
             });
 
             $('.full-screen').click(function () {
+                console.log("fullscreen clicked");
                 if(PiGallery.lightbox.options.fullScreen == false){
                     PiGallery.lightbox.options.fullScreen = true;
                     PiGallery.lightbox.requestFullScreen(PiGallery.lightbox.container[0]);

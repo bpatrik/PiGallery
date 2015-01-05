@@ -17,7 +17,8 @@
         // Register as an anonymous AMD module:
         define([
             './blueimp-helper',
-            './blueimp-gallery'
+            './blueimp-gallery',
+            './blueimp-gallery-fullscreen'
         ], factory);
     } else {
         // Browser globals:

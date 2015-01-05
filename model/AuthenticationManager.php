@@ -33,14 +33,14 @@ class AuthenticationManager {
             if(Properties::$databaseEnabled){ //Using database enabled?
 
                 $user = DB_UserManager::loginWithSessionID($sessionID);
-                if($user != null && $user->getRole() >= $roleNeeded){
+                if(!is_null($user) && $user->getRole() >= $roleNeeded){
                     return $user;
                 }
 
             }else{//No-database mode
 
                 $user = NoDBUserManager::loginWithSessionID($sessionID);
-                if($user != null && $user->getRole() >= $roleNeeded){
+                if(!is_null($user) && $user->getRole() >= $roleNeeded){
                     return $user;
                 }
 
