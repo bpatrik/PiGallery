@@ -406,7 +406,7 @@ PiGallery.showGallery = function(){
                 $('#linkCountDown').hide();
             }
 
-            if(PiGallery.user.role <= PiGallery.enums.Roles.User){
+            if(PiGallery.user.role < PiGallery.enums.Roles.User){
                 PiGallery.sharingManger.hide();
             }else{
                 PiGallery.sharingManger.show();
