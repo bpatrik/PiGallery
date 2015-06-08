@@ -31,7 +31,7 @@ class Properties{
 
     /*-----------Thumbnail settings--------------*/
     /*The thumbnail folder relative to the base folder. !IMPORTANT the folder must be writable!
-    Eg.: If the images folder is /var/www/PiGallery/thumbnails than set is './thumbnails'
+    Eg.: If the thumbnail folder is /var/www/PiGallery/thumbnails than set is './thumbnails'
     Note: it should be relative to the site root.
           If your folder is somewhere else, create a link to the thumbnail folder in your site root directory*/
     public static $thumbnailFolder = "./thumbnails";
