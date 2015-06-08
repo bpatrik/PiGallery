@@ -22,7 +22,7 @@ define(["jquery", 'PiGallery/Enums'], function ($) {
                             that.lastXhr = null;
                             return;
                         }
-                        PiGallery.showErrorMessage(result.error);
+                        PiGallery.showErrorMessage(result.error.message);
                     }else if(result.data != null) { //if the directory content changed comparing to the cached one
                         that.storeContent(result.data);
                         galleryRenderer.showContent(result.data);
@@ -69,7 +69,7 @@ define(["jquery", 'PiGallery/Enums'], function ($) {
                             that.lastXhr = null;
                             return;
                         }
-                        PiGallery.showErrorMessage(result.error);
+                        PiGallery.showErrorMessage(result.error.message);
                     }else if(result.data != null && result.data.noChange == false) { //if the directory content changed comparing to the cached one
                         that.storeContent(result.data);
                         galleryRenderer.showContent(result.data);
@@ -135,7 +135,7 @@ define(["jquery", 'PiGallery/Enums'], function ($) {
                         that.lastXhr = null;
                         return;
                     }
-                    PiGallery.showErrorMessage(result.error);
+                    PiGallery.showErrorMessage(result.error.message);
                 }
                 that.lastXhr = null;
                 $("#loading-sign").css("opacity",0);

@@ -80,6 +80,7 @@ class ThumbnailManager {
 
         //freeup
         imagedestroy($tmp_img);
+        imagedestroy($src_img);
 
     }
 

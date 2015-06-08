@@ -116,7 +116,7 @@ define(["jquery", 'zeroClipboard', 'bootstrapSlider' ], function ($,ZeroClipboar
                                         PiGallery.logOut();
                                         return;
                                     }
-                                    PiGallery.showErrorMessage(result.error);
+                                    PiGallery.showErrorMessage(result.error.message);
                                 }
                             }).fail(function () {
                                 console.log("Error during sharing");
