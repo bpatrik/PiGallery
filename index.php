@@ -19,8 +19,8 @@ header("Access-Control-Allow-Headers: X-Requested-With");
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="description" content="It is an open source gallery webpage. https://github.com/bpatrik/PiGallery">
+    <meta name="author" content="Patrik Braun">
     <link rel="shortcut icon" href="img/icon.png">
 
     <title><?php echo $LANG['site_name']; ?></title>

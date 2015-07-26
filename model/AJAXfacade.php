@@ -9,7 +9,6 @@ require_once __DIR__."/../db/DB_ContentManager.php";
 require_once __DIR__."/Helper.php";
 require_once __DIR__."/../config.php";
 require_once __DIR__."/DirectoryScanner.php";
-require_once __DIR__."/../config.php";
 require_once __DIR__."/../db/entities/AjaxError.php";
 require_once __DIR__."/NoDBUserManager.php";
 
@@ -97,7 +96,7 @@ switch (Helper::require_REQUEST('method')) {
                     DB::indexDirectory($dir);
                     $data = DB_ContentManager::getDirectoryContent($dir, null);
                 }else{
-                    $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
+                    $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: IndexDirectoryAndGetContent function in no-db mode  not supported");
                 }
             }catch(\Exception $ex){
                 $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
@@ -124,7 +123,7 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                 $data = DB_ContentManager::getAutoComplete($searchText,$count);
             }else{
-                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Auto complete in no-db mode not supported");
             }
         }catch(\Exception $ex){
             $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
@@ -145,7 +144,7 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                 $data = DB_ContentManager::getSearchResult($searchString);
             }else{
-                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Search in no-db mode not supported");
             }
         }catch(\Exception $ex){
             $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
@@ -174,7 +173,7 @@ switch (Helper::require_REQUEST('method')) {
                               "validInterval" => $validInterval,
                               "isRecursive" => $isRecursive );
             }else{
-                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Share in no-db mode not supported");
             }
         }catch(\Exception $ex){
             $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
@@ -249,7 +248,7 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                 $data = DB::recreateDatabase();
             }else{
-                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Recreate DB table in no-db mode not supported");
             }
         }catch(\Exception $ex){
             $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
@@ -267,7 +266,7 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                 $data = DB::clearDatabase();
             }else{
-                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Creating gallery database in no-db mode not supported");
             }
         }catch(\Exception $ex){
             $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
@@ -289,7 +288,7 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                $data = DB::indexDirectory($dir);
             }else{
-                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Directory indexing in no-db mode not supported");
             }
         }catch(\Exception $ex){
             $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
@@ -316,7 +315,7 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                 $data = DB_UserManager::getUsersList();
             }else{
-                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Getting User list from db in no-db mode not supported");
             }
         }catch(\Exception $ex){
             $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
@@ -336,7 +335,7 @@ switch (Helper::require_REQUEST('method')) {
             if(Properties::$databaseEnabled){
                 $data = DB_UserManager::register(new User($userName, $password, $role));
             }else{
-                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
+                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Registering user in no-db mode not supported");
             }
         }catch(\Exception $ex){
             $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
@@ -356,7 +355,7 @@ switch (Helper::require_REQUEST('method')) {
                 if(Properties::$databaseEnabled){
                     $data = DB_UserManager::deleteUser($id);
                 }else{
-                    $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: not supported");
+                    $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Deleting in no-db mode not supported");
                 }
             }catch(\Exception $ex){
                 $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
