@@ -470,13 +470,13 @@ function isGD(){
 
             <div class="form-group">
                 <div class="col-sm-push-3 col-sm-2">
-                    <input id="databaseName" name="databaseName" placeholder="username" class="form-control input-md" type="text">
+                    <input id="adminUserName" name="databaseName" placeholder="username" class="form-control input-md" type="text">
                 </div>
                 <div class="col-sm-push-3 col-sm-2">
-                    <input id="databaseName" name="databaseName" placeholder="password" class="form-control input-md" type="password">
+                    <input id="adminPassword" name="databaseName" placeholder="password" class="form-control input-md" type="password">
                 </div>
                 <div class="col-sm-push-3 col-sm-2">
-                    <select id="lang" name="lang" class="form-control" disabled>
+                    <select  class="form-control" disabled>
                         <option value="<?php echo \piGallery\db\entities\Role::Admin; ?>">Admin</option>
                     </select>
                 </div>
@@ -484,13 +484,13 @@ function isGD(){
 
             <div class="form-group" style="display: none" id="userInfoPrototype">
                 <div class="col-sm-push-3 col-sm-2">
-                    <input id="databaseName" name="databaseName" placeholder="username" class="form-control input-md" type="text">
+                    <input data-user="name" name="databaseName" placeholder="username" class="form-control input-md" type="text">
                 </div>
                 <div class="col-sm-push-3 col-sm-2">
-                    <input id="databaseName" name="databaseName" placeholder="password" class="form-control input-md" type="password">
+                    <input data-user="password"  name="databaseName" placeholder="password" class="form-control input-md" type="password">
                 </div>
                 <div class="col-sm-push-3 col-sm-2">
-                    <select id="lang" name="lang" class="form-control">
+                    <select data-user="role"  name="lang" class="form-control">
                         <option value="<?php echo \piGallery\db\entities\Role::User; ?>">User</option>
                         <option value="<?php echo \piGallery\db\entities\Role::Admin; ?>">Admin</option>
                     </select>

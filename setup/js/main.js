@@ -1,7 +1,7 @@
 require.config({
     baseUrl:  './js/',
     paths: {
-        PiGallery: './pigallery',
+        PiGallery: './../../js/pigallery',
         
      // CDN fallbacks
       /*  jquery: ['//code.jquery.com/jquery-2.1.3.min','lib/jquery-2.1.3.min'],
@@ -58,9 +58,12 @@ require.config({
     }
 
 });
-
 var PiGallery = PiGallery || {};
-require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider'], function   ($) {
+
+
+require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider','PiGallery/Enums' ], function   ($) {
+    "use strict";
+
 
     var TypicalMode = 0, CustomMode = 1;
     var installerMode = TypicalMode;
@@ -159,7 +162,7 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider'], functio
 
     $('#nonDatabaseMode').click(function(){
         databaseMode = NoDatabase;
-        showPanel($( "#addUsers" ));
+        showAddUserPanel();
         return false;
     });
     $('#databaseMode').click(function(){
@@ -184,10 +187,11 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider'], functio
                 databaseName: $("#databaseName").val()},
             dataType: "json"
         }).done(function(result) {
+
             if(result.error != null){
                 PiGallery.showErrorMessage(result.error.message);
-            }else  {
-                showPanel($( "#addUsers" ));
+            }else {
+                showAddUserPanel();
             }
 
         }).fail(function() {
@@ -212,9 +216,50 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider'], functio
     });
 
 
-    var PiGallery = PiGallery || {};
     PiGallery.showErrorMessage = function(str){
         $('#alertsDiv').append('<div class="alert  alert-danger">' + str  + '</div>');
 
     };
+
+    function showAddUserPanel(){
+
+        $.ajax({
+            type: "POST",
+            url: "setupAJAXfacade.php",
+            data: {method: "getUsersList",
+                databaseMode: databaseMode == UseDatabase ? "UseDatabase" : "NoDatabase",
+                databaseAddress: $("#databaseAddress").val(),
+                databaseUserName: $("#databaseUserName").val(),
+                databasePassword: $("#databasePassword").val(),
+                databaseName: $("#databaseName").val()},
+            dataType: "json"
+        }).done(function(result) {
+            if (result.error != null) {
+                PiGallery.showErrorMessage(result.error.message);
+            } else {
+                for (var i = 0; i < result.data.length; i++) {
+                    if(result.data[i].role == PiGallery.enums.Roles.Admin){
+                        $("#adminUserName").val(result.data[i].userName);
+                        $("#adminPassword").val(result.data[i].password);
+                        result.data.splice(i, 1);
+
+                        break;
+                    }
+                }
+                $(".userInfos").remove();
+                for (var i = 0; i < result.data.length; i++) {
+                    var $newDiv = $("#userInfoPrototype").clone().insertBefore("#addNewUser-group");
+                    $newDiv.addClass("userInfos");
+                    $newDiv.find('[data-user="name"]').val(result.data[i].userName);
+                    $newDiv.find('[data-user="password"]').val(result.data[i].password);
+                    $newDiv.find('[data-user="role"]').val(result.data[i].role);
+                    $newDiv.show();
+                }
+
+                showPanel($("#addUsers"));
+            }
+        }).fail(function() {
+            PiGallery.showErrorMessage("Error during validating data base settings");
+        });
+    }
 });

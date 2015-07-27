@@ -45,7 +45,7 @@ function authenticate($role = Role::User) {
 switch (Helper::require_REQUEST('method')) {
 
     case 'validateImageAndThumbnailFolder':
-        $user = authenticate(Role::Admin);
+        authenticate(Role::Admin);
         $error = null;
         $data = null;
 
@@ -70,7 +70,7 @@ switch (Helper::require_REQUEST('method')) {
         break;
 
     case 'validateDataBaseSettings':
-        $user = authenticate(Role::Admin);
+        authenticate(Role::Admin);
         $error = null;
         $data = null;
 
@@ -99,6 +99,68 @@ switch (Helper::require_REQUEST('method')) {
         }
 
 
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => $data)));
+        break;
+
+    case 'getUsersList':
+        authenticate(Role::Admin);
+        $error = null;
+        $data = null;
+
+        $databaseMode = Helper::require_REQUEST('databaseMode');
+
+        try {
+            if($databaseMode == "UseDatabase"){
+
+                $databaseAddress = Helper::require_REQUEST('databaseAddress');
+                $databaseUserName = Helper::require_REQUEST('databaseUserName');
+                $databasePassword = Helper::require_REQUEST('databasePassword');
+                $databaseName = Helper::require_REQUEST('databaseName');
+
+                $mysqli = @new mysqli(
+                    $databaseAddress,
+                    $databaseUserName,
+                    $databasePassword,
+                    $databaseName);
+
+                if ($mysqli->connect_errno) {
+                    $error = new AjaxError(AjaxError::GENERAL_ERROR, "Failed to connect to MySQL: " . $mysqli->connect_error);
+                }else {
+
+                    $users = array();
+                    $stmt = $mysqli->prepare("SELECT
+                                    u.ID,
+                                    u.userName,
+                                    u.role
+                                    FROM
+                                    users u ");
+                    if ($stmt === false) {
+                        $error = $mysqli->error;
+                        $mysqli->close();
+                        throw new \Exception("Error: " . $error);
+                    }
+                    $stmt->execute();
+                    $stmt->bind_result($userID, $userName, $role);
+
+
+                    while ($stmt->fetch()) {
+                        $user = new User($userName, $userName, $role);
+                        $user->setId($userID);
+                        array_push($users, $user);
+                    }
+                    $stmt->close();
+
+                    $mysqli->close();
+
+                    $data = Helper::phpObjectArrayToJSONable($users);
+                }
+            }else{
+
+                $data =  Properties::$users;
+            }
+        }catch(\Exception $ex){
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
+        }
         die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => $data)));
         break;
 
