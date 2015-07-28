@@ -112,21 +112,26 @@ switch (Helper::require_REQUEST('method')) {
         break;
 
     case 'autoComplete':
-
         authenticate(Role::LocalGuest);
+        $error = null;
+        $data = null;
+
         $count= intval(Helper::get_REQUEST('count',5));
         $searchText= Helper::require_REQUEST('searchText');
 
-        $error = null;
-        $data = null;
-        try {
-            if(Properties::$databaseEnabled){
-                $data = DB_ContentManager::getAutoComplete($searchText,$count);
-            }else{
-                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Auto complete in no-db mode not supported");
+
+        if(Properties::$enableSearching == false){
+            $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Searching is disabled");
+        }else {
+            try {
+                if (Properties::$databaseEnabled) {
+                    $data = DB_ContentManager::getAutoComplete($searchText, $count);
+                } else {
+                    $error = new AjaxError(AjaxError::GENERAL_ERROR, "Error: Auto complete in no-db mode not supported");
+                }
+            } catch (\Exception $ex) {
+                $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
             }
-        }catch(\Exception $ex){
-            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
 
         die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => $data)));
@@ -138,16 +143,20 @@ switch (Helper::require_REQUEST('method')) {
         $error = null;
         $data = null;
 
-        $searchString = Helper::require_REQUEST('searchString');
+        if(Properties::$enableSearching == false){
+            $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Searching is disabled");
+        }else {
+            $searchString = Helper::require_REQUEST('searchString');
 
-        try {
-            if(Properties::$databaseEnabled){
-                $data = DB_ContentManager::getSearchResult($searchString);
-            }else{
-                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Search in no-db mode not supported");
+            try {
+                if (Properties::$databaseEnabled) {
+                    $data = DB_ContentManager::getSearchResult($searchString);
+                } else {
+                    $error = new AjaxError(AjaxError::GENERAL_ERROR, "Error: Search in no-db mode not supported");
+                }
+            } catch (\Exception $ex) {
+                $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
             }
-        }catch(\Exception $ex){
-            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
 
         die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => Helper::contentArrayToJSONable($data))));
@@ -162,21 +171,24 @@ switch (Helper::require_REQUEST('method')) {
         $currentShareId = Helper::get_REQUEST('currentShareId',null);
         $isRecursive = filter_var( Helper::get_REQUEST('isRecursive',false),FILTER_VALIDATE_BOOLEAN);
         $validInterval = intval(Helper::get_REQUEST('validInterval',24 * 30)); //default 30 days
-        
-        
-        try {
-            if(Properties::$databaseEnabled){
-                $shareId = DB_ContentManager::shareFolder($user, $dir, $validInterval, $isRecursive, $currentShareId);
-                $data = array("link" => Properties::$siteUrl.'?s='.$shareId,
-                              "shareId" => $shareId,
-                              "path" => $dir,
-                              "validInterval" => $validInterval,
-                              "isRecursive" => $isRecursive );
-            }else{
-                $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Share in no-db mode not supported");
+
+        if(Properties::$enableSharing == false){
+            $error = new AjaxError(AjaxError::GENERAL_ERROR,"Error: Sharing is disabled");
+        }else {
+            try {
+                if (Properties::$databaseEnabled) {
+                    $shareId = DB_ContentManager::shareFolder($user, $dir, $validInterval, $isRecursive, $currentShareId);
+                    $data = array("link" => Properties::$siteUrl . '?s=' . $shareId,
+                        "shareId" => $shareId,
+                        "path" => $dir,
+                        "validInterval" => $validInterval,
+                        "isRecursive" => $isRecursive);
+                } else {
+                    $error = new AjaxError(AjaxError::GENERAL_ERROR, "Error: Share in no-db mode not supported");
+                }
+            } catch (\Exception $ex) {
+                $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
             }
-        }catch(\Exception $ex){
-            $error = new AjaxError(AjaxError::GENERAL_ERROR, utf8_encode($ex->getMessage()));
         }
 
         die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => $data)));

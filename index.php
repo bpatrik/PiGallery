@@ -110,9 +110,9 @@ header("Access-Control-Allow-Headers: X-Requested-With");
         PiGallery.currentPath = "<?php echo Helper::toURLPath($dir); ?>";
         PiGallery.preLoadedDirectoryContent= <?php echo ($content == null ?  "null" : Helper::contentArrayToJSON($content)); ?>;
         PiGallery.Supported = {
-            DataBaseSettings : <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>,
-            Search : <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>,
-            Share : <?php echo Properties::$databaseEnabled == false ? "false" : "true"; ?>
+            DataBaseSettings : <?php echo Properties::$databaseEnabled ? "true" : "false"; ?>,
+            Search : <?php echo Properties::$databaseEnabled && Properties::$enableSearching ? "true" : "false"; ?>,
+            Share : <?php echo Properties::$databaseEnabled && Properties::$enableSharing ? "true" : "false"; ?>
         };
         PiGallery.documentRoot = "<?php echo Properties::$documentRoot; ?>";
         PiGallery.guestAtLocalNetworkEnabled = <?php  echo Properties::$GuestLoginAtLocalNetworkEnabled ? "true" : "false"; ?>;
@@ -207,7 +207,7 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                     <li><a href="#" id="logOutButton" ><?php echo $LANG['logout']; ?></a></li>
                     <li><a href="#" id="signinButton" data-toggle="modal" data-target="#loginModal"><?php echo $LANG['signin']; ?></a></li>
                 </ul>
-                <?php if(Properties::$databaseEnabled == true) { ?>
+                <?php if(Properties::$databaseEnabled == true && Properties::$enableSearching) { ?>
                 <form id="autocompleteForm" class="navbar-form navbar-right" role="search" >
                     <div class="form-group">
                         <input type="text" id="auto-complete-box"  class="form-control" placeholder="Search">

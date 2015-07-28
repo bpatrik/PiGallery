@@ -212,8 +212,12 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider','PiGaller
     });
 
     $("#addNewUser").click(function(){
-        $("#userInfoPrototype").clone().insertBefore("#addNewUser-group").show().find('.userDeleteButton').click(function(){
-            $(this).parent().parent().remove();
+        $("#userInfoPrototype").clone()
+            .insertBefore("#addNewUser-group")
+            .addClass("userInfos")
+            .show()
+            .find('.userDeleteButton').click(function(){
+                $(this).parent().parent().remove();
         });
     });
 
@@ -261,6 +265,12 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider','PiGaller
                     $newDiv.find('[data-user="name"]').val(result.data[i].userName);
                     $newDiv.find('[data-user="password"]').val(result.data[i].password);
                     $newDiv.find('[data-user="role"]').val(result.data[i].role);
+
+                    if(databaseMode == UseDatabase) {
+                        $newDiv.find('[data-user="name"]').attr("disabled","disabled");
+                        $newDiv.find('[data-user="password"]').attr("disabled","disabled");
+                        $newDiv.find('[data-user="role"]').attr("disabled","disabled");
+                    }
                     $newDiv.show().find('.userDeleteButton').click(function(){
                         $(this).parent().parent().remove();
                     });
@@ -281,7 +291,8 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider','PiGaller
         $users.push({
             userName: $("#adminUserName").val(),
             password: $("#adminPassword").val(),
-            role: PiGallery.enums.Roles.Admin
+            role: PiGallery.enums.Roles.Admin,
+            id:$("#adminUserID").val()
         });
         $( ".userInfos" ).each(function(  ) {
 
@@ -289,6 +300,7 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider','PiGaller
                 userName: $( this ).find('[data-user="name"]').val(),
                 password: $( this ).find('[data-user="password"]').val(),
                 role: $( this ).find('[data-user="role"]').val(),
+                id: $( this ).find('[data-user="id"]').val()
             });
 
         });
@@ -313,6 +325,9 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider','PiGaller
             $databaseUserName  :$("#databaseUserName").val(),
             $databasePassword  : $("#databasePassword").val(),
             $databaseName  : $("#databaseName").val(),
+            $enableSearching : $("#enableSearching").is(':checked'),
+
+            $enableSharing : $("#enableSharing").is(':checked'),
 
             $enableOnTheFlyIndexing  : $("#enableOnTheFlyIndexing").is(':checked'),
 

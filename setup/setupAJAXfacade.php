@@ -144,7 +144,7 @@ switch (Helper::require_REQUEST('method')) {
 
 
                     while ($stmt->fetch()) {
-                        $user = new User($userName, "", $role);
+                        $user = new User($userName, "******", $role);
                         $user->setId($userID);
                         array_push($users, $user);
                     }
@@ -172,7 +172,62 @@ switch (Helper::require_REQUEST('method')) {
         $properties = json_decode(Helper::require_REQUEST('properties'),true);
 
         $usersString ="";
-        if($properties["\$databaseEnabled"] == false){
+        if($properties["\$databaseEnabled"]) {
+            $mysqli = @new mysqli(
+                $properties["\$databaseAddress"],
+                $properties["\$databaseUserName"],
+                $properties["\$databasePassword"],
+                $properties["\$databaseName"]);
+
+            if ($mysqli->connect_errno) {
+                $error = new AjaxError(AjaxError::GENERAL_ERROR, "Failed to connect to MySQL: " . $mysqli->connect_error);
+            }else {
+                $idArray = array();
+                foreach ($properties["\$users"] as $value) {
+                    $idArray[]=intval($value["id"]);
+                }
+
+
+                $inQuery = implode(',', $idArray);
+                $stmt = $mysqli->prepare("DELETE FROM users WHERE id NOT IN (".$inQuery.")");
+
+                if($stmt === false) {
+                    $error = $mysqli->error;
+                    $mysqli->close();
+                    throw new \Exception("Error: ". $error);
+                }
+
+                $stmt->execute();
+
+                $stmt ->close();
+
+                foreach ($properties["\$users"] as $value) {
+                    //insert new users
+                    if(!$value["id"] || $value["id"] == null || $value["id"] == ""){
+                        $stmt = $mysqli->prepare("INSERT INTO users (userName, password, passwordSalt, role) VALUES (?, ?, ?, ?)");
+
+                        if($stmt === false) {
+                            $error = $mysqli->error;
+                            $mysqli->close();
+                            throw new \Exception("Error: ". $error);
+                        }
+                        $userName = $value["userName"];
+                        $password = $value["password"];
+                        $salt = uniqid(mt_rand(), true);
+                        $encrypted_password = sha1($salt.$password);
+                        $role = $value["role"];
+
+                        $stmt->bind_param('sssi', $userName, $encrypted_password, $salt, $role);
+                        $stmt->execute();
+
+                        $stmt ->close();
+                    }
+                }
+
+
+
+            }
+        }else{
             $maxCount = count($properties["\$users"]);
             $counter = 0;
             $usersString.="\r\n";
@@ -210,6 +265,8 @@ class Properties{
     public static $databaseUserName = "'.$properties["\$databaseUserName"].'";
     public static $databasePassword = "'.$properties["\$databasePassword"].'";
     public static $databaseName = "'.$properties["\$databaseName"].'";
+    public static $enableSearching = '.($properties["\$enableSearching"] ? 'true' : 'false').';
+    public static $enableSharing = '.($properties["\$enableSharing"] ? 'true' : 'false').';
 
     public static $enableOnTheFlyIndexing = '.($properties["\$enableOnTheFlyIndexing"] ? 'true' : 'false').';
     public static $maxSearchResultItems = '.$properties["\$maxSearchResultItems"].';
@@ -221,7 +278,7 @@ class Properties{
 ';
 
         $manualConfigFileContent = str_replace("<?","&lt;?",str_replace("\r\n","<br/>",$propertiesText));
-        $configFileUrl = __DIR__."/../config.php";
+        $configFileUrl = __DIR__."/../test.php";
         if ( !file_exists($configFileUrl) ) {
             $error = new AjaxError(AjaxError::GENERAL_ERROR, "Config file not found. Open the config.php and override the content with this: ".$manualConfigFileContent);
         }else {

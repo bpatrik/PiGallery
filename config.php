@@ -8,7 +8,8 @@ use piGallery\db\entities\Role;
 
 
 class Properties{
-    public static $installerWizardEnabled = true;
+    /*Set it false if you edit it manually. If its true the setup page will show on loading the page*/
+    public static $installerWizardEnabled = false;
 
     /* The language of the site, pick one from the lang directory.
      * If your language not exist, translate from eng :) */
@@ -65,6 +66,12 @@ class Properties{
     /*If its true, the site will check at every directory open if indexing is needed or not.
      if need, the site will index the given folder automatically*/
     public static $enableOnTheFlyIndexing = true;
+
+    /*If its true, a search box with autocomplete will appefar in the menu bar (only works in db-mode)*/
+    public static $enableSearching = true;
+
+    /*If its true, a sharing button will appear in the menu bar (only works in db-mode)*/
+    public static $enableSharing = true;
 
     /*The max number of results, that a search can give. */
     public static $maxSearchResultItems = 500;

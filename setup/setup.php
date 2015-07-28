@@ -447,6 +447,28 @@ function isGD(){
                     <span class="glyphicon glyphicon-question-sign"></button>
             </div>
 
+            <!-- Searching settings-->
+            <div class="form-group"  data-advanced-setup="true">
+                <label class="col-sm-4 control-label" for="textinput">Searching</label>
+                <div class="col-sm-4">
+                    <input id="enableSearching" name="enableSearching" data-width="100%" data-toggle="toggle" data-on="Enabled" data-off="Disabled" type="checkbox"  <?php if(Properties::$enableSearching) echo 'checked="checked"'; ?>>
+                </div>
+                <button type="button" class="btn btn-default" data-toggle="popover" data-trigger="hover click" data-html="true" data-placement="auto right" title="Search settings help"
+                        data-content="If its true, a search box with autocomplete will appear in the menu bar (only works in db-mode)">
+                    <span class="glyphicon glyphicon-question-sign"></button>
+            </div>
+
+            <!-- Searching settings-->
+            <div class="form-group"  data-advanced-setup="true">
+                <label class="col-sm-4 control-label" for="textinput">Sharing</label>
+                <div class="col-sm-4">
+                    <input id="enableSharing" name="enableSharing" data-width="100%" data-toggle="toggle" data-on="Enabled" data-off="Disabled" type="checkbox"  <?php if(Properties::$enableSharing) echo 'checked="checked"'; ?>>
+                </div>
+                <button type="button" class="btn btn-default" data-toggle="popover" data-trigger="hover click" data-html="true" data-placement="auto right" title="Share settings help"
+                        data-content="If its true, a sharing button will appear in the menu bar (only works in db-mode)">
+                    <span class="glyphicon glyphicon-question-sign"></button>
+            </div>
+
 
             <div class="form-group">
                 <div class="col-sm-push-1 col-sm-2">
