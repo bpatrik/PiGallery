@@ -144,7 +144,7 @@ switch (Helper::require_REQUEST('method')) {
 
 
                     while ($stmt->fetch()) {
-                        $user = new User($userName, $userName, $role);
+                        $user = new User($userName, "", $role);
                         $user->setId($userID);
                         array_push($users, $user);
                     }
@@ -164,4 +164,80 @@ switch (Helper::require_REQUEST('method')) {
         die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => $data)));
         break;
 
+    case 'saveSettings':
+        authenticate(Role::Admin);
+        $error = null;
+        $data = null;
+
+        $properties = json_decode(Helper::require_REQUEST('properties'),true);
+
+        $usersString ="";
+        if($properties["\$databaseEnabled"] == false){
+            $maxCount = count($properties["\$users"]);
+            $counter = 0;
+            $usersString.="\r\n";
+            foreach($properties["\$users"] as $value){
+                $usersString.= "                    ".
+                                    'array("userName" =>"'.$value["userName"].'", "password" =>"'.$value["password"].'", "role" => '.$value["role"].')';
+                $counter++;
+                if($counter < $maxCount){
+                    $usersString.=",\r\n";
+                }
+            }
+        }
+
+        $propertiesText = '<?php
+namespace piGallery;
+
+class Properties{
+    public static $installerWizardEnabled = false;
+
+    public static $language = "'.$properties["\$language"].'";
+
+    public static $siteUrl = "'.$properties["\$siteUrl"].'";
+    public static $documentRoot  = "'.$properties["\$documentRoot"].'";
+    public static $imageFolder = "'.$properties["\$imageFolder"].'";
+    public static $thumbnailFolder = "'.$properties["\$thumbnailFolder"].'";
+
+    public static $thumbnailSizes = array('.$properties["\$thumbnailSizes"].');
+    public static $thumbnailJPEGQuality = '.$properties["\$thumbnailJPEGQuality"].';
+    public static $EnableThumbnailResample = '.($properties["\$EnableThumbnailResample"] ? 'true' : 'false').';
+    public static $enableImageCaching = '.($properties["\$enableImageCaching"] ? 'true' : 'false').';
+    public static $enableUTF8Encode = '.($properties["\$enableUTF8Encode"] ? 'true' : 'false').';
+
+    public static $databaseEnabled = '.($properties["\$databaseEnabled"] ? 'true' : 'false').';
+    public static $databaseAddress = "'.$properties["\$databaseAddress"].'";
+    public static $databaseUserName = "'.$properties["\$databaseUserName"].'";
+    public static $databasePassword = "'.$properties["\$databasePassword"].'";
+    public static $databaseName = "'.$properties["\$databaseName"].'";
+
+    public static $enableOnTheFlyIndexing = '.($properties["\$enableOnTheFlyIndexing"] ? 'true' : 'false').';
+    public static $maxSearchResultItems = '.$properties["\$maxSearchResultItems"].';
+    public static $GuestLoginAtLocalNetworkEnabled = '.($properties["\$GuestLoginAtLocalNetworkEnabled"] ? 'true' : 'false').';
+
+    public static $users = array('.$usersString.');
+
+}
+';
+
+        $manualConfigFileContent = str_replace("<?","&lt;?",str_replace("\r\n","<br/>",$propertiesText));
+        $configFileUrl = __DIR__."/../config.php";
+        if ( !file_exists($configFileUrl) ) {
+            $error = new AjaxError(AjaxError::GENERAL_ERROR, "Config file not found. Open the config.php and override the content with this: ".$manualConfigFileContent);
+        }else {
+
+            $configFile = fopen($configFileUrl, "w+");
+            if (!$configFile) {
+                $error = new AjaxError(AjaxError::GENERAL_ERROR, "Can't open config file for write. Open the config.php and override the content with this: " . $manualConfigFileContent);
+            } else {
+                $data = "ok";
+                fwrite($configFile, $propertiesText);
+                fclose($configFile);
+            }
+
+        }
+
+
+        die(json_encode(array("error" => is_null($error) ? null : $error->getJsonData(), "data" => $data)));
+        break;
 }

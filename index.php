@@ -1,8 +1,12 @@
 <?php
 require_once __DIR__."/config.php";
+use \piGallery\Properties;
+if(Properties::$installerWizardEnabled){
+    header("Location: setup/setup.php");
+    die("Please visit setup/setup.php for settings, or disable installer wizard at config.php");
+}
 require_once __DIR__."/model/AuthenticationManager.php";
 use piGallery\db\entities\Role;
-use \piGallery\Properties;
 
 require_once __DIR__."/lang/".Properties::$language.".php";
 

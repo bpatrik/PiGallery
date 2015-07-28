@@ -80,7 +80,11 @@ class Properties{
      * - Admin -- code: 1
      * */
     public static $users = array(
-        array("userName" => "admin", "password" => "admin", "role" => Role::Admin)
+        array("userName" => "admin", "password" => "admin", "role" => Role::Admin),
+
+        array("userName" => "admin2", "password" => "a", "role" => Role::Admin),
+
+        array("userName" => "user", "password" => "adminasdasdasdad", "role" => Role::User)
     );
     /*NOTE: these uses are not used in database mode, at database mode the default user is user:admin, pass:admin*/
 

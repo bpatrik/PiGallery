@@ -212,7 +212,9 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider','PiGaller
     });
 
     $("#addNewUser").click(function(){
-        $("#userInfoPrototype").clone().insertBefore("#addNewUser-group").show();
+        $("#userInfoPrototype").clone().insertBefore("#addNewUser-group").show().find('.userDeleteButton').click(function(){
+            $(this).parent().parent().remove();
+        });
     });
 
 
@@ -239,6 +241,9 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider','PiGaller
             } else {
                 for (var i = 0; i < result.data.length; i++) {
                     if(result.data[i].role == PiGallery.enums.Roles.Admin){
+                        if(databaseMode == UseDatabase) {
+                            $('#adminUserID').val(result.data[i].id);
+                        }
                         $("#adminUserName").val(result.data[i].userName);
                         $("#adminPassword").val(result.data[i].password);
                         result.data.splice(i, 1);
@@ -250,10 +255,15 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider','PiGaller
                 for (var i = 0; i < result.data.length; i++) {
                     var $newDiv = $("#userInfoPrototype").clone().insertBefore("#addNewUser-group");
                     $newDiv.addClass("userInfos");
+                    if(databaseMode == UseDatabase) {
+                        $newDiv.find('[data-user="id"]').val(result.data[i].id);
+                    }
                     $newDiv.find('[data-user="name"]').val(result.data[i].userName);
                     $newDiv.find('[data-user="password"]').val(result.data[i].password);
                     $newDiv.find('[data-user="role"]').val(result.data[i].role);
-                    $newDiv.show();
+                    $newDiv.show().find('.userDeleteButton').click(function(){
+                        $(this).parent().parent().remove();
+                    });
                 }
 
                 showPanel($("#addUsers"));
@@ -262,4 +272,72 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider','PiGaller
             PiGallery.showErrorMessage("Error during validating data base settings");
         });
     }
+
+
+    $("#save").click(function(){
+
+
+        var $users = [];
+        $users.push({
+            userName: $("#adminUserName").val(),
+            password: $("#adminPassword").val(),
+            role: PiGallery.enums.Roles.Admin
+        });
+        $( ".userInfos" ).each(function(  ) {
+
+            $users.push({
+                userName: $( this ).find('[data-user="name"]').val(),
+                password: $( this ).find('[data-user="password"]').val(),
+                role: $( this ).find('[data-user="role"]').val(),
+            });
+
+        });
+        var properties ={
+
+              $language: $("#lang").val(),
+              $siteUrl: $("#siteUrl").val(),
+              $documentRoot: $("#documentRoot").val(),
+             $imageFolder: $("#imageFolder").val(),
+
+            $thumbnailFolder: $("#thumbnailFolder").val(),
+            $thumbnailSizes: $("#thumbnailSizes").val(),
+            $thumbnailJPEGQuality: $("#thumbnailJPEGQuality").val(),
+            $EnableThumbnailResample:$("#EnableThumbnailResample").is(':checked'),
+            $enableImageCaching  : $("#enableImageCaching").is(':checked'),
+
+            $enableUTF8Encode  : $("#enableUTF8Encode").is(':checked'),
+
+            $databaseEnabled  : databaseMode == UseDatabase,
+
+            $databaseAddress  : $("#databaseAddress").val(),
+            $databaseUserName  :$("#databaseUserName").val(),
+            $databasePassword  : $("#databasePassword").val(),
+            $databaseName  : $("#databaseName").val(),
+
+            $enableOnTheFlyIndexing  : $("#enableOnTheFlyIndexing").is(':checked'),
+
+            $maxSearchResultItems  : $("#maxSearchResultItems").val(),
+
+            $GuestLoginAtLocalNetworkEnabled  : $("#GuestLoginAtLocalNetworkEnabled").is(':checked'),
+
+            $users: $users
+        };
+        
+        
+        $.ajax({
+            type: "POST",
+            url: "setupAJAXfacade.php",
+            data: {method: "saveSettings",
+                properties: JSON.stringify(properties)},
+            dataType: "json"
+        }).done(function(result) {
+            if (result.error != null) {
+                PiGallery.showErrorMessage(result.error.message);
+            } else {
+
+            }
+        }).fail(function() {
+            PiGallery.showErrorMessage("Error during validating data base settings");
+        });
+    });
 });

@@ -1,8 +1,8 @@
 <?php
-use piGallery\Properties;
-
+require_once __DIR__."/../model/Helper.php";
 require_once __DIR__."/../config.php";
-if(!\piGallery\Properties::$installerWizardEnabled){
+use piGallery\Properties;
+if(! Properties::$installerWizardEnabled){
     die("Enable installer wizard in the config.php");
 }
 
@@ -82,7 +82,6 @@ function isGD(){
         return false;
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -105,7 +104,6 @@ function isGD(){
     <link href="css/setup.css" rel="stylesheet">
   </head>
 <body>
-
 
 <div id="gallerySite" >
     <!-- Fixed navbar -->
@@ -197,7 +195,7 @@ function isGD(){
             <div class="form-group">
                 <label class="col-sm-4 control-label" for="textinput">Site Url</label>
                 <div class="col-sm-4">
-                    <input id="siteurl" name="siteurl" placeholder="http://wwww.yoursite.com" class="form-control input-md" type="text" required="required"  value="<?php echo Properties::$siteUrl; ?>">
+                    <input id="siteUrl" name="siteUrl" placeholder="http://wwww.yoursite.com" class="form-control input-md" type="text" required="required"  value="<?php echo Properties::$siteUrl; ?>">
                     <span class="help-block">It seems that you should use this: <?php echo home_base_url();?></span>
                 </div>
                 <button type="button" class="btn btn-default" data-toggle="popover" data-trigger="hover click" data-html="true" data-placement="auto right" title="Site Url settings help"
@@ -469,20 +467,23 @@ function isGD(){
 
 
             <div class="form-group">
+                <input id="adminUserID" name="adminUserID"  type="hidden">
                 <div class="col-sm-push-3 col-sm-2">
-                    <input id="adminUserName" name="databaseName" placeholder="username" class="form-control input-md" type="text">
+                    <input id="adminUserName" placeholder="username" class="form-control input-md" type="text">
                 </div>
                 <div class="col-sm-push-3 col-sm-2">
-                    <input id="adminPassword" name="databaseName" placeholder="password" class="form-control input-md" type="password">
+                    <input id="adminPassword"  placeholder="password" class="form-control input-md" type="password">
                 </div>
                 <div class="col-sm-push-3 col-sm-2">
-                    <select  class="form-control" disabled>
-                        <option value="<?php echo \piGallery\db\entities\Role::Admin; ?>">Admin</option>
+                    <select class="form-control" name="lang" disabled="disabled">
+                        <option value="<?php echo \piGallery\db\entities\Role::User; ?>">User</option>
+                        <option selected value="<?php echo \piGallery\db\entities\Role::Admin; ?>">Admin</option>
                     </select>
                 </div>
             </div>
 
             <div class="form-group" style="display: none" id="userInfoPrototype">
+                <input data-user="id" name="adminUserID"  type="hidden">
                 <div class="col-sm-push-3 col-sm-2">
                     <input data-user="name" name="databaseName" placeholder="username" class="form-control input-md" type="text">
                 </div>
@@ -494,6 +495,9 @@ function isGD(){
                         <option value="<?php echo \piGallery\db\entities\Role::User; ?>">User</option>
                         <option value="<?php echo \piGallery\db\entities\Role::Admin; ?>">Admin</option>
                     </select>
+                </div>
+                <div class="col-sm-push-3 col-sm-1">
+                    <button  data-user="delete"   class="col-sm-12 btn btn-danger userDeleteButton"  type="button"> <span class="glyphicon glyphicon-trash"></span> </button>
                 </div>
             </div>
 
