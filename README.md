@@ -11,7 +11,7 @@ Features:
 * authentication
   * Support for no-authentication/Guest mode at local network
 * recursive directory scan
-* on the fly thumbnail generation with cache
+* on the fly thumbnail generation with cache (It works one threaded only. Won't use multiple thread on Pi2 either)
 * on the fly directory indexing (for database mode)
 * nice lightbox for image preview (using blueimp* gallery)
 * supports image keywords (like lightroom keywords)
@@ -35,6 +35,8 @@ Notes:
 --------
 
 * site is using mysqli for accessing database. It should be enabled in php.ini
+* for thumbnail generation php gd is needed.
+* webserver needs read and write rights for the thumbnail folder and read rights for the images folder.
 * for best performance don't store much photos in a directory (best is under 200-300)
 * at large directories php timeout may occur, in this case increase the timeout in php.ini
 * for faster thumbnail generating user less thumbnail sizes (eg.: only one, with a low value, eg.: 150)
