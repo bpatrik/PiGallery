@@ -278,7 +278,7 @@ class Properties{
 ';
 
         $manualConfigFileContent = str_replace("<?","&lt;?",str_replace("\r\n","<br/>",$propertiesText));
-        $configFileUrl = __DIR__."/../test.php";
+        $configFileUrl = __DIR__."/../config.php";
         if ( !file_exists($configFileUrl) ) {
             $error = new AjaxError(AjaxError::GENERAL_ERROR, "Config file not found. Open the config.php and override the content with this: ".$manualConfigFileContent);
         }else {
