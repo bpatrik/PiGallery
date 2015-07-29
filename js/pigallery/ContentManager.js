@@ -53,7 +53,7 @@ define(["jquery", 'PiGallery/Enums'], function ($) {
 
             var ajaxArray = {method: "getContent", dir: path, lastModificationDate: lastModificationDate};
             if(PiGallery.shareLink){
-                ajaxArray.s=PiGallery.shareLink;
+                ajaxArray.s = PiGallery.shareLink;
             }
             
             that.lastXhr =

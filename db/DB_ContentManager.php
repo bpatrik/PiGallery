@@ -484,8 +484,9 @@ class DB_ContentManager {
         $isRecursive = intval($isRecursive);
         $userId = $user->getId();
 
-        if(!is_dir(Helper::getAbsoluteImageFolderPath($folder))){
-            throw new \Exception("Error: '". Helper::getAbsoluteImageFolderPath($folder). "' is not a directory");
+        $absolutePath =Helper::concatPath(Helper::getAbsoluteImageFolderPath(),$folder);
+        if(!is_dir($absolutePath)){
+            throw new \Exception("Error: '". $absolutePath. "' is not a directory");
         }
         
         $mysqli = DB::getDatabaseConnection();

@@ -18,7 +18,11 @@ class ThumbnailManager {
     }
 
 
-
+    /**
+     * @param $pathToImage
+     * @param $size
+     * @return bool
+     */
     private static function createThumbnail($pathToImage, $size){
         ini_set('memory_limit', '96M');
 
@@ -81,6 +85,7 @@ class ThumbnailManager {
         //freeup
         imagedestroy($tmp_img);
         imagedestroy($src_img);
+        return true;
 
     }
 

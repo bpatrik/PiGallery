@@ -215,8 +215,8 @@ class Helper {
     /**
      * Check if a client IP is in our Server subnet
      *
-     * @param string $client_ip
-     * @param string $server_ip
+     * @param string|bool $client_ip
+     * @param string|bool $server_ip
      * @return bool
      */
      public static function isClientInSameSubnet($client_ip = false, $server_ip = false)

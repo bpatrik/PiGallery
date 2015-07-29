@@ -42,12 +42,22 @@ class DB {
     public static function recreateDatabase(){
 
 
-        $dropPhotoTableSql ="DROP TABLE photos";
-        $dropDirectoryTableSql = "DROP TABLE directories";
+        $dropPhotoTableSql ="DROP TABLE IF EXISTS photos ";
+        $dropDirectoryTableSql = "DROP TABLE IF EXISTS directories";
 
-        $dropUsersTableSQL = "DROP TABLE users";
-        $dropSessionIDTableSQL = "DROP TABLE sessionids";
-        $dropSharingTableSQL = "DROP TABLE sharing";
+        $dropUsersTableSQL = "DROP TABLE IF EXISTS users";
+        $dropSessionIDTableSQL = "DROP TABLE IF EXISTS sessionids";
+        $dropSharingTableSQL = "DROP TABLE IF EXISTS sharing";
+
+        $createDirectoryTableSQL = "CREATE TABLE directories
+                                    (
+                                        ID INT NOT NULL AUTO_INCREMENT,
+                                        PRIMARY KEY(ID),
+                                        path VARCHAR(256) CHARACTER SET UTF8,
+                                        directoryName VARCHAR(64) CHARACTER SET UTF8,
+                                        lastModification DATETIME,
+                                        fileCount INT
+                                    )";
 
         $createPhotoTableSQL = "CREATE TABLE photos
                                 (
@@ -63,16 +73,6 @@ class DB {
                                         REFERENCES directories(ID)
                                         ON DELETE CASCADE
                                 )";
-
-        $createDirectoryTableSQL = "CREATE TABLE directories
-                                    (
-                                        ID INT NOT NULL AUTO_INCREMENT,
-                                        PRIMARY KEY(ID),
-                                        path VARCHAR(256) CHARACTER SET UTF8,
-                                        directoryName VARCHAR(64) CHARACTER SET UTF8,
-                                        lastModification DATETIME,
-                                        fileCount INT
-                                    )";
 
 
         $createUsersTableSQL = "CREATE TABLE users
@@ -123,34 +123,39 @@ class DB {
         //Dropping table
         $mysqli->query($dropPhotoTableSql);
         $mysqli->query($dropDirectoryTableSql);
-        $mysqli->query($dropUsersTableSQL);
         $mysqli->query($dropSessionIDTableSQL);
         $mysqli->query($dropSharingTableSQL);
+        $mysqli->query($dropUsersTableSQL);
 
         //Creating table
         if(!$mysqli->query($createDirectoryTableSQL)){
+            $error = $mysqli->error;
             $mysqli->close();
-            throw new Exception("Error: ". $mysqli->error);
+            throw new Exception("Error: ". $error);
         }
 
         if(!$mysqli->query($createPhotoTableSQL)){
+            $error = $mysqli->error;
             $mysqli->close();
-            throw new Exception("Error: ". $mysqli->error);
+            throw new Exception("Error: ". $error);
         }
 
         if(!$mysqli->query($createUsersTableSQL)){
+            $error = $mysqli->error;
             $mysqli->close();
-            throw new Exception("Error: ". $mysqli->error);
+            throw new Exception("Error: ". $error);
         }
 
         if(!$mysqli->query($createSessionIDTableSQL)){
+            $error = $mysqli->error;
             $mysqli->close();
-            throw new Exception("Error: ". $mysqli->error);
+            throw new Exception("Error: ". $error);
         }
 
         if(!$mysqli->query($createSharingTableSQL)){
+            $error = $mysqli->error;
             $mysqli->close();
-            throw new Exception("Error: ". $mysqli->error);
+            throw new Exception("Error: ". $error);
         }
 
         DB_UserManager::register(new User("admin", "admin", Role::Admin));
@@ -173,6 +178,13 @@ class DB {
         return $exist;
     }
 
+    /**
+     * @param $dirName
+     * @param $baseName
+     * @param $mysqli mysqli
+     * @return null|Directory
+     * @throws Exception
+     */
     private static function loadDirectory($dirName, $baseName, $mysqli){
 
         if(empty($baseName)){
@@ -204,8 +216,13 @@ class DB {
     }
 
 
-
-
+    /**
+     * @param $dirName
+     * @param $baseName
+     * @param $mysqli mysqli
+     * @return null|Directory
+     * @throws Exception
+     */
     private static function saveDirectory($dirName, $baseName, $mysqli){
 
         if(empty($baseName)){
@@ -305,7 +322,7 @@ class DB {
                     if (isset($readyPhotos[$value]))
                         continue;
 
-                    list($width, $height, $type, $attr) = getimagesize($contentPath, $info);
+                    list($width, $height, $type) = getimagesize($contentPath, $info);
 
                     if ($type != IMAGETYPE_JPEG && $type != IMAGETYPE_PNG && $type != IMAGETYPE_GIF)
                         continue;
