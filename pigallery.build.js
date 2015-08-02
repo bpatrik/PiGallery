@@ -29,8 +29,7 @@
     //to the build file. All relative paths are relative to the build file.
     dir: "../pigallery-built",
 
-    optimizeCss: 'standard',
-
+    optimizeCss: 'standard', 
 
     //How to optimize all the JS files in the build output directory.
     //Right now only the following values

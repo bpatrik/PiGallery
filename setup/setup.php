@@ -1,10 +1,17 @@
 <?php
 require_once __DIR__."/../model/Helper.php";
 require_once __DIR__."/../config.php";
+require_once __DIR__."/../model/AuthenticationManager.php";
+require_once __DIR__."/../db/entities/Role.php";
+require_once __DIR__."/../db/DB_ContentManager.php";
+require_once __DIR__."/../config.php";
+require_once __DIR__."/../db/entities/AjaxError.php";
+require_once __DIR__."/../lang/eng.php";
+
+use piGallery\db\entities\Role;
+use piGallery\db\entities\User;
+use piGallery\model\AuthenticationManager;
 use piGallery\Properties;
-if(! Properties::$installerWizardEnabled){
-    die("Enable installer wizard in the config.php");
-}
 
 require_once __DIR__."/../db/entities/Role.php";
 
@@ -82,6 +89,30 @@ function isGD(){
         return false;
     }
 }
+/**
+ * @param int $role
+ * @return null|User
+ */
+function authenticate($role = Role::User) {
+    if(Properties::$installerWizardEnabled){
+        return new User("Guest", null, Role::Admin);
+    }
+    /*Authenticating*/
+    require_once __DIR__."/../model/AuthenticationManager.php";
+    require_once __DIR__."/../db/entities/Role.php";
+
+    /*Authentication need for images*/
+    $user = AuthenticationManager::authenticate($role);
+    if(is_null($user)){
+        return null;
+    }
+    return $user;
+}
+
+if(authenticate(Role::Admin) == null){
+    die("Enable installer wizard in the config.php or login as ADMIN");
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -116,7 +147,7 @@ function isGD(){
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="setup.php"><img src="../img/icon_inv.png" style="max-height: 26px; display: inline;"/>Setup</a>
+                <a class="navbar-brand" href="../index.php"><img src="../img/icon_inv.png" style="max-height: 26px; display: inline;"/><?php echo $LANG['site_name']; ?></a>
                 <img class="pull-left pull-right" id="loading-sign" src="../img/loading.gif"/>
 
             </div>
@@ -196,7 +227,7 @@ function isGD(){
                 <label class="col-sm-4 control-label" for="textinput">Site Url</label>
                 <div class="col-sm-4">
                     <input id="siteUrl" name="siteUrl" placeholder="http://wwww.yoursite.com" class="form-control input-md" type="text" required="required"  value="<?php echo Properties::$siteUrl; ?>">
-                    <span class="help-block">It seems that you should use this: <?php echo home_base_url();?></span>
+                    <span class="help-block">It seems that you should use this: "<?php echo home_base_url();?>"</span>
                 </div>
                 <button type="button" class="btn btn-default" data-toggle="popover" data-trigger="hover click" data-html="true" data-placement="auto right" title="Site Url settings help"
                         data-content="The site url. This path leads to the index.php<br/>
@@ -212,7 +243,7 @@ function isGD(){
                 <label class="col-sm-4 control-label" for="textinput">Document Root</label>
                 <div class="col-sm-4">
                     <input id="documentRoot" name="documentRoot" placeholder="" class="form-control input-md" type="text" value="<?php echo Properties::$documentRoot; ?>">
-                    <span class="help-block">It seems that you should use this: <?php echo documentRoot();?></span>
+                    <span class="help-block">It seems that you should use this: "<?php echo documentRoot();?>"</span>
                 </div>
                 <button type="button" class="btn btn-default" data-toggle="popover" data-trigger="hover click" data-html="true" data-placement="auto right" title="Document Root settings help"
                         data-content="The base directory relative to the document root (the www folder) <br/>

@@ -70,7 +70,7 @@ define(["jquery", 'PiGallery/Enums'], function ($) {
                             return;
                         }
                         PiGallery.showErrorMessage(result.error.message);
-                    }else if(result.data != null && result.data.noChange == false) { //if the directory content changed comparing to the cached one
+                    }else if(result.data != null && (typeof result.data.noChange === 'undefined' || result.data.noChange == false)) { //if the directory content changed comparing to the cached one
                         that.storeContent(result.data);
                         galleryRenderer.showContent(result.data);
 

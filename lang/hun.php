@@ -45,3 +45,5 @@ $LANG['admin_indexPhotos'] = "Képek indexelése";
 $LANG['admin_indexing'] = "Indexelés...";
 $LANG['admin_database'] = "Adatbázis";
 $LANG['admin_resetDatabase'] = "Adatbázis visszaállítása";
+$LANG['admin_installerWizard'] = "Telepítő varázsló";
+$LANG['admin_runSetup'] = "Telepítés futtatása";

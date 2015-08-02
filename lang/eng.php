@@ -45,3 +45,5 @@ $LANG['admin_indexPhotos'] = "Index Photos";
 $LANG['admin_indexing'] = "Indexing..";
 $LANG['admin_database'] = "Database";
 $LANG['admin_resetDatabase'] = "Reset Database";
+$LANG['admin_installerWizard'] = "Installer Wizard";
+$LANG['admin_runSetup'] = "Run setup";

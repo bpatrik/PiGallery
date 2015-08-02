@@ -349,7 +349,7 @@ require(['jquery','bootstrap','toggle' ,'jquery_ui', 'bootstrapSlider','PiGaller
             if (result.error != null) {
                 PiGallery.showErrorMessage(result.error.message);
             } else {
-
+                window.location = "../index.php";
             }
         }).fail(function() {
             PiGallery.showErrorMessage("Error during validating data base settings");

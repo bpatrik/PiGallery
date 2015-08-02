@@ -64,6 +64,7 @@ define(["jquery", "PiGallery/ThumbnailManager",  "PiGallery/DirectoryRenderer", 
             directoryRenderer.showDirectories(searchContent.directories);
             photoRenderer.showImages(searchContent.photos);
 
+
             if(searchContent.tooMuchResults == true){
                 console.log(PiGallery);
                 console.log(PiGallery.showInfoMessage);
@@ -86,7 +87,7 @@ define(["jquery", "PiGallery/ThumbnailManager",  "PiGallery/DirectoryRenderer", 
          * Show the given content
          * If the directory not changed, updates the content
          * @param directoryContent
-         * @param forceShow
+         * @param forceShow redraw all the pictures
          */
         this.showContent = function (directoryContent, forceShow) {
             PiGallery.hideMessages();

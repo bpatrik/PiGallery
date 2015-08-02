@@ -49,19 +49,21 @@ switch (Helper::require_REQUEST('method')) {
         $error = null;
         $data = null;
 
-        $documentRoot = Helper::toDirectoryPath(Helper::require_REQUEST('documentRoot'));
+        $originalImgFolder = Helper::get_REQUEST('imageFolder',"");
+        $originalTHFolder = Helper::get_REQUEST('thumbnailFolder',"");
+        $documentRoot = Helper::toDirectoryPath(Helper::get_REQUEST('documentRoot',""));
         $documentRoot = Helper::concatPath(Helper::toDirectoryPath($_SERVER['DOCUMENT_ROOT']), $documentRoot);
-        $imageFolder = Helper::concatPath($documentRoot,Helper::toDirectoryPath(Helper::require_REQUEST('imageFolder')));
-        $thumbnailFolder = Helper::concatPath($documentRoot,Helper::toDirectoryPath(Helper::require_REQUEST('thumbnailFolder')));
+        $imageFolder = Helper::concatPath($documentRoot,Helper::toDirectoryPath(Helper::get_REQUEST('imageFolder',"")));
+        $thumbnailFolder = Helper::concatPath($documentRoot,Helper::toDirectoryPath($originalTHFolder));
 
         if(!file_exists($imageFolder)){
-            $error = new AjaxError(AjaxError::GENERAL_ERROR,"Image folder: '". Helper::require_REQUEST('imageFolder')."'  not exist");
+            $error = new AjaxError(AjaxError::GENERAL_ERROR,"Image folder: '". $originalImgFolder."'  not exist");
         }else if(!file_exists($thumbnailFolder)){
-            $error = new AjaxError(AjaxError::GENERAL_ERROR,"Thumbnail folder: '". Helper::require_REQUEST('thumbnailFolder')."' not exist");
+            $error = new AjaxError(AjaxError::GENERAL_ERROR,"Thumbnail folder: '". $originalTHFolder."' not exist");
         }else if(!is_readable($imageFolder)){
-            $error = new AjaxError(AjaxError::GENERAL_ERROR,"Image folder: '". Helper::require_REQUEST('imageFolder')."'' must be readable");
+            $error = new AjaxError(AjaxError::GENERAL_ERROR,"Image folder: '". $originalImgFolder."'' must be readable");
         }else if(!is_writable($thumbnailFolder)){
-            $error = new AjaxError(AjaxError::GENERAL_ERROR,"Thumbnail folder: '". Helper::require_REQUEST('thumbnailFolder')."' must be writable");
+            $error = new AjaxError(AjaxError::GENERAL_ERROR,"Thumbnail folder: '". $originalTHFolder."' must be writable");
         }else{
             $data="ok";
         }
@@ -188,18 +190,20 @@ switch (Helper::require_REQUEST('method')) {
                 }
 
 
-                $inQuery = implode(',', $idArray);
-                $stmt = $mysqli->prepare("DELETE FROM users WHERE id NOT IN (".$inQuery.")");
+				if(count($idArray) > 0) {
+					$inQuery = implode(',', $idArray);
+					$stmt = $mysqli->prepare("DELETE FROM users WHERE id NOT IN (".$inQuery.")");
 
-                if($stmt === false) {
-                    $error = $mysqli->error;
-                    $mysqli->close();
-                    throw new \Exception("Error: ". $error);
-                }
+					if($stmt === false) {
+						$error = $mysqli->error;
+						$mysqli->close();
+						throw new \Exception("Error: ". $error);
+					}
 
-                $stmt->execute();
+					$stmt->execute();
 
-                $stmt ->close();
+					$stmt ->close();
+				}
 
                 foreach ($properties["\$users"] as $value) {
                     //insert new users

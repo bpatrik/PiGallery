@@ -346,6 +346,14 @@ header("Access-Control-Allow-Headers: X-Requested-With");
                 <button id="resetDatabaseButton" type="button" class="btn btn-default btn-danger"><?php echo $LANG['admin_resetDatabase']; ?></button>
             </div>
         </div>
+        <div  id="adminPhotos" class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><?php echo $LANG['admin_installerWizard']; ?></h3>
+            </div>
+            <div class="panel-body">
+                <a href="setup/setup.php" class="btn btn-default btn-primary"><?php echo $LANG['admin_runSetup']; ?></a>
+            </div>
+        </div>
     </div> <!-- /container -->
 </div>
 
