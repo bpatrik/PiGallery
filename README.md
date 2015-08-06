@@ -49,8 +49,8 @@ Screenshots:
 --------
 ![Screen](screen2.jpg?raw=true)
 
-[![Install](install.jpg?raw=true)](install.jpg?raw=true =250x)
-[![Login](login.jpg?raw=true)](login.jpg?raw=true =250x)
-[![Screen](screen1.jpg?raw=true)](screen1.jpg?raw=true =250x)
-[![Screen](screen3.jpg?raw=true)](screen3.jpg?raw=true =250x)
-[![Screen](lightbox.jpg?raw=true)](lightbox.jpg?raw=true =250x)
+[![Install](install.jpg?raw=true =250x)](install.jpg?raw=true =250x)
+[![Login](login.jpg?raw=true =250x)](login.jpg?raw=true =250x)
+[![Screen](screen.jpg?raw=true =250x)](screen.jpg?raw=true =250x)
+[![Screen](screen3.jpg?raw=true =250x)](screen3.jpg?raw=true =250x)
+[![Screen](lightbox.jpg?raw=true =250x)](lightbox.jpg?raw=true =250x)
