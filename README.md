@@ -47,10 +47,29 @@ Notes:
 
 Screenshots:
 --------
-![Screen](screen2.jpg?raw=true)
+[![Screen](screen2.jpg?raw=true)](screen2.jpg?raw=true)
 
-[![Install](install.jpg?raw=true)](install.jpg?raw=true =250x)
-[![Login](login.jpg?raw=true)](login.jpg?raw=true =250x)
-[![Screen](screen1.jpg?raw=true)](screen1.jpg?raw=true =250x)
-[![Screen](screen3.jpg?raw=true)](screen3.jpg?raw=true =250x)
-[![Screen](lightbox.jpg?raw=true)](lightbox.jpg?raw=true =250x)
+
+<table align="center">
+ <tr>
+  <td>
+   <img src="install.jpg?raw=true" alt="Install" width="330px" >
+  </td>
+  <td>
+   <img src="login.jpg?raw=true" alt="Login" width="330px">
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <img src="screen.jpg?raw=true" alt="Screen" width="330px" >
+  </td>
+  <td>
+   <img src="screen3.jpg?raw=true" alt="Screen" width="330px">
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <img src="lightbox.jpg?raw=true" alt="Screen" width="330px" >
+  </td> 
+ </tr>
+</table> 
