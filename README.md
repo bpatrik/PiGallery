@@ -50,26 +50,26 @@ Screenshots:
 [![Screen](screen2.jpg?raw=true)](screen2.jpg?raw=true)
 
 
-<table>
+<table align="center">
  <tr>
   <td>
-   <img src="install.jpg?raw=true" alt="Install" width="250px" >
+   <img src="install.jpg?raw=true" alt="Install" width="350px" >
   </td>
   <td>
-   <img src="login.jpg?raw=true" alt="Login" width="250px">
+   <img src="login.jpg?raw=true" alt="Login" width="350px">
   </td>
  </tr>
  <tr>
   <td>
-   <img src="screen.jpg?raw=true" alt="Screen" width="200px" >
+   <img src="screen.jpg?raw=true" alt="Screen" width="350px" >
   </td>
   <td>
-   <img src="screen3.jpg?raw=true" alt="Screen" width="200px">
+   <img src="screen3.jpg?raw=true" alt="Screen" width="350px">
   </td>
  </tr>
  <tr>
   <td>
-   <img src="lightbox.jpg?raw=true" alt="Screen" width="200px" >
+   <img src="lightbox.jpg?raw=true" alt="Screen" width="350px" >
   </td> 
  </tr>
 </table> 
