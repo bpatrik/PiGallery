@@ -49,7 +49,7 @@ Screenshots:
 --------
 ![Screen](screen2.jpg?raw=true)
 
-[![Install](install.jpg?raw=true =250x)](install.jpg?raw=true =250x)
+[![Install](install.jpg?raw=true)](install.jpg?raw=true){:width="200px" display:"inline-block"}
 [![Login](login.jpg?raw=true =250x)](login.jpg?raw=true =250x)
 [![Screen](screen.jpg?raw=true =250x)](screen.jpg?raw=true =250x)
 [![Screen](screen3.jpg?raw=true =250x)](screen3.jpg?raw=true =250x)
