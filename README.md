@@ -53,23 +53,23 @@ Screenshots:
 <table align="center">
  <tr>
   <td>
-   <img src="install.jpg?raw=true" alt="Install" width="350px" >
+   <img src="install.jpg?raw=true" alt="Install" width="330px" >
   </td>
   <td>
-   <img src="login.jpg?raw=true" alt="Login" width="350px">
-  </td>
- </tr>
- <tr>
-  <td>
-   <img src="screen.jpg?raw=true" alt="Screen" width="350px" >
-  </td>
-  <td>
-   <img src="screen3.jpg?raw=true" alt="Screen" width="350px">
+   <img src="login.jpg?raw=true" alt="Login" width="330px">
   </td>
  </tr>
  <tr>
   <td>
-   <img src="lightbox.jpg?raw=true" alt="Screen" width="350px" >
+   <img src="screen.jpg?raw=true" alt="Screen" width="330px" >
+  </td>
+  <td>
+   <img src="screen3.jpg?raw=true" alt="Screen" width="330px">
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <img src="lightbox.jpg?raw=true" alt="Screen" width="330px" >
   </td> 
  </tr>
 </table> 
