@@ -45,6 +45,12 @@ Notes:
 * For faster thumbnail generating user less thumbnail sizes (eg.: only one, with a low value such as `150`)
   and disable image resampling in `config.php`
 
-ScreenShot:
+Screenshots:
 --------
-![screenshot](screenshot1.jpg)
+![Screen](screen2.jpg)
+
+[![Install](install.jpg)](install.jpg)
+[![Login](login.jpg)](login.jpg)
+[![Screen](screen1.jpg)](screen1.jpg)
+[![Screen](screen3.jpg)](screen3.jpg)
+[![Screen](lightbox.jpg)](lightbox.jpg)

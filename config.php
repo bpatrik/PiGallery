@@ -54,7 +54,7 @@ class Properties{
 
 
     /*Enable the database usage*/
-    public static $databaseEnabled = false;
+    public static $databaseEnabled = true;
 
     /*-------------Database settings----------*/
     /*if $databaseEnabled == true*/
