@@ -49,6 +49,17 @@ Screenshots:
 --------
 ![Screen](screen2.jpg?raw=true)
 
+
+<table>
+ <tr>
+  <td>
+   <img src="install.jpg?raw=true" alt="Install style="width:200px; display:inline-block;">
+  </td>
+  <td>
+   <img src="login.jpg?raw=true" alt="Login" style="width:200px; display:inline-block;">
+  </td>
+ </tr>
+</table>
 [![Install](install.jpg?raw=true)](install.jpg?raw=true){:width="200px" display="inline-block"}
 [![Login](login.jpg?raw=true =250x)](login.jpg?raw=true =250x)
 [![Screen](screen.jpg?raw=true =250x)](screen.jpg?raw=true =250x)
