@@ -53,7 +53,7 @@ Screenshots:
 <table>
  <tr>
   <td>
-   <img src="install.jpg?raw=true" alt="Install style="width:200px; display:inline-block;">
+   <img src="install.jpg?raw=true" alt="Install" style="width:200px; display:inline-block;">
   </td>
   <td>
    <img src="login.jpg?raw=true" alt="Login" style="width:200px; display:inline-block;">
