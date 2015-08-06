@@ -47,10 +47,10 @@ Notes:
 
 Screenshots:
 --------
-![Screen](screen2.jpg)
+![Screen](screen2.jpg?raw=true)
 
-[![Install](install.jpg)](install.jpg)
-[![Login](login.jpg)](login.jpg)
-[![Screen](screen1.jpg)](screen1.jpg)
-[![Screen](screen3.jpg)](screen3.jpg)
-[![Screen](lightbox.jpg)](lightbox.jpg)
+[![Install](install.jpg?raw=true)](install.jpg?raw=true =250x)
+[![Login](login.jpg?raw=true)](login.jpg?raw=true =250x)
+[![Screen](screen1.jpg?raw=true)](screen1.jpg?raw=true =250x)
+[![Screen](screen3.jpg?raw=true)](screen3.jpg?raw=true =250x)
+[![Screen](lightbox.jpg?raw=true)](lightbox.jpg?raw=true =250x)
