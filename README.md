@@ -1,4 +1,4 @@
-**This project is deprecated in favor of ![pigallery2](https://github.com/bpatrik/pigallery2).**
+# **This project is deprecated in favor of ![pigallery2](https://github.com/bpatrik/pigallery2).**
 
 PiGallery 1.0
 =========
